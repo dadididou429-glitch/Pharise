@@ -16,6 +16,8 @@
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js" crossorigin></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -49,6 +51,9 @@
   @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.5; } 70% { transform: scale(1.8); opacity: 0; } 100% { transform: scale(1.8); opacity: 0; } }
   @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .sheet-anim { animation: slideUp 0.2s ease-out; }
+.leaflet-container { width: 100%; height: 100%; z-index: 1; }
+.tab-active { background: #059669; color: white; }
+.tab-inactive { background: #064e3b; color: #a7f3d0; }
 </style>
 </head>
 <body>
@@ -603,6 +608,9 @@ function PharmacyFinder() {
   const [loginError, setLoginError] = useState(null);
   const [loginLoading, setLoginLoading] = useState(false);
   const [adminTab, setAdminTab] = useState("review");
+  const [showMap, setShowMap] = useState(false);
+const [activeTab, setActiveTab] = useState('list');
+const [mapInstance, setMapInstance] = useState(null);
   const dir = lang === "ar" ? "rtl" : "ltr";
 
   const wilaya = WILAYAS.find((w) => w.id === wilayaId);
@@ -658,7 +666,60 @@ function PharmacyFinder() {
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
+useEffect(() => {
+  if (activeTab === 'map' && !mapInstance) {
+    setTimeout(() => {
+      const mapEl = document.getElementById('map');
+      if (mapEl && !mapInstance) {
+        const map = L.map('map').setView([userLoc.lat, userLoc.lng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+        L.marker([userLoc.lat, userLoc.lng], {
+          icon: L.divIcon({
+            className: '',
+            html: '<div style="background:#3b82f6;border:3px solid white;border-radius:50%;width:16px;height:16px;box-shadow:0 0 10px #3b82f6;"></div>',
+            iconSize: [16, 16]
+          })
+        }).addTo(map).bindPopup(lang === 'ar' ? 'موقعك' : 'Vous');
+        setMapInstance(map);
+      }
+    }, 300);
+  }
+  if (activeTab === 'map' && mapInstance) {
+    setTimeout(() => mapInstance.invalidateSize(), 100);
+  }
+}, [activeTab]);
 
+useEffect(() => {
+  if (mapInstance && activeTab === 'map' && list.length > 0) {
+    mapInstance.eachLayer((layer) => {
+      if (layer._url) mapInstance.removeLayer(layer);
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(mapInstance);
+    
+    L.marker([userLoc.lat, userLoc.lng], {
+      icon: L.divIcon({
+        className: '',
+        html: '<div style="background:#3b82f6;border:3px solid white;border-radius:50%;width:16px;height:16px;box-shadow:0 0 10px #3b82f6;"></div>',
+        iconSize: [16, 16]
+      })
+    }).addTo(mapInstance).bindPopup(lang === 'ar' ? 'موقعك' : 'Vous');
+    
+    list.forEach(ph => {
+      const color = ph.onDuty ? '#f59e0b' : ph.status.open ? '#10b981' : '#ef4444';
+      L.marker([ph.lat, ph.lng], {
+        icon: L.divIcon({
+          className: '',
+          html: '<div style="background:' + color + ';border:2px solid white;border-radius:50%;width:14px;height:14px;box-shadow:0 0 6px ' + color + ';"></div>',
+          iconSize: [14, 14]
+        })
+      }).addTo(mapInstance).bindPopup('<div style="text-align:right;font-family:sans-serif;"><b>' + ph.name + '</b><br><small>' + ph.address + '</small><br><small>' + (ph.onDuty ? '🚨 مناوبة' : ph.status.open ? '🟢 مفتوحة' : '🔴 مغلقة') + ' | ' + ph.distance.toFixed(1) + ' كم</small>' + (ph.phone ? '<br><small>📞 ' + ph.phone + '</small>' : '') + '</div>');
+    });
+  }
+}, [list, mapInstance, activeTab]);
   useEffect(() => {
     if (selected) {
       const mine = myReviews[selected.id];
@@ -904,8 +965,26 @@ function PharmacyFinder() {
       </header>
 
       {toast && <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 bg-emerald-950 text-emerald-50 text-sm px-4 py-2.5 rounded-full shadow-lg max-w-[90%] text-center">{toast}</div>}
+<div className="flex gap-1 px-5 pt-3 max-w-md mx-auto">
+  <button onClick={() => { setShowMap(false); setActiveTab('list'); }}
+    className={`flex-1 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'list' ? 'tab-active' : 'tab-inactive'}`}>
+    📋 {lang === 'ar' ? 'القائمة' : lang === 'fr' ? 'Liste' : 'List'}
+  </button>
+  <button onClick={() => { setShowMap(true); setActiveTab('map'); }}
+    className={`flex-1 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'map' ? 'tab-active' : 'tab-inactive'}`}>
+    🗺️ {lang === 'ar' ? 'الخريطة' : lang === 'fr' ? 'Carte' : 'Map'}
+  </button>
+</div>
 
-      <main className="px-5 py-5 space-y-3 max-w-md mx-auto">
+{activeTab === 'map' ? (
+  <div className="px-5 py-3 max-w-md mx-auto">
+    <div id="map" style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }} className="rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-lg"></div>
+    <p className="text-xs text-center text-stone-500 mt-2">
+      {lang === 'ar' ? '🟢 مفتوحة | 🔴 مغلقة | 🟡 مناوبة' : lang === 'fr' ? '🟢 Ouverte | 🔴 Fermée | 🟡 Garde' : '🟢 Open | 🔴 Closed | 🟡 On Duty'}
+    </p>
+  </div>
+) : (
+  <main className="px-5 py-5 space-y-3 max-w-md mx-auto">
         {list.length === 0 && <p className="text-center text-stone-500 mt-10">{filter === "favorites" ? t("noFavorites") : t("noResults")}</p>}
         {list.map((ph) => (
           <div key={ph.id} className={`w-full bg-white rounded-2xl p-4 shadow-sm border transition ${ph.underReview ? "border-rose-300 bg-rose-50" : "border-stone-200 hover:shadow-md"}`}>
@@ -938,9 +1017,15 @@ function PharmacyFinder() {
               </div>
             </div>
           </div>
-        ))}
+                
       </main>
-
+)}
+      {selected && (
+        <div className="fixed inset-0 bg-black/40 flex items-end z-30" onClick={() => setSelected(null)}>
+          <div className="bg-white w-full rounded-t-3xl p-6 max-w-md mx-auto sheet-anim" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start">
+              <div>
+                
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-end z-30" onClick={() => setSelected(null)}>
           <div className="bg-white w-full rounded-t-3xl p-6 max-w-md mx-auto sheet-anim" onClick={(e) => e.stopPropagation()}>
