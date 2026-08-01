@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+  <title>Pharis — Open Pharmacies Near You</title>
+  <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
+  <meta name="theme-color" content="#022c22" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pharis" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23022c22'/><path d='M35 25h30v20h20v30H65v20H35V75H15V45h20V25z' fill='%2334d399'/></svg>" />
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+              400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+              800: '#065f46', 900: '#064e3b', 950: '#022c22'
+            }
+          },
+          fontFamily: {
+            arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+            sans: ['IBM Plex Sans', 'IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace']
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.25s ease-out',
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            'pulse-soft': 'pulseSoft 2s ease-in-out infinite'
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+            slideUp: { from: { transform: 'translateY(100%)', opacity: 0.5 }, to: { transform: 'translateY(0)', opacity: 1 } },
+            pulseSoft: { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.6 } }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+    html, body { margin: 0; padding: 0; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+    .leaflet-container { font-family: inherit; }
+    .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15); }
+    .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body class="bg-brand-50 text-stone-900 antialiased">
+  <div id="root">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#065f46;direction:rtl">
+      <div style="text-align:center">
+        <div style="width:40px;height:40px;border:3px solid #10b981;border-top-color:transparent;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite"></div>
+        <p style="font-size:14px;opacity:0.7">جاري تحميل Pharis...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHMYoNaXnkrILKM38Q0f-bL1u72AXRbkE",
+      authDomain: "maftouha-ap.firebaseapp.com",
+      projectId: "maftouha-ap",
+      storageBucket: "maftouha-ap.firebasestorage.app",
+      messagingSenderId: "584528603494",
+      appId: "1:584528603494:web:46f17d9c9bee0cb208c0a7",
+      measurementId: "G-BNSGCRJ4X6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+  </script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useMemo, useCallback, useRef, memo } = React;
+
+    // ═══════════════════════════════════════════════════════════
+    // ICONS
+    // ═══════════════════════════════════════════════════════════
+    const Icon = ({ children, className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+    );
+    const Icons = {
+      MapPin: (p) => <Icon {...p}><path d="M12 21s-6-5.686-6-10a6 6 0 1112 0c0 4.314-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></Icon>,
+      Clock: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></Icon>,
+      Phone: (p) => <Icon {...p}><path d="M5 4h3.5l1.8 4.5-2 1.5a10.5 10.5 0 005.7 5.7l1.5-2L20 15.5V19a1.5 1.5 0 01-1.6 1.5A15.5 15.5 0 013.5 5.6 1.5 1.5 0 015 4z"/></Icon>,
+      Search: (p) => <Icon {...p}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></Icon>,
+      X: (p) => <Icon {...p}><path d="M6 6l12 12M6 18L18 6"/></Icon>,
+      Flag: (p) => <Icon {...p}><path d="M5 21V4h13l-3 4 3 4H5"/></Icon>,
+      Alert: (p) => <Icon {...p}><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></Icon>,
+      Nav: (p) => <Icon {...p}><path d="M3 11l18-8-8 18-2-8-8-2z"/></Icon>,
+      Heart: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 21s-7.5-4.686-10-9A5.5 5.5 0 0112 6a5.5 5.5 0 0110 6c-2.5 4.314-10 9-10 9z"/></svg>,
+      Star: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+      Share: (p) => <Icon {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></Icon>,
+      Plus: (p) => <Icon {...p}><path d="M12 5v14M5 12h14"/></Icon>,
+      Map: (p) => <Icon {...p}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></Icon>,
+      Globe: (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></Icon>,
+      Moon: (p) => <Icon {...p}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></Icon>,
+      Sun: (p) => <Icon {...p}><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></Icon>,
+      Cross: (p) => <Icon {...p}><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z"/></Icon>,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // TRANSLATIONS (complete)
+    // ═══════════════════════════════════════════════════════════
+    const T = {
+      ar: {
+        tagline: "صيدليات {place}، الآن",
+        dashboard: "لوحة التحكم",
+        openStat: "مفتوحة من أصل {total}",
+        searchPlaceholder: "ابحث باسم الصيدلية أو الحي...",
+        filterAll: "الكل", filterOpen: "مفتوحة", filterUrgent: "مناوبة 24س",
+        filterFavorites: "المفضلة", filterLate: "مفتوحة ليلاً",
+        addedFavorite: 'أُضيفت "{name}" للمفضلة',
+        removedFavorite: 'أُزيلت "{name}" من المفضلة',
+        noFavorites: "لا توجد صيدليات مفضلة بعد. اضغط على القلب لإضافة واحدة.",
+        noRatingsYet: "لا تقييمات بعد",
+        ratingsCount: "({n})",
+        yourRating: "قيّم هذه الصيدلية",
+        reviewPlaceholder: "شاركنا تجربتك (اختياري)...",
+        submitReview: "إرسال التقييم",
+        reviewSubmitted: "شكراً على تقييمك!",
+        pickStarsFirst: "اختر عدد النجوم أولاً",
+        reviewsTitle: "التقييمات",
+        changeLocation: "تغيير الموقع",
+        noResults: "لا توجد نتائج مطابقة",
+        openNow: "مفتوحة الآن", closedNow: "مغلقة", closedNowFull: "مغلقة الآن",
+        onDutyLabel: "مناوبة · 24 ساعة",
+        closesAt: "تغلق الساعة {time}", opensAt: "تفتح الساعة {time}",
+        reportTitle: "الإبلاغ عن هذه الصيدلية",
+        directions: "الاتجاهات",
+        underReviewBanner: "وصلت لـ {n} شكاوى — قيد المراجعة",
+        underReviewDetail: "هذه الصيدلية وصلت إلى {n} شكاوى وهي الآن قيد المراجعة اليدوية.",
+        adminTitle: "لوحة التحكم",
+        adminSubtitle: "صيدليات قيد المراجعة (الحد: {n} شكاوى)",
+        adminEmpty: "لا توجد صيدليات قيد المراجعة",
+        verifyReturn: "تحقق — إعادتها",
+        deleteFinal: "حذف نهائي",
+        comingSoon: "قريباً",
+        alreadyReported: "تم الإبلاغ مسبقاً",
+        thanksReport: "شكراً، تم استلام بلاغك",
+        thresholdReached: 'وصلت "{name}" إلى {n} شكاوى — أُرسلت للمراجعة',
+        dismissedToast: 'تمت إعادة "{name}" للقائمة',
+        removedToast: 'تم حذف "{name}" نهائياً',
+        addPharmacyBtn: "أضف صيدليتك",
+        addPharmacyTitle: "تسجيل صيدلية جديدة",
+        addPharmacySubtitle: "تظهر في القائمة مباشرة بعد الإرسال",
+        formName: "اسم الصيدلية", formArea: "الحي / المنطقة", formAddress: "العنوان الكامل",
+        formPhone: "الهاتف (اختياري)", formOpenHour: "ساعة الفتح", formCloseHour: "ساعة الغلق",
+        formOnDuty: "مناوبة 24 ساعة",
+        useMyLocation: "استخدم موقعي الحالي",
+        locationCaptured: "تم تحديد الموقع ✓",
+        locationFailed: "تعذر تحديد الموقع",
+        submitNewPharmacy: "إرسال التسجيل",
+        submittingPharmacy: "جاري الإرسال...",
+        newPharmacySuccess: "تم تسجيل الصيدلية بنجاح",
+        newPharmacyError: "حدث خطأ، حاول مرة أخرى",
+        formRequiredError: "أدخل اسم الصيدلية والعنوان على الأقل",
+        unverifiedBadge: "غير موثقة",
+        unverifiedNote: "أُضيفت من صاحبها ولم تُتحقق بعد",
+        adminLoginTitle: "دخول المسؤول",
+        loginBtn: "دخول", loginError: "بيانات غير صحيحة",
+        logoutBtn: "خروج",
+        allPharmaciesTab: "كل الصيدليات ({n})",
+        allPharmaciesSubtitle: "احذف أي صيدلية نهائياً",
+        kmAway: "كم",
+        copy: "نسخ", call: "اتصل",
+        map: "خريطة", list: "قائمة",
+        loadFromMap: "جلب من الخريطة",
+        searchCity: "ابحث عن مدينة...",
+        detecting: "جاري تحديد موقعك...",
+        geoError: "تعذر تحديد الموقع. استخدم القائمة يدوياً.",
+        country: "الدولة", city: "المدينة",
+        darkMode: "الوضع الداكن", lightMode: "الوضع الفاتح",
+        share: "مشاركة",
+        pharmaciesFound: "✅ {n} صيدلية في {name}",
+        loadFailed: "❌ تعذر الجلب",
+        wait30s: "⏳ انتظر 30 ثانية قبل إضافة أخرى",
+        invalidPhone: "❌ رقم هاتف غير صالح",
+        locatingAddress: "جاري تحديد الموقع من العنوان...",
+        noLocation: "حدد موقعاً أو أدخل عنواناً صالحاً",
+        protected: "الحقول محمية ضد البيانات الزائفة",
+        worldwide: "أضف صيدليتك من أي مكان في العالم",
+        reviewBtn: "قيد المراجعة ({n})",
+        openLate: "مفتوحة ليلاً",
+      },
+      fr: {
+        tagline: "Pharmacies de {place}, en direct",
+        dashboard: "Tableau de bord",
+        openStat: "ouvertes sur {total}",
+        searchPlaceholder: "Rechercher une pharmacie ou un quartier...",
+        filterAll: "Toutes", filterOpen: "Ouvertes", filterUrgent: "De garde 24h",
+        filterFavorites: "Favoris", filterLate: "Ouvert tard",
+        addedFavorite: '"{name}" ajoutée aux favoris',
+        removedFavorite: '"{name}" retirée des favoris',
+        noFavorites: "Aucune pharmacie favorite. Touchez le cœur pour en ajouter.",
+        noRatingsYet: "Pas encore d'avis",
+        ratingsCount: "({n})",
+        yourRating: "Notez cette pharmacie",
+        reviewPlaceholder: "Partagez votre expérience (optionnel)...",
+        submitReview: "Envoyer l'avis",
+        reviewSubmitted: "Merci pour votre avis !",
+        pickStarsFirst: "Choisissez d'abord une note",
+        reviewsTitle: "Avis",
+        changeLocation: "Changer de lieu",
+        noResults: "Aucun résultat",
+        openNow: "Ouverte", closedNow: "Fermée", closedNowFull: "Fermée maintenant",
+        onDutyLabel: "De garde · 24h",
+        closesAt: "Ferme à {time}", opensAt: "Ouvre à {time}",
+        reportTitle: "Signaler cette pharmacie",
+        directions: "Itinéraire",
+        underReviewBanner: "{n} signalements — en revue",
+        underReviewDetail: "Cette pharmacie a reçu {n} signalements et est en revue manuelle.",
+        adminTitle: "Tableau de bord",
+        adminSubtitle: "Pharmacies en revue (seuil : {n})",
+        adminEmpty: "Aucune pharmacie en revue",
+        verifyReturn: "Vérifiée — restaurer",
+        deleteFinal: "Supprimer",
+        comingSoon: "Bientôt",
+        alreadyReported: "Déjà signalée",
+        thanksReport: "Merci, signalement reçu",
+        thresholdReached: '"{name}" a atteint {n} signalements — envoyée en revue',
+        dismissedToast: '"{name}" restaurée',
+        removedToast: '"{name}" supprimée définitivement',
+        addPharmacyBtn: "Ajouter votre pharmacie",
+        addPharmacyTitle: "Enregistrer une pharmacie",
+        addPharmacySubtitle: "Elle apparaît immédiatement après envoi",
+        formName: "Nom de la pharmacie", formArea: "Quartier", formAddress: "Adresse complète",
+        formPhone: "Téléphone (optionnel)", formOpenHour: "Heure d'ouverture", formCloseHour: "Heure de fermeture",
+        formOnDuty: "De garde 24h/24",
+        useMyLocation: "Utiliser ma position",
+        locationCaptured: "Position enregistrée ✓",
+        locationFailed: "Impossible de localiser",
+        submitNewPharmacy: "Envoyer",
+        submittingPharmacy: "Envoi...",
+        newPharmacySuccess: "Pharmacie enregistrée avec succès",
+        newPharmacyError: "Erreur, réessayez",
+        formRequiredError: "Indiquez au moins le nom et l'adresse",
+        unverifiedBadge: "Non vérifiée",
+        unverifiedNote: "Ajoutée par son propriétaire, pas encore vérifiée",
+        adminLoginTitle: "Connexion admin",
+        loginBtn: "Se connecter", loginError: "Identifiants incorrects",
+        logoutBtn: "Déconnexion",
+        allPharmaciesTab: "Toutes ({n})",
+        allPharmaciesSubtitle: "Supprimez n'importe quelle pharmacie",
+        kmAway: "km",
+        copy: "Copier", call: "Appeler",
+        map: "Carte", list: "Liste",
+        loadFromMap: "Charger depuis la carte",
+        searchCity: "Rechercher une ville...",
+        detecting: "Détection de votre position...",
+        geoError: "Impossible de détecter la position. Utilisez le menu.",
+        country: "Pays", city: "Ville",
+        darkMode: "Mode sombre", lightMode: "Mode clair",
+        share: "Partager",
+        pharmaciesFound: "✅ {n} pharmacies à {name}",
+        loadFailed: "❌ Échec du chargement",
+        wait30s: "⏳ Attendez 30 secondes",
+        invalidPhone: "❌ Numéro invalide",
+        locatingAddress: "Localisation de l'adresse...",
+        noLocation: "Indiquez une position ou une adresse valide",
+        protected: "Champs protégés contre les injections",
+        worldwide: "Ajoutez votre pharmacie de n'importe où",
+        reviewBtn: "En revue ({n})",
+        openLate: "Ouvert tard",
+      },
+      en: {
+        tagline: "{place} pharmacies, live",
+        dashboard: "Dashboard",
+        openStat: "open out of {total}",
+        searchPlaceholder: "Search by name or neighborhood...",
+        filterAll: "All", filterOpen: "Open", filterUrgent: "24h duty",
+        filterFavorites: "Favorites", filterLate: "Open late",
+        addedFavorite: '"{name}" added to favorites',
+        removedFavorite: '"{name}" removed from favorites',
+        noFavorites: "No favorites yet. Tap the heart to add one.",
+        noRatingsYet: "No ratings yet",
+        ratingsCount: "({n})",
+        yourRating: "Rate this pharmacy",
+        reviewPlaceholder: "Share your experience (optional)...",
+        submitReview: "Submit rating",
+        reviewSubmitted: "Thanks for your rating!",
+        pickStarsFirst: "Pick a star rating first",
+        reviewsTitle: "Reviews",
+        changeLocation: "Change location",
+        noResults: "No matching results",
+        openNow: "Open now", closedNow: "Closed", closedNowFull: "Closed now",
+        onDutyLabel: "On duty · 24h",
+        closesAt: "Closes at {time}", opensAt: "Opens at {time}",
+        reportTitle: "Report this pharmacy",
+        directions: "Directions",
+        underReviewBanner: "{n} complaints — under review",
+        underReviewDetail: "This pharmacy has {n} complaints and is under manual review.",
+        adminTitle: "Dashboard",
+        adminSubtitle: "Pharmacies under review (threshold: {n})",
+        adminEmpty: "No pharmacies under review",
+        verifyReturn: "Verified — restore",
+        deleteFinal: "Delete permanently",
+        comingSoon: "Coming soon",
+        alreadyReported: "Already reported",
+        thanksReport: "Thanks, report received",
+        thresholdReached: '"{name}" reached {n} complaints — sent for review',
+        dismissedToast: '"{name}" restored to listing',
+        removedToast: '"{name}" permanently removed',
+        addPharmacyBtn: "Add your pharmacy",
+        addPharmacyTitle: "Register a new pharmacy",
+        addPharmacySubtitle: "Appears in the list right after submitting",
+        formName: "Pharmacy name", formArea: "Neighborhood / Area", formAddress: "Full address",
+        formPhone: "Phone (optional)", formOpenHour: "Opening hour", formCloseHour: "Closing hour",
+        formOnDuty: "On duty 24h",
+        useMyLocation: "Use my current location",
+        locationCaptured: "Location captured ✓",
+        locationFailed: "Could not get location",
+        submitNewPharmacy: "Submit registration",
+        submittingPharmacy: "Submitting...",
+        newPharmacySuccess: "Pharmacy registered successfully",
+        newPharmacyError: "Something went wrong, try again",
+        formRequiredError: "Fill in at least the name and address",
+        unverifiedBadge: "Unverified",
+        unverifiedNote: "Added by its owner, not yet verified by the team",
+        adminLoginTitle: "Admin login",
+        loginBtn: "Log in", loginError: "Incorrect credentials",
+        logoutBtn: "Log out",
+        allPharmaciesTab: "All pharmacies ({n})",
+        allPharmaciesSubtitle: "Permanently delete any pharmacy",
+        kmAway: "km",
+        copy: "Copy", call: "Call",
+        map: "Map", list: "List",
+        loadFromMap: "Load from map",
+        searchCity: "Search a city...",
+        detecting: "Detecting your location...",
+        geoError: "Could not detect location. Use the menu manually.",
+        country: "Country", city: "City",
+        darkMode: "Dark mode", lightMode: "Light mode",
+        share: "Share",
+        pharmaciesFound: "✅ {n} pharmacies in {name}",
+        loadFailed: "❌ Failed to load",
+        wait30s: "⏳ Wait 30 seconds before adding another",
+        invalidPhone: "❌ Invalid phone number",
+        locatingAddress: "Locating address...",
+        noLocation: "Provide a location or valid address",
+        protected: "Fields protected against injection",
+        worldwide: "Add your pharmacy from anywhere in the world",
+        reviewBtn: "Under review ({n})",
+        openLate: "Open late",
+      }
+    };
+
+    function tr(lang, key, vars = {}) {
+      let str = (T[lang] && T[lang][key]) || T.ar[key] || key;
+      Object.entries(vars).forEach(([k, v]) => { str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v); });
+      return str;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // DATA — Core pharmacies (Sidi Bel Abbès, Oran, Algiers)
+    // ═══════════════════════════════════════════════════════════
+    const SBA = [
+      { id: 1, name: "صيدلية بوعشة فريد", area: "شارع 08 نوفمبر", address: "Rue 08 Novembre, Sidi Bel Abbès", phone: null, lat: 35.1994115, lng: -0.6453492, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 2, name: "صيدلية أنس بن الأزهر", area: "سيدي جيلالي", address: "Agence Foncière, Sidi Djilali", phone: "040 73 11 11", lat: 35.2100923, lng: -0.6308727, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 3, name: "صيدلية منصور وفاء", area: "سيدي جيلالي", address: "250 Segar Abdelaziz, Secteur 1", phone: null, lat: 35.2156413, lng: -0.6350891, hours: { open: 8.5, close: 24 }, onDuty: false },
+      { id: 4, name: "صيدلية بن حمودة", area: "سيدي بلعباس", address: "Sidi Bel Abbès 22000", phone: "0557 48 64 80", lat: 35.2194202, lng: -0.6259365, hours: { open: 8, close: 25 }, onDuty: false },
+      { id: 5, name: "صيدلية د. عربي", area: "روڨاب عكاشة", address: "Telmouni N°23 Lot 36", phone: "0542 61 77 50", lat: 35.1736176, lng: -0.5448622, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 6, name: "صيدلية بن عز الدين عبد الصمد", area: "بوليفار بنديدة", address: "56 Bd Bendida Mohamed", phone: "0770 80 52 35", lat: 35.1950042, lng: -0.6194100, hours: { open: 8, close: 26.5 }, onDuty: false },
+      { id: 7, name: "صيدلية رقبال محل", area: "سيدي بلعباس", address: "17 Rue Laziz Ghalem", phone: "0542 69 78 07", lat: 35.1976143, lng: -0.6484907, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 8, name: "صيدلية د. عراد بن علي", area: "حي 100 مسكن", address: "Cité 100 Logements Aile A N°1", phone: "048 76 77 85", lat: 35.1966647, lng: -0.6176962, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 9, name: "صيدلية بلعربي الحسين", area: "AADL", address: "AADL, Sidi Bel Abbès", phone: "0549 67 98 94", lat: 35.2185763, lng: -0.6275044, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 10, name: "صيدلية معاشو محمد", area: "حي 237 مسكن", address: "Cité 237 Logts", phone: "0561 06 28 18", lat: 35.2125875, lng: -0.6232656, hours: { open: 8, close: 27 }, onDuty: false },
+      { id: 22, name: "صيدلية حماد جيلالي", area: "بوليفار عيساط إيدير", address: "Bd Aissat Idir", phone: "0559 56 87 22", lat: 35.1945066, lng: -0.6248018, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 26, name: "صيدلية الشيخ أمين", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.182191, lng: -0.6311097, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 31, name: "صيدلية الرائد", area: "حي الأمير", address: "Cité El Amir", phone: null, lat: 35.2100, lng: -0.6400, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 32, name: "صيدلية سفيزف المركزية", area: "نهج الاستقلال", address: "Rue de l'Indépendance, Sfisef", phone: "048 70 12 34", lat: 35.2333, lng: -0.2500, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 37, name: "صيدلية الحياة بن باديس", area: "الطريق الوطني 7", address: "RN7, Ben Badis", phone: null, lat: 35.2700, lng: -0.5600, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 40, name: "صيدلية مناوبة تلاغ", area: "طريق سيدي بلعباس", address: "Route de SBA, Telagh", phone: "0770 55 44 33", lat: 34.7800, lng: -0.5900, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 43, name: "صيدلية عين البرد 24", area: "شارع الأمير عبد القادر", address: "Bd Emir Abdelkader, Aïn El Berd", phone: "0550 11 22 33", lat: 35.3667, lng: -0.5167, hours: { open: 0, close: 24 }, onDuty: true },
+    ].map(p => ({ ...p, wilaya: "سيدي بلعباس", commune: p.area, verified: true }));
+
+    const ORAN = [
+      { id: 201, name: "صيدلية بوزيان", area: "شارع الشيخ عبد القادر", address: "50 Av. Cheikh Abdelkader, Oran", phone: "041 23 17 75", lat: 35.6903998, lng: -0.6409355, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 202, name: "صيدلية الحاج", area: "وهران", address: "Oran", phone: "041 23 25 78", lat: 35.674515, lng: -0.6503951, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 203, name: "صيدلية بوزيان (الجامع الكبير)", area: "بوليفار عبد الحميد بن باديس", address: "Pole Abdelhamid Ibn Badis, Bir El Djir", phone: "041 23 17 75", lat: 35.6970558, lng: -0.6072521, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 205, name: "صيدلية ويس", area: "شارع مولود فرعون", address: "140 Rue Mouloud Feraoun, Oran", phone: "040 57 77 06", lat: 35.6997742, lng: -0.6350941, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 209, name: "صيدلية بروانة H24", area: "شارع العقيد بن عبد الرزاق", address: "07 Av. Colonel Benabderrezak, Oran", phone: "0770 43 44 84", lat: 35.6983949, lng: -0.6307644, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 216, name: "صيدلية العربي.ع", area: "شارع جلاط حبيب", address: "Av. Djellat Habib, Oran", phone: null, lat: 35.7405471, lng: -0.5677005, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 217, name: "صيدلية تيانتي لطيفة", area: "وهران", address: "Oran", phone: "0550 17 28 91", lat: 35.6935264, lng: -0.6363853, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 221, name: "صيدلية أول نوفمبر", area: "ساحة أول نوفمبر", address: "Place 1er Novembre, Oran", phone: "041 33 44 55", lat: 35.7020, lng: -0.6350, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 228, name: "صيدلية الرازي", area: "طريق الكنيسة", address: "Route de l'Église, Oran", phone: null, lat: 35.7080, lng: -0.6180, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 231, name: "صيدلية السانية الكبرى", area: "وسط السانية", address: "Centre-ville, Es Senia", phone: "041 60 11 22", lat: 35.6478, lng: -0.6230, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 235, name: "صيدلية الميناء أرزيو", area: "الميناء", address: "Port, Arzew", phone: "0770 44 55 66", lat: 35.8200, lng: -0.3100, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 239, name: "صيدلية بئر الجير 24", area: "طريق وهران", address: "Route d'Oran, Bir El Djir", phone: "0790 11 22 33", lat: 35.7300, lng: -0.5500, hours: { open: 0, close: 24 }, onDuty: true },
+    ].map(p => ({ ...p, wilaya: "وهران", commune: p.area, verified: true }));
+
+    const ALGER = [
+      { id: 401, name: "صيدلية خلدون 24/7", area: "الحراش", address: "12 Rue Si Hanafi, El-Harrach", phone: "020 43 43 34", lat: 36.7172244, lng: 3.1461069, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 402, name: "صيدلية الزيتونة", area: "بئر مراد رايس", address: "Bir Mourad Raïs", phone: "0560 28 51 99", lat: 36.7341897, lng: 3.0359469, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 405, name: "صيدلية شكرون", area: "دالي إبراهيم", address: "140 Hay El Bina, Dély Ibrahim", phone: "0770 07 88 01", lat: 36.7604004, lng: 2.9842351, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 414, name: "صيدلية وسالح سهام", area: "سيدي امحمد", address: "70 Rue Hassiba Ben Bouali", phone: "0699 41 68 61", lat: 36.7629402, lng: 3.0563756, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 417, name: "صيدلية القبة (مناوبة)", area: "القبة", address: "Kouba", phone: null, lat: 36.7257983, lng: 3.0903277, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 418, name: "صيدلية زكري", area: "بئر مراد رايس", address: "Rue Fabri Marcello", phone: "023 42 04 07", lat: 36.7371436, lng: 3.0632726, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 419, name: "صيدلية دي الكيفان (مناوبة)", area: "برج الكيفان", address: "Cité Benzarga, Bordj El Kiffan", phone: "020 21 48 57", lat: 36.7721132, lng: 3.2435749, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 423, name: "صيدلية باب الزوار", area: "باب الزوار", address: "Cité 5 Juillet, Bab Ezzouar", phone: "021 24 55 66", lat: 36.7167, lng: 3.1833, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 429, name: "صيدلية برج البحري", area: "برج البحري", address: "Route Nationale, Bordj El Bahri", phone: null, lat: 36.7833, lng: 3.2333, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 430, name: "صيدلية الحراش 24", area: "الحراش", address: "Place de la Mairie, El-Harrach", phone: "020 33 44 55", lat: 36.7167, lng: 3.1333, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 436, name: "صيدلية الأبيار", area: "الأبيار", address: "Bd Krim Belkacem, El Biar", phone: null, lat: 36.7667, lng: 3.0167, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 446, name: "صيدلية عين البنيان", area: "عين البنيان", address: "Bord de Mer, Aïn Benian", phone: null, lat: 36.8000, lng: 2.9333, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 453, name: "صيدلية المحمدية", area: "المحمدية", address: "Rue Principale, Mohammedia", phone: "021 88 77 66", lat: 36.7333, lng: 3.1667, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 460, name: "صيدلية سيدي عبد الله", area: "سيدي عبد الله", address: "Nouvelle Ville, Sidi Abdellah", phone: null, lat: 36.6833, lng: 2.8833, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 466, name: "صيدلية عين النعجة", area: "عين النعجة", address: "Cité Militaire, Aïn Naadja", phone: null, lat: 36.7000, lng: 3.0667, hours: { open: 0, close: 24 }, onDuty: true },
+    ].map(p => ({ ...p, wilaya: "الجزائر", commune: p.area, verified: true }));
+
+    const RAW = [...SBA, ...ORAN, ...ALGER];
+
+    const COUNTRIES = [
+      { id: "DZ", name: "🇩🇿 الجزائر", nameFr: "Algérie", nameEn: "Algeria" },
+      { id: "FR", name: "🇫🇷 فرنسا", nameFr: "France", nameEn: "France" },
+      { id: "MA", name: "🇲🇦 المغرب", nameFr: "Maroc", nameEn: "Morocco" },
+      { id: "TN", name: "🇹🇳 تونس", nameFr: "Tunisie", nameEn: "Tunisia" },
+      { id: "EG", name: "🇪🇬 مصر", nameFr: "Égypte", nameEn: "Egypt" },
+      { id: "SA", name: "🇸🇦 السعودية", nameFr: "Arabie Saoudite", nameEn: "Saudi Arabia" },
+      { id: "AE", name: "🇦🇪 الإمارات", nameFr: "Émirats", nameEn: "UAE" },
+      { id: "TR", name: "🇹🇷 تركيا", nameFr: "Turquie", nameEn: "Turkey" },
+      { id: "ES", name: "🇪🇸 إسبانيا", nameFr: "Espagne", nameEn: "Spain" },
+      { id: "IT", name: "🇮🇹 إيطاليا", nameFr: "Italie", nameEn: "Italy" },
+      { id: "DE", name: "🇩🇪 ألمانيا", nameFr: "Allemagne", nameEn: "Germany" },
+      { id: "GB", name: "🇬🇧 بريطانيا", nameFr: "R.-U.", nameEn: "UK" },
+      { id: "US", name: "🇺🇸 أمريكا", nameFr: "États-Unis", nameEn: "USA" },
+      { id: "CA", name: "🇨🇦 كندا", nameFr: "Canada", nameEn: "Canada" },
+      { id: "OTHER", name: "🌍 أخرى", nameFr: "Autre", nameEn: "Other" },
+    ];
+
+    const WILAYAS = [
+      { id: 16, name: "الجزائر", enabled: true },
+      { id: 31, name: "وهران", enabled: true },
+      { id: 22, name: "سيدي بلعباس", enabled: true },
+      { id: 999, name: "🌍 OpenStreetMap", enabled: true },
+    ];
+
+    // ═══════════════════════════════════════════════════════════
+    // UTILS
+    // ═══════════════════════════════════════════════════════════
+    const COMPLAINT_THRESHOLD = 3;
+    const DEFAULT_LOC = { lat: 35.1917, lng: -0.6355 };
+
+    function useNow() {
+      const [now, setNow] = useState(() => new Date());
+      useEffect(() => {
+        const t = setInterval(() => setNow(new Date()), 30000);
+        return () => clearInterval(t);
+      }, []);
+      return now;
+    }
+
+    function computeStatus(ph, now) {
+      if (ph.onDuty) return { open: true, kind: "onDuty" };
+      const hour = now.getHours() + now.getMinutes() / 60;
+      const { open, close } = ph.hours || { open: 8, close: 21 };
+      const isOpen = close > 24 ? (hour >= open || hour < close - 24) : (hour >= open && hour < close);
+      return { open: isOpen, kind: isOpen ? "closesAt" : "opensAt", time: isOpen ? close % 24 : open };
+    }
+
+    function fmtHour(h) {
+      const hh = Math.floor(h) % 24;
+      const mm = Math.round((h - Math.floor(h)) * 60);
+      return String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+    }
+
+    function haversine(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLng = ((lng2 - lng1) * Math.PI) / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function sanitize(text, max = 100) {
+      if (!text || typeof text !== "string") return null;
+      const cleaned = text.trim().replace(/[<>\x00-\x1F\x7F]/g, "").substring(0, max);
+      return cleaned.length > 0 ? cleaned : null;
+    }
+
+    function isValidPhone(phone) {
+      if (!phone) return true;
+      return /^[+\d\s\-()]{6,20}$/.test(phone.trim());
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // API HELPERS
+    // ═══════════════════════════════════════════════════════════
+    async function searchCities(query, countryCode) {
+      if (!query.trim()) return [];
+      const cc = countryCode === "OTHER" ? "" : countryCode;
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + (cc ? ", " + cc : ""))}&format=json&addressdetails=1&limit=8&accept-language=ar,en,fr`;
+      const res = await fetch(url, { headers: { "Accept-Language": "ar,en,fr" } });
+      const data = await res.json();
+      return data
+        .filter(item => ["city", "town", "village", "municipality"].includes(item.type) || item.class === "place")
+        .map(item => ({
+          name: item.display_name.split(",")[0],
+          fullName: item.display_name,
+          lat: parseFloat(item.lat),
+          lng: parseFloat(item.lon),
+          country: item.address?.country || ""
+        }));
+    }
+
+    async function geocodeAddress(address, countryHint) {
+      const q = countryHint ? `${address}, ${countryHint}` : address;
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&addressdetails=1`);
+      const data = await res.json();
+      if (!data.length) throw new Error("Address not found");
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
+        displayName: data[0].display_name,
+        city: data[0].address?.city || data[0].address?.town || data[0].address?.village || "",
+        countryCode: (data[0].address?.country_code || "").toUpperCase()
+      };
+    }
+
+    async function fetchOSMPharmacies(lat, lng, radius = 6000) {
+      const query = `[out:json][timeout:20];(node["amenity"="pharmacy"](around:${radius},${lat},${lng}););out body;`;
+      const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
+      if (!res.ok) throw new Error("Overpass failed");
+      const data = await res.json();
+      return (data.elements || []).map((el, idx) => {
+        const t = el.tags || {};
+        const name = t["name:ar"] || t.name || "صيدلية";
+        const address = [t["addr:street"], t["addr:housenumber"], t["addr:city"]].filter(Boolean).join(", ");
+        const phone = t.phone || t["contact:phone"] || null;
+        const onDuty = t.opening_hours && t.opening_hours.includes("24/7");
+        return {
+          id: `osm_${el.id}_${idx}`,
+          name: /صيدلية|Pharmacie|Pharmacy/i.test(name) ? name : `صيدلية ${name}`,
+          area: t["addr:suburb"] || t["addr:city"] || "",
+          address: address || "",
+          phone,
+          lat: el.lat,
+          lng: el.lon,
+          hours: { open: onDuty ? 0 : 8, close: onDuty ? 24 : 21 },
+          onDuty: !!onDuty,
+          wilaya: "OSM",
+          commune: t["addr:city"] || "",
+          verified: true,
+          fromOSM: true
+        };
+      }).filter(p => p.lat && p.lng);
+    }
+
+    async function fetchOSMByCity(cityName) {
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`);
+      const geoData = await geoRes.json();
+      if (!geoData.length) throw new Error("City not found");
+      const [s, n, w, e] = geoData[0].boundingbox.map(Number);
+      const query = `[out:json][timeout:25];(node["amenity"="pharmacy"](${s},${w},${n},${e}););out body;`;
+      const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
+      if (!res.ok) throw new Error("Overpass failed");
+      const data = await res.json();
+      const city = geoData[0].display_name.split(",")[0];
+      return (data.elements || []).map((el, idx) => {
+        const t = el.tags || {};
+        const name = t["name:ar"] || t.name || "صيدلية";
+        const onDuty = t.opening_hours && t.opening_hours.includes("24/7");
+        return {
+          id: `osm_${el.id}_${idx}`,
+          name: /صيدلية|Pharmacie|Pharmacy/i.test(name) ? name : `صيدلية ${name}`,
+          area: t["addr:suburb"] || t["addr:city"] || city,
+          address: [t["addr:street"], t["addr:housenumber"]].filter(Boolean).join(", ") || "",
+          phone: t.phone || t["contact:phone"] || null,
+          lat: el.lat,
+          lng: el.lon,
+          hours: { open: onDuty ? 0 : 8, close: onDuty ? 24 : 21 },
+          onDuty: !!onDuty,
+          wilaya: city,
+          commune: t["addr:city"] || city,
+          verified: true,
+          fromOSM: true
+        };
+      }).filter(p => p.lat && p.lng);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // COMPONENTS
+    // ═══════════════════════════════════════════════════════════
+    function Toast({ message, onClose }) {
+      useEffect(() => {
+        const t = setTimeout(onClose, 3200);
+        return () => clearTimeout(t);
+      }, [onClose]);
+      return (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-brand-950 text-brand-50 text-sm px-5 py-2.5 rounded-full shadow-xl max-w-[90%] text-center animate-fade-in">
+          {message}
+        </div>
+      );
+    }
+
+    function StatusDot({ open }) {
+      return (
+        <span className={`relative flex h-2.5 w-2.5 flex-shrink-0`}>
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-40 ${open ? "bg-emerald-400" : "bg-rose-400"}`} />
+          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${open ? "bg-emerald-500" : "bg-rose-500"}`} />
+        </span>
+      );
+    }
+
+    const PharmacyCard = memo(function PharmacyCard({ ph, lang, t, onSelect, onToggleFav, onReport }) {
+      return (
+        <div className={`bg-white dark:bg-brand-900 rounded-2xl p-4 shadow-sm border transition hover:shadow-md ${ph.underReview ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20" : "border-stone-100 dark:border-brand-800"}`}>
+          {ph.underReview && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 mb-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-lg px-2.5 py-1.5">
+              <Icons.Alert className="w-3.5 h-3.5 flex-shrink-0" />
+              {t("underReviewBanner", { n: ph.complaintCount })}
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <button onClick={() => onSelect(ph)} className="flex-1 min-w-0 text-start flex items-center gap-3">
+              <StatusDot open={ph.status.open} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
+                    {ph.name}
+                    {ph.verified === false && (
+                      <span className="text-[9px] font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full px-1.5 py-0.5 flex-shrink-0">
+                        {t("unverifiedBadge")}
+                      </span>
+                    )}
+                  </h3>
+                  <span className="font-mono text-xs text-stone-400 flex-shrink-0">
+                    {ph.distance.toFixed(1)} {t("kmAway")}
+                  </span>
+                </div>
+                <p className="text-xs text-stone-500 dark:text-brand-300 mt-0.5 truncate">{ph.area}{ph.address ? ` · ${ph.address}` : ""}</p>
+                <div className="flex items-center justify-between mt-1.5">
+                  <p className={`text-xs font-medium ${ph.status.open ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                    {ph.status.open ? t("openNow") : t("closedNow")}
+                    {ph.status.kind !== "onDuty" && ` · ${t(ph.status.kind, { time: fmtHour(ph.status.time) })}`}
+                    {ph.status.kind === "onDuty" && ` · ${t("onDutyLabel")}`}
+                  </p>
+                  {ph.avgRating !== null && (
+                    <span className="flex items-center gap-0.5 text-xs text-amber-500">
+                      <Icons.Star className="w-3 h-3" fill="currentColor" />
+                      {ph.avgRating.toFixed(1)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </button>
+            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+              <button onClick={() => onToggleFav(ph.id, ph.name)} className={`p-2 rounded-full transition ${ph.isFavorite ? "text-rose-500" : "text-stone-300 dark:text-brand-600 hover:text-rose-400"}`}>
+                <Icons.Heart className="w-4 h-4" fill={ph.isFavorite ? "currentColor" : "none"} />
+              </button>
+              <button onClick={() => onReport(ph.id, ph.name)} className="p-2 rounded-full text-stone-300 dark:text-brand-600 hover:text-rose-400 transition">
+                <Icons.Flag className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    });
+
+    function MapView({ pharmacies, userLoc, lang, onSelect }) {
+      const mapRef = useRef(null);
+      const mapInstance = useRef(null);
+
+      useEffect(() => {
+        if (!mapRef.current || mapInstance.current) return;
+        const map = L.map(mapRef.current, { zoomControl: false }).setView([userLoc.lat, userLoc.lng], 13);
+        L.control.zoom({ position: "bottomright" }).addTo(map);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap"
+        }).addTo(map);
+
+        L.circleMarker([userLoc.lat, userLoc.lng], {
+          radius: 9, fillColor: "#3b82f6", color: "#fff", weight: 2.5, fillOpacity: 0.95
+        }).addTo(map).bindPopup(lang === "ar" ? "📍 أنت هنا" : lang === "fr" ? "📍 Vous êtes ici" : "📍 You are here");
+
+        const markers = [];
+        pharmacies.forEach(ph => {
+          const color = ph.status.open ? "#059669" : "#dc2626";
+          const m = L.circleMarker([ph.lat, ph.lng], {
+            radius: 11, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
+          }).addTo(map);
+          m.bindPopup(`<div style="font-family:sans-serif;text-align:${lang==="ar"?"right":"left"};direction:${lang==="ar"?"rtl":"ltr"};min-width:180px;padding:2px">
+            <b style="color:#064e3b">${ph.name}</b><br/>
+            <span style="font-size:12px;color:#666">${ph.area}</span><br/>
+            <span style="font-size:12px;font-weight:600;color:${ph.status.open?"#059669":"#dc2626"}">${ph.status.open ? "🟢 Open" : "🔴 Closed"}</span>
+          </div>`);
+          m.on("click", () => onSelect && onSelect(ph));
+          markers.push(m);
+        });
+
+        if (markers.length) {
+          const group = L.featureGroup(markers);
+          map.fitBounds(group.getBounds().pad(0.12));
+        }
+        mapInstance.current = map;
+        return () => {
+          map.remove();
+          mapInstance.current = null;
+        };
+      }, []);
+
+      return <div ref={mapRef} className="w-full h-full min-h-[50vh] rounded-2xl" />;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // MAIN APP
+    // ═══════════════════════════════════════════════════════════
+    function PharisApp() {
+      const now = useNow();
+      const [lang, setLang] = useState(() => {
+        const b = (navigator.language || "ar").slice(0, 2);
+        return ["ar", "fr", "en"].includes(b) ? b : "ar";
+      });
+      const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+      const [query, setQuery] = useState("");
+      const [filter, setFilter] = useState("all");
+      const [selected, setSelected] = useState(null);
+      const [toast, setToast] = useState(null);
+      const [showMap, setShowMap] = useState(false);
+      const [showLocationPicker, setShowLocationPicker] = useState(false);
+      const [showAddForm, setShowAddForm] = useState(false);
+      const [showLogin, setShowLogin] = useState(false);
+      const [adminView, setAdminView] = useState(false);
+      const [adminTab, setAdminTab] = useState("review");
+
+      // Location & data
+      const [countryId, setCountryId] = useState("DZ");
+      const [wilayaId, setWilayaId] = useState(22);
+      const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
+      const [locating, setLocating] = useState(true);
+      const [geoError, setGeoError] = useState(null);
+      const [osmPharmacies, setOsmPharmacies] = useState([]);
+      const [loadingOSM, setLoadingOSM] = useState(false);
+      const [submitted, setSubmitted] = useState([]);
+      const [removedIds, setRemovedIds] = useState(new Set());
+      const [complaints, setComplaints] = useState({});
+      const [reportedByMe, setReportedByMe] = useState(new Set());
+      const [favorites, setFavorites] = useState(new Set());
+      const [ratings, setRatings] = useState({});
+      const [myReviews, setMyReviews] = useState({});
+      const [draftStars, setDraftStars] = useState(0);
+      const [draftText, setDraftText] = useState("");
+
+      // City search
+      const [citySearch, setCitySearch] = useState("");
+      const [cityResults, setCityResults] = useState([]);
+      const [loadingCities, setLoadingCities] = useState(false);
+      const [currentPlace, setCurrentPlace] = useState("سيدي بلعباس");
+
+      // Admin
+      const [adminUser, setAdminUser] = useState(null);
+      const [loginEmail, setLoginEmail] = useState("");
+      const [loginPassword, setLoginPassword] = useState("");
+      const [loginError, setLoginError] = useState(null);
+      const [loginLoading, setLoginLoading] = useState(false);
+
+      // Add form
+      const [form, setForm] = useState({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "" });
+      const [formLoc, setFormLoc] = useState(null);
+      const [formLocStatus, setFormLocStatus] = useState(null);
+      const [submitting, setSubmitting] = useState(false);
+      const [lastSubmit, setLastSubmit] = useState(0);
+
+      const t = useCallback((key, vars) => tr(lang, key, vars), [lang]);
+      const dir = lang === "ar" ? "rtl" : "ltr";
+
+      // Dark mode
+      useEffect(() => {
+        document.documentElement.classList.toggle("dark", dark);
+      }, [dark]);
+
+      // Geolocation
+      useEffect(() => {
+        if (!navigator.geolocation) {
+          setLocating(false);
+          setGeoError("unsupported");
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setUserLoc({ lat, lng });
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${lang}`);
+              const data = await res.json();
+              const addr = data.address || {};
+              const state = addr.state || addr.city || "";
+              const match = WILAYAS.find(w => w.enabled && w.id !== 999 && (state.includes(w.name) || w.name.includes(state)));
+              if (match) {
+                setWilayaId(match.id);
+                setCurrentPlace(match.name);
+              }
+            } catch {}
+            setLocating(false);
+          },
+          () => { setGeoError("denied"); setLocating(false); },
+          { timeout: 12000, enableHighAccuracy: true }
+        );
+      }, []);
+
+      // Auth
+      useEffect(() => {
+        const unsub = auth.onAuthStateChanged(u => setAdminUser(u));
+        return unsub;
+      }, []);
+
+      // Load submitted + removed
+      useEffect(() => {
+        if (!db) return;
+        const place = WILAYAS.find(w => w.id === wilayaId)?.name;
+        if (place && place !== "🌍 OpenStreetMap") {
+          db.collection("pharmacies_submitted").where("wilaya", "==", place).get()
+            .then(snap => setSubmitted(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
+            .catch(() => {});
+        }
+        db.collection("removed_pharmacies").get()
+          .then(snap => setRemovedIds(new Set(snap.docs.map(d => isNaN(d.id) ? d.id : Number(d.id)))))
+          .catch(() => {});
+      }, [wilayaId]);
+
+      // Sync selected review draft
+      useEffect(() => {
+        if (selected) {
+          const mine = myReviews[selected.id];
+          setDraftStars(mine?.stars || 0);
+          setDraftText(mine?.text || "");
+        }
+      }, [selected?.id]);
+
+      // Computed list
+      const baseList = useMemo(() => {
+        const local = RAW.filter(p => {
+          if (wilayaId === 999) return false;
+          const w = WILAYAS.find(x => x.id === wilayaId);
+          return w && p.wilaya === w.name;
+        });
+        const submittedMapped = submitted.map(p => ({
+          ...p,
+          verified: false,
+          hours: p.hours || { open: 8, close: 21 },
+          complaints: 0,
+          ratingSum: 0,
+          ratingCount: 0
+        }));
+        return [...local, ...submittedMapped, ...osmPharmacies];
+      }, [wilayaId, submitted, osmPharmacies]);
+
+      const allComputed = useMemo(() => {
+        return baseList
+          .filter(ph => !removedIds.has(ph.id))
+          .map(ph => {
+            const status = computeStatus(ph, now);
+            const distance = haversine(userLoc.lat, userLoc.lng, ph.lat, ph.lng);
+            const complaintCount = complaints[ph.id] || 0;
+            const r = ratings[ph.id] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
+            return {
+              ...ph,
+              status,
+              distance,
+              complaintCount,
+              underReview: complaintCount >= COMPLAINT_THRESHOLD,
+              avgRating: r.count > 0 ? r.sum / r.count : null,
+              ratingCount: r.count,
+              isFavorite: favorites.has(ph.id)
+            };
+          });
+      }, [baseList, now, complaints, removedIds, ratings, favorites, userLoc]);
+
+      const list = useMemo(() => {
+        return allComputed
+          .filter(ph => (ph.name + " " + (ph.area || "") + " " + (ph.address || "")).toLowerCase().includes(query.toLowerCase()))
+          .filter(ph => filter === "open" ? ph.status.open : true)
+          .filter(ph => filter === "urgent" ? ph.onDuty : true)
+          .filter(ph => filter === "favorites" ? ph.isFavorite : true)
+          .filter(ph => filter === "late" ? (ph.status.open && (ph.hours?.close > 22 || ph.onDuty)) : true)
+          .sort((a, b) => a.distance - b.distance);
+      }, [allComputed, query, filter]);
+
+      const openCount = list.filter(p => p.status.open).length;
+      const reviewQueue = useMemo(() => {
+        return RAW
+          .filter(ph => !removedIds.has(ph.id))
+          .map(ph => ({ ...ph, complaintCount: complaints[ph.id] || 0 }))
+          .filter(ph => ph.complaintCount >= COMPLAINT_THRESHOLD)
+          .sort((a, b) => b.complaintCount - a.complaintCount);
+      }, [complaints, removedIds]);
+
+      const selectedLive = selected ? allComputed.find(p => p.id === selected.id) || selected : null;
+      const timeStr = now.toLocaleTimeString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB", { hour: "2-digit", minute: "2-digit" });
+
+      // Actions
+      const showToast = (msg) => setToast(msg);
+
+      const toggleFavorite = (id, name) => {
+        setFavorites(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) {
+            next.delete(id);
+            showToast(t("removedFavorite", { name }));
+          } else {
+            next.add(id);
+            showToast(t("addedFavorite", { name }));
+          }
+          return next;
+        });
+      };
+
+      const reportPharmacy = (id, name) => {
+        if (reportedByMe.has(id)) {
+          showToast(t("alreadyReported"));
+          return;
+        }
+        setComplaints(prev => {
+          const next = { ...prev, [id]: (prev[id] || 0) + 1 };
+          showToast(next[id] === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+          return next;
+        });
+        setReportedByMe(prev => new Set(prev).add(id));
+      };
+
+      const submitRating = (id) => {
+        if (draftStars === 0) {
+          showToast(t("pickStarsFirst"));
+          return;
+        }
+        setRatings(prev => {
+          const cur = prev[id] || { sum: 0, count: 0 };
+          const already = myReviews[id];
+          const sum = already ? cur.sum - already.stars + draftStars : cur.sum + draftStars;
+          const count = already ? cur.count : cur.count + 1;
+          return { ...prev, [id]: { sum, count } };
+        });
+        setMyReviews(prev => ({ ...prev, [id]: { stars: draftStars, text: draftText } }));
+        showToast(t("reviewSubmitted"));
+      };
+
+      const loadOSMNearMe = async () => {
+        setLoadingOSM(true);
+        try {
+          const data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng);
+          setOsmPharmacies(data);
+          setWilayaId(999);
+          setCurrentPlace("Nearby (OSM)");
+          showToast(t("pharmaciesFound", { n: data.length, name: "nearby" }));
+        } catch {
+          showToast(t("loadFailed"));
+        } finally {
+          setLoadingOSM(false);
+        }
+      };
+
+      const searchCityAndLoad = async () => {
+        if (!citySearch.trim()) return;
+        setLoadingCities(true);
+        try {
+          const results = await searchCities(citySearch, countryId);
+          setCityResults(results);
+        } catch {
+          setCityResults([]);
+        } finally {
+          setLoadingCities(false);
+        }
+      };
+
+      const selectCity = async (city) => {
+        setCityResults([]);
+        setCitySearch(city.name);
+        setUserLoc({ lat: city.lat, lng: city.lng });
+        setCurrentPlace(city.name);
+        setLoadingOSM(true);
+        try {
+          const data = await fetchOSMByCity(city.name + (city.country ? ", " + city.country : ""));
+          setOsmPharmacies(data);
+          setWilayaId(999);
+          showToast(t("pharmaciesFound", { n: data.length, name: city.name }));
+        } catch {
+          showToast(t("loadFailed"));
+        } finally {
+          setLoadingOSM(false);
+          setShowLocationPicker(false);
+        }
+      };
+
+      const selectWilaya = (w) => {
+        if (!w.enabled) return;
+        setWilayaId(w.id);
+        setOsmPharmacies([]);
+        setCurrentPlace(w.name);
+        setShowLocationPicker(false);
+      };
+
+      // Add pharmacy
+      const captureFormLocation = () => {
+        if (!navigator.geolocation) {
+          setFormLocStatus("failed");
+          return;
+        }
+        setFormLocStatus("loading");
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            setFormLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            setFormLocStatus("ok");
+          },
+          () => setFormLocStatus("failed"),
+          { timeout: 8000 }
+        );
+      };
+
+      const submitNewPharmacy = async () => {
+        const vName = sanitize(form.name, 80);
+        const vAddress = sanitize(form.address, 200);
+        const vArea = sanitize(form.area, 80);
+        const vPhone = form.phone.trim() ? (isValidPhone(form.phone) ? form.phone.trim().substring(0, 20) : null) : null;
+
+        if (!vName || !vAddress) {
+          showToast(t("formRequiredError"));
+          return;
+        }
+        if (form.phone.trim() && !vPhone) {
+          showToast(t("invalidPhone"));
+          return;
+        }
+        if (Date.now() - lastSubmit < 30000) {
+          showToast(t("wait30s"));
+          return;
+        }
+
+        setSubmitting(true);
+        setLastSubmit(Date.now());
+        let loc = formLoc;
+        try {
+          if (!loc && form.address.trim()) {
+            const geo = await geocodeAddress(form.address, form.country === "DZ" ? "Algeria" : form.country);
+            loc = { lat: geo.lat, lng: geo.lng };
+          }
+          if (!loc) loc = userLoc;
+
+          const payload = {
+            name: vName,
+            area: vArea || form.city || "",
+            address: vAddress,
+            phone: vPhone,
+            lat: loc.lat,
+            lng: loc.lng,
+            wilaya: form.country === "DZ" ? (WILAYAS.find(w => w.id === wilayaId)?.name || "سيدي بلعباس") : form.city || "🌍",
+            commune: vArea || form.city || "",
+            country: form.country,
+            hours: { open: Number(form.open), close: Number(form.close) },
+            onDuty: form.onDuty,
+            verified: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          const ref = await db.collection("pharmacies_submitted").add(payload);
+          setSubmitted(prev => [...prev, { id: ref.id, ...payload }]);
+          showToast(t("newPharmacySuccess"));
+          setShowAddForm(false);
+          setForm({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "" });
+          setFormLoc(null);
+          setFormLocStatus(null);
+        } catch {
+          showToast(t("newPharmacyError"));
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      // Admin
+      const submitLogin = async () => {
+        setLoginError(null);
+        setLoginLoading(true);
+        try {
+          await auth.signInWithEmailAndPassword(loginEmail.trim(), loginPassword);
+          setShowLogin(false);
+          setAdminView(true);
+          setLoginPassword("");
+        } catch {
+          setLoginError(t("loginError"));
+        } finally {
+          setLoginLoading(false);
+        }
+      };
+
+      const removePermanently = async (id, name) => {
+        setRemovedIds(prev => new Set(prev).add(id));
+        showToast(t("removedToast", { name }));
+        try {
+          if (typeof id === "string") {
+            await db.collection("pharmacies_submitted").doc(id).delete();
+            setSubmitted(prev => prev.filter(p => p.id !== id));
+          } else {
+            await db.collection("removed_pharmacies").doc(String(id)).set({
+              name,
+              removedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
+        } catch {}
+      };
+
+      const dismissComplaints = (id, name) => {
+        setComplaints(prev => ({ ...prev, [id]: 0 }));
+        showToast(t("dismissedToast", { name }));
+      };
+
+      // ═══════════════════════════════════════════════════════════
+      // RENDER
+      // ═══════════════════════════════════════════════════════════
+      return (
+        <div dir={dir} className={`min-h-screen ${dark ? "dark bg-brand-950 text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
+          {/* Header */}
+          <header className="sticky top-0 z-20 bg-brand-950 text-brand-50 px-4 pt-3 pb-4 rounded-b-2xl shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-brand-700 flex items-center justify-center shadow-md">
+                  <Icons.Cross className="w-4 h-4 text-brand-100" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold tracking-tight text-brand-400 leading-tight" dir="ltr">Pharis</h1>
+                  <p className="text-[11px] text-brand-300">{currentPlace}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => setDark(d => !d)} className="p-1.5 rounded-lg hover:bg-brand-900 transition" title={dark ? t("lightMode") : t("darkMode")}>
+                  {dark ? <Icons.Sun className="w-4 h-4 text-brand-300" /> : <Icons.Moon className="w-4 h-4 text-brand-300" />}
+                </button>
+                <button onClick={() => adminUser ? setAdminView(true) : setShowLogin(true)} className="font-mono text-brand-400 text-[10px] border border-brand-800 rounded-md px-2 py-1 hover:bg-brand-900 transition">
+                  {t("dashboard")}
+                </button>
+                <div className="font-mono text-brand-400 text-xs border border-brand-800 rounded-md px-2 py-1">{timeStr}</div>
+              </div>
+            </div>
+
+            {/* Location button */}
+            <button
+              onClick={() => setShowLocationPicker(s => !s)}
+              className={`mt-3 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
+            >
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Icons.MapPin className="w-4 h-4" />
+                {t("tagline", { place: currentPlace })}
+              </span>
+              <span className={`text-xs font-semibold underline ${showLocationPicker ? "text-brand-950" : "text-brand-300"}`}>
+                {t("changeLocation")}
+              </span>
+            </button>
+
+            {/* Language */}
+            <div className="flex gap-1.5 mt-2">
+              {[{ code: "ar", label: "العربية" }, { code: "fr", label: "Français" }, { code: "en", label: "English" }].map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${lang === l.code ? "bg-brand-400 text-brand-950" : "bg-brand-900 text-brand-300"}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Location picker panel */}
+            {showLocationPicker && (
+              <div className="mt-3 bg-brand-950 rounded-2xl p-3 max-h-[55vh] overflow-y-auto border border-brand-800 space-y-3 scrollbar-thin animate-fade-in">
+                <div>
+                  <p className="text-xs text-brand-300 px-1 pb-2">{t("country")}</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {COUNTRIES.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => { setCountryId(c.id); setCityResults([]); setCitySearch(""); }}
+                        className={`text-start text-xs px-2.5 py-1.5 rounded-lg transition truncate ${c.id === countryId ? "bg-brand-500 text-brand-950 font-medium" : "text-brand-200 hover:bg-brand-900"}`}
+                      >
+                        {lang === "ar" ? c.name : lang === "fr" ? c.nameFr : c.nameEn}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {countryId === "DZ" && (
+                  <div className="pt-2 border-t border-brand-800">
+                    <p className="text-xs text-brand-300 px-1 pb-2">الولاية</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      {WILAYAS.filter(w => w.id !== 999).map(w => (
+                        <button
+                          key={w.id}
+                          onClick={() => selectWilaya(w)}
+                          className={`text-start text-xs px-2.5 py-1.5 rounded-lg transition ${w.id === wilayaId ? "bg-brand-500 text-brand-950 font-medium" : "text-brand-200 hover:bg-brand-900"}`}
+                        >
+                          {w.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-brand-800">
+                  <p className="text-xs text-brand-300 px-1 pb-2">{t("searchCity")}</p>
+                  <div className="flex gap-1.5">
+                    <input
+                      value={citySearch}
+                      onChange={e => setCitySearch(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && searchCityAndLoad()}
+                      placeholder={t("searchCity")}
+                      className="flex-1 bg-brand-900 placeholder-brand-600 text-brand-50 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                    <button onClick={searchCityAndLoad} disabled={loadingCities} className="px-3 py-2 rounded-lg text-xs font-semibold bg-brand-700 text-brand-50 disabled:opacity-50">
+                      {loadingCities ? "…" : "OK"}
+                    </button>
+                  </div>
+                  {cityResults.length > 0 && (
+                    <div className="mt-2 space-y-1 max-h-36 overflow-y-auto">
+                      {cityResults.map((city, i) => (
+                        <button
+                          key={i}
+                          onClick={() => selectCity(city)}
+                          className="w-full text-start text-xs px-2.5 py-2 rounded-lg text-brand-200 hover:bg-brand-900 transition flex items-center justify-between"
+                        >
+                          <span className="truncate">{city.name}</span>
+                          <span className="text-[9px] text-brand-500 flex-shrink-0">{city.country}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Stats */}
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-bold font-mono text-brand-400">{openCount}</span>
+              <span className="text-xs text-brand-200">{t("openStat", { total: list.length })}</span>
+            </div>
+
+            {/* Search */}
+            <div className="mt-3 relative">
+              <Icons.Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-brand-500 ${dir === "rtl" ? "right-3" : "left-3"}`} />
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder={t("searchPlaceholder")}
+                className={`w-full bg-brand-900 placeholder-brand-600 text-brand-50 rounded-xl py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition ${dir === "rtl" ? "pr-10 pl-4" : "pl-10 pr-4"}`}
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex gap-1.5 mt-2.5 flex-wrap">
+              {[
+                { id: "all", label: t("filterAll") },
+                { id: "open", label: t("filterOpen") },
+                { id: "urgent", label: t("filterUrgent"), urgent: true },
+                { id: "favorites", label: t("filterFavorites") },
+                { id: "late", label: t("filterLate") },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilter(f.id)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                    filter === f.id
+                      ? f.urgent ? "bg-rose-500 text-white" : "bg-brand-400 text-brand-950"
+                      : f.urgent ? "bg-rose-950/60 text-rose-300" : "bg-brand-900 text-brand-200"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+              <button
+                onClick={() => setShowMap(s => !s)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition flex items-center gap-1 ${showMap ? "bg-brand-400 text-brand-950" : "bg-brand-900 text-brand-200"}`}
+              >
+                <Icons.Map className="w-3 h-3" /> {showMap ? t("list") : t("map")}
+              </button>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="ms-auto px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-400 text-brand-950 flex items-center gap-1"
+              >
+                <Icons.Plus className="w-3 h-3" /> {t("addPharmacyBtn")}
+              </button>
+            </div>
+
+            {/* OSM load */}
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={loadOSMNearMe}
+                disabled={loadingOSM}
+                className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-900/80 text-blue-200 disabled:opacity-50 flex items-center gap-1"
+              >
+                {loadingOSM ? "⏳" : <Icons.Globe className="w-3 h-3" />} {t("loadFromMap")}
+              </button>
+            </div>
+
+            {locating && (
+              <div className="mt-2 flex items-center gap-2 text-xs text-brand-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
+                </span>
+                {t("detecting")}
+              </div>
+            )}
+            {geoError && !locating && (
+              <div className="mt-2 text-xs text-rose-300 bg-rose-950/40 rounded-lg px-2.5 py-1.5">{t("geoError")}</div>
+            )}
+          </header>
+
+          {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+
+          {/* Main */}
+          <main className="px-4 py-4 space-y-3 max-w-lg mx-auto safe-bottom">
+            {showMap ? (
+              <div className="h-[60vh] rounded-2xl overflow-hidden border border-stone-200 dark:border-brand-800">
+                <MapView pharmacies={list} userLoc={userLoc} lang={lang} onSelect={setSelected} />
+              </div>
+            ) : (
+              <>
+                {list.length === 0 && (
+                  <div className="text-center py-16 text-stone-400 dark:text-brand-500">
+                    <Icons.Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                    <p>{filter === "favorites" ? t("noFavorites") : t("noResults")}</p>
+                  </div>
+                )}
+                {list.map(ph => (
+                  <PharmacyCard
+                    key={ph.id}
+                    ph={ph}
+                    lang={lang}
+                    t={t}
+                    onSelect={setSelected}
+                    onToggleFav={toggleFavorite}
+                    onReport={reportPharmacy}
+                  />
+                ))}
+              </>
+            )}
+          </main>
+
+          {/* Detail Sheet */}
+          {selectedLive && (
+            <div className="fixed inset-0 bg-black/50 z-30 flex items-end" onClick={() => setSelected(null)}>
+              <div className="bg-white dark:bg-brand-900 w-full rounded-t-3xl p-5 max-w-lg mx-auto animate-slide-up max-h-[85vh] overflow-y-auto safe-bottom" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-start gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold text-stone-900 dark:text-brand-50 flex items-center gap-2 flex-wrap">
+                      {selectedLive.name}
+                      {selectedLive.verified === false && (
+                        <span className="text-[10px] font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full px-2 py-0.5">{t("unverifiedBadge")}</span>
+                      )}
+                    </h2>
+                    <p className="text-sm text-stone-500 dark:text-brand-300 mt-0.5">{selectedLive.area}</p>
+                    {selectedLive.verified === false && <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{t("unverifiedNote")}</p>}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button onClick={() => toggleFavorite(selectedLive.id, selectedLive.name)} className={selectedLive.isFavorite ? "text-rose-500 p-1.5" : "text-stone-400 p-1.5"}>
+                      <Icons.Heart className="w-5 h-5" fill={selectedLive.isFavorite ? "currentColor" : "none"} />
+                    </button>
+                    <button onClick={() => setSelected(null)} className="text-stone-400 p-1.5"><Icons.X className="w-5 h-5" /></button>
+                  </div>
+                </div>
+
+                <div className={`inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-sm font-medium ${selectedLive.status.open ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-rose-50 dark:bg-rose-950/40 text-rose-500"}`}>
+                  <span className={`w-2 h-2 rounded-full ${selectedLive.status.open ? "bg-emerald-500" : "bg-rose-500"}`} />
+                  {selectedLive.status.open ? t("openNow") : t("closedNowFull")}
+                </div>
+
+                <div className="mt-4 space-y-2.5 text-sm text-stone-800 dark:text-brand-100">
+                  <div className="flex items-center gap-2"><Icons.MapPin className="w-4 h-4 text-stone-400" />{selectedLive.address || selectedLive.area}</div>
+                  <div className="flex items-center gap-2 font-mono"><Icons.Nav className="w-4 h-4 text-stone-400" />{selectedLive.distance.toFixed(1)} {t("kmAway")}</div>
+                  <div className="flex items-center gap-2"><Icons.Clock className="w-4 h-4 text-stone-400" />
+                    {selectedLive.status.kind === "onDuty" ? t("onDutyLabel") : t(selectedLive.status.kind, { time: fmtHour(selectedLive.status.time) })}
+                  </div>
+                  {selectedLive.phone && (
+                    <div className="flex items-center gap-2 font-mono flex-wrap">
+                      <Icons.Phone className="w-4 h-4 text-stone-400" />
+                      <span dir="ltr">{selectedLive.phone}</span>
+                      <button onClick={() => { navigator.clipboard.writeText(selectedLive.phone); showToast(lang === "ar" ? "📋 تم النسخ" : "📋 Copied"); }} className="text-xs bg-stone-100 dark:bg-brand-800 text-stone-600 dark:text-brand-200 px-2 py-0.5 rounded-md">{t("copy")}</button>
+                      <a href={`tel:${selectedLive.phone.replace(/\s/g, "")}`} className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md">{t("call")}</a>
+                    </div>
+                  )}
+                </div>
+
+                {selectedLive.underReview && (
+                  <div className="flex items-start gap-2 text-xs text-rose-500 mt-4 bg-rose-50 dark:bg-rose-950/30 rounded-lg px-3 py-2.5">
+                    <Icons.Alert className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    {t("underReviewDetail", { n: selectedLive.complaintCount })}
+                  </div>
+                )}
+
+                {/* Reviews */}
+                <div className="mt-5 pt-4 border-t border-stone-100 dark:border-brand-800">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">{t("reviewsTitle")}</h3>
+                    {selectedLive.avgRating !== null ? (
+                      <span className="flex items-center gap-1 text-sm text-amber-500">
+                        <Icons.Star className="w-4 h-4" fill="currentColor" />
+                        {selectedLive.avgRating.toFixed(1)}
+                        <span className="text-stone-400 text-xs">{t("ratingsCount", { n: selectedLive.ratingCount })}</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-stone-400">{t("noRatingsYet")}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-stone-500 mt-3 mb-1.5">{t("yourRating")}</p>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <button key={n} onClick={() => setDraftStars(n)} className="p-0.5">
+                        <Icons.Star className={`w-6 h-6 ${n <= draftStars ? "text-amber-500" : "text-stone-200 dark:text-brand-700"}`} fill={n <= draftStars ? "currentColor" : "none"} />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={draftText}
+                    onChange={e => setDraftText(e.target.value)}
+                    placeholder={t("reviewPlaceholder")}
+                    rows={2}
+                    className="w-full mt-2 text-sm bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                  />
+                  <button onClick={() => submitRating(selectedLive.id)} className="mt-2 w-full bg-brand-700 text-brand-50 rounded-xl py-2.5 text-sm font-medium hover:bg-brand-600 transition">
+                    {t("submitReview")}
+                  </button>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 mt-5">
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedLive.lat},${selectedLive.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-brand-950 dark:bg-brand-700 text-brand-50 rounded-xl py-3 font-medium text-center text-sm"
+                  >
+                    {t("directions")}
+                  </a>
+                  <button
+                    onClick={() => {
+                      const data = {
+                        title: selectedLive.name,
+                        text: `${selectedLive.name} — ${selectedLive.address || selectedLive.area}`,
+                        url: `https://www.google.com/maps/search/?api=1&query=${selectedLive.lat},${selectedLive.lng}`
+                      };
+                      if (navigator.share) navigator.share(data);
+                      else { navigator.clipboard.writeText(data.text + " " + data.url); showToast("📋"); }
+                    }}
+                    className="px-4 rounded-xl border border-stone-200 dark:border-brand-700 text-brand-600 dark:text-brand-300 flex items-center justify-center hover:bg-brand-50 dark:hover:bg-brand-800 transition"
+                  >
+                    <Icons.Share className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => reportPharmacy(selectedLive.id, selectedLive.name)} className="px-4 rounded-xl border border-stone-200 dark:border-brand-700 text-rose-500 flex items-center justify-center">
+                    <Icons.Flag className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Add Pharmacy Sheet */}
+          {showAddForm && (
+            <div className="fixed inset-0 bg-black/50 z-30 flex items-end" onClick={() => !submitting && setShowAddForm(false)}>
+              <div className="bg-white dark:bg-brand-900 w-full rounded-t-3xl p-5 max-w-lg mx-auto animate-slide-up max-h-[90vh] overflow-y-auto safe-bottom" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl font-bold">{t("addPharmacyTitle")}</h2>
+                    <p className="text-sm text-stone-500 dark:text-brand-300 mt-0.5">{t("worldwide")}</p>
+                    <p className="text-[10px] text-stone-400 mt-1">🔒 {t("protected")}</p>
+                  </div>
+                  <button onClick={() => !submitting && setShowAddForm(false)} className="text-stone-400 p-1"><Icons.X className="w-5 h-5" /></button>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  <div>
+                    <label className="text-xs text-stone-500 mb-1 block">{t("country")}</label>
+                    <select
+                      value={form.country}
+                      onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
+                      className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                    >
+                      {COUNTRIES.map(c => (
+                        <option key={c.id} value={c.id}>{lang === "ar" ? c.name : lang === "fr" ? c.nameFr : c.nameEn}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-stone-500 mb-1 block">{t("formName")}</label>
+                    <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-stone-500 mb-1 block">{t("city")}</label>
+                    <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="Paris, Dubai..." className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-stone-500 mb-1 block">{t("formArea")}</label>
+                    <input value={form.area} onChange={e => setForm(f => ({ ...f, area: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-stone-500 mb-1 block">{t("formAddress")}</label>
+                    <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-stone-500 mb-1 block">{t("formPhone")}</label>
+                    <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} dir="ltr" placeholder="+213..." className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm py-1">
+                    <input type="checkbox" checked={form.onDuty} onChange={e => setForm(f => ({ ...f, onDuty: e.target.checked }))} className="w-4 h-4 accent-brand-600" />
+                    {t("formOnDuty")}
+                  </label>
+                  {!form.onDuty && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-stone-500 mb-1 block">{t("formOpenHour")}</label>
+                        <input type="number" min="0" max="24" step="0.5" value={form.open} onChange={e => setForm(f => ({ ...f, open: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-stone-500 mb-1 block">{t("formCloseHour")}</label>
+                        <input type="number" min="0" max="30" step="0.5" value={form.close} onChange={e => setForm(f => ({ ...f, close: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                      </div>
+                    </div>
+                  )}
+                  <button onClick={captureFormLocation} type="button" className="w-full flex items-center justify-center gap-2 border border-stone-200 dark:border-brand-700 rounded-xl py-2.5 text-sm font-medium">
+                    <Icons.Nav className="w-4 h-4" />
+                    {formLocStatus === "ok" ? t("locationCaptured") : t("useMyLocation")}
+                  </button>
+                  {formLocStatus === "failed" && <p className="text-xs text-rose-500">{t("locationFailed")}</p>}
+
+                  <button
+                    onClick={submitNewPharmacy}
+                    disabled={submitting || (!formLoc && !form.address.trim())}
+                    className="w-full bg-brand-700 disabled:opacity-40 text-brand-50 rounded-xl py-3 text-sm font-semibold mt-1 hover:bg-brand-600 transition"
+                  >
+                    {submitting ? t("submittingPharmacy") : t("submitNewPharmacy")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Login */}
+          {showLogin && (
+            <div className="fixed inset-0 bg-black/50 z-30 flex items-end" onClick={() => setShowLogin(false)}>
+              <div className="bg-white dark:bg-brand-900 w-full rounded-t-3xl p-5 max-w-lg mx-auto animate-slide-up" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-start">
+                  <h2 className="text-xl font-bold">{t("adminLoginTitle")}</h2>
+                  <button onClick={() => setShowLogin(false)} className="text-stone-400 p-1"><Icons.X className="w-5 h-5" /></button>
+                </div>
+                <div className="mt-4 space-y-3">
+                  <input value={loginEmail} onChange={e => setLoginEmail(e.target.value)} dir="ltr" placeholder="admin@email.com" className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  <input value={loginPassword} onChange={e => setLoginPassword(e.target.value)} type="password" dir="ltr" placeholder="••••••••" onKeyDown={e => e.key === "Enter" && submitLogin()} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  {loginError && <p className="text-xs text-rose-500">{loginError}</p>}
+                  <button onClick={submitLogin} disabled={loginLoading} className="w-full bg-brand-700 disabled:opacity-60 text-brand-50 rounded-xl py-3 text-sm font-semibold">
+                    {loginLoading ? "..." : t("loginBtn")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Admin Panel */}
+          {adminView && (
+            <div className="fixed inset-0 bg-brand-950 z-40 overflow-y-auto">
+              <div className="max-w-lg mx-auto px-4 py-6">
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { auth.signOut(); setAdminView(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
+                    <button onClick={() => setAdminView(false)} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
+                  </div>
+                </div>
+                <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
+
+                <div className="flex gap-2 mb-5">
+                  <button onClick={() => setAdminTab("review")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "review" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
+                    {t("reviewBtn", { n: reviewQueue.length })}
+                  </button>
+                  <button onClick={() => setAdminTab("all")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "all" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
+                    {t("allPharmaciesTab", { n: allComputed.length })}
+                  </button>
+                </div>
+
+                {adminTab === "review" && (
+                  <>
+                    <p className="text-sm text-brand-300 mb-4">{t("adminSubtitle", { n: COMPLAINT_THRESHOLD })}</p>
+                    {reviewQueue.length === 0 && <div className="text-center text-brand-600 mt-16 text-sm">{t("adminEmpty")}</div>}
+                    <div className="space-y-3">
+                      {reviewQueue.map(ph => (
+                        <div key={ph.id} className="bg-brand-900 rounded-2xl p-4 border border-brand-800">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold text-brand-50">{ph.name}</h3>
+                              <p className="text-xs text-brand-300 mt-0.5">{ph.area}</p>
+                            </div>
+                            <div className="flex items-center gap-1 bg-rose-950 text-rose-300 text-xs font-semibold px-2.5 py-1 rounded-full">
+                              <Icons.Alert className="w-3 h-3" />{ph.complaintCount}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mt-4">
+                            <button onClick={() => dismissComplaints(ph.id, ph.name)} className="flex-1 bg-brand-800 text-brand-300 text-sm font-medium rounded-lg py-2.5">{t("verifyReturn")}</button>
+                            <button onClick={() => removePermanently(ph.id, ph.name)} className="flex-1 bg-rose-950 text-rose-300 text-sm font-medium rounded-lg py-2.5">{t("deleteFinal")}</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {adminTab === "all" && (
+                  <>
+                    <p className="text-sm text-brand-300 mb-4">{t("allPharmaciesSubtitle")}</p>
+                    <div className="space-y-2">
+                      {allComputed.map(ph => (
+                        <div key={ph.id} className="bg-brand-900 rounded-xl p-3 border border-brand-800 flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-brand-50 truncate">{ph.name}</p>
+                            <p className="text-xs text-brand-400 truncate">{ph.area}</p>
+                          </div>
+                          <button onClick={() => removePermanently(ph.id, ph.name)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Error Boundary
+    class ErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+      }
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div style={{ padding: 24, fontFamily: "sans-serif", color: "#7f1d1d", background: "#fef2f2", direction: "rtl", textAlign: "right", minHeight: "100vh" }}>
+              <h2 style={{ marginBottom: 12 }}>⚠️ حدث خطأ غير متوقع</h2>
+              <p style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>جرب تحديث الصفحة.</p>
+              <button onClick={() => window.location.reload()} style={{ background: "#059669", color: "white", border: "none", padding: "10px 20px", borderRadius: 8, cursor: "pointer" }}>
+                🔄 تحديث الصفحة
+              </button>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(
+      <ErrorBoundary>
+        <PharisApp />
+      </ErrorBoundary>
+    );
+  </script>
+</body>
+</html>
