@@ -1,0 +1,22 @@
+{
+  "name": "Pharis — صيدليات مفتوحة",
+  "short_name": "Pharis",
+  "description": "Find open pharmacies near you in real time. Algeria & worldwide.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#022c22",
+  "theme_color": "#022c22",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%23022c22'/%3E%3Cpath d='M196 96h120v120h120v120H316v120H196V336H76V216h120V96z' fill='%2334d399'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical", "utilities"]
+}
