@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#059669">
+<meta name="description" content="Find open pharmacies worldwide">
+<title>Pharise Pro | صيدليات مفتوحة</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857', 900: '#064e3b' },
+      }
+    }
+  }
+}
+</script>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Inter', 'Noto Sans Arabic', system-ui, sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark body { background: #0f172a; color: #f1f5f9; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+.animate-spin { animation: spin 1s linear infinite; }
+
+.card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+.dark .card { background: #1e293b; border-color: #334155; }
+.card:active { transform: scale(0.98); }
+
+.badge-open { background: #d1fae5; color: #065f46; }
+.dark .badge-open { background: #064e3b; color: #6ee7b7; }
+.badge-closed { background: #fee2e2; color: #991b1b; }
+.dark .badge-closed { background: #450a0a; color: #fca5a5; }
+.badge-duty { background: #fef3c7; color: #92400e; }
+.dark .badge-duty { background: #451a03; color: #fde68a; }
+
+.sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 24px 24px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.dark .sheet { background: #1e293b; }
+.sheet.active { transform: translateY(0); }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  z-index: 40;
+}
+.overlay.active { opacity: 1; visibility: visible; }
+
+.hide-scroll::-webkit-scrollbar { display: none; }
+.hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+.glass {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.dark .glass { background: rgba(15,23,42,0.9); }
+
+/* Dark mode overrides */
+.dark .bg-stone-50 { background-color: #1e293b !important; }
+.dark .bg-white { background-color: #1e293b !important; }
+.dark .text-stone-900 { color: #f1f5f9 !important; }
+.dark .text-stone-800 { color: #e2e8f0 !important; }
+.dark .text-stone-700 { color: #cbd5e1 !important; }
+.dark .text-stone-600 { color: #94a3b8 !important; }
+.dark .text-stone-500 { color: #64748b !important; }
+.dark .text-stone-400 { color: #64748b !important; }
+.dark .text-stone-300 { color: #94a3b8 !important; }
+.dark .border-stone-200 { border-color: #334155 !important; }
+.dark .border-stone-100 { border-color: #1e293b !important; }
+.dark .bg-stone-100 { background-color: #334155 !important; }
+.dark .bg-stone-200 { background-color: #475569 !important; }
+.dark .bg-stone-300 { background-color: #475569 !important; }
+.dark .bg-emerald-50 { background-color: #064e3b !important; }
+.dark .bg-amber-50 { background-color: #451a03 !important; }
+.dark .text-amber-900 { color: #fef3c7 !important; }
+.dark .bg-rose-50 { background-color: #450a0a !important; }
+.dark .text-rose-900 { color: #fee2e2 !important; }
+.dark .bg-sky-50 { background-color: #0c4a6e !important; }
+.dark .text-sky-900 { color: #e0f2fe !important; }
+.dark .bg-violet-50 { background-color: #2e1065 !important; }
+.dark .text-violet-900 { color: #ede9fe !important; }
+.dark .bg-orange-50 { background-color: #431407 !important; }
+.dark .text-orange-900 { color: #ffedd5 !important; }
+.dark .bg-emerald-100 { background-color: #065f46 !important; }
+.dark .text-emerald-800 { color: #a7f3d0 !important; }
+.dark .bg-amber-100 { background-color: #78350f !important; }
+.dark .text-amber-800 { color: #fde68a !important; }
+.dark .bg-rose-100 { background-color: #991b1b !important; }
+.dark .text-rose-800 { color: #fecaca !important; }
+.dark .bg-sky-100 { background-color: #075985 !important; }
+.dark .text-sky-800 { color: #bae6fd !important; }
+.dark .bg-violet-100 { background-color: #5b21b6 !important; }
+.dark .text-violet-800 { color: #ddd6fe !important; }
+.dark .bg-orange-100 { background-color: #9a3412 !important; }
+.dark .text-orange-800 { color: #fed7aa !important; }
+.dark input, .dark select, .dark textarea { background-color: #334155 !important; color: #f1f5f9 !important; border-color: #475569 !important; }
+.dark input::placeholder { color: #64748b !important; }
+</style>
+
+<script>
+// Dark mode init (before anything else)
+(function() {
+  try { if (localStorage.getItem('pharise_dark') === '1') document.documentElement.classList.add('dark'); } catch(e) {}
+})();
+</script>
+</head>
+
+<body class="min-h-screen">
+
+<!-- App -->
+<div id="app">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 glass border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-lg mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-primary-600/30">💊</div>
+          <div>
+            <h1 class="font-bold text-lg leading-tight dark:text-white">Pharise Pro</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400" id="header-subtitle">صيدليات مفتوحة</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-dark" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-lg hover:scale-110 transition">🌙</button>
+          <button id="btn-lang" class="w-9 h-9 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold">ع</button>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="mt-3 flex gap-2">
+        <div class="flex-1 relative">
+          <input type="text" id="search-input" placeholder="ابحث عن صيدلية..." 
+            class="w-full bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-2.5 pr-10 text-sm dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary-500">
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+        </div>
+        <button id="btn-map-toggle" class="px-4 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition flex items-center gap-1 shadow-lg shadow-primary-600/30">
+          🗺️ <span id="map-btn-text">خريطة</span>
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex gap-2 mt-2 overflow-x-auto hide-scroll pb-1">
+        <button class="filter-btn active px-3 py-1.5 rounded-full text-xs font-medium bg-primary-600 text-white whitespace-nowrap" data-filter="all">الكل</button>
+        <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-filter="open">🟢 مفتوحة</button>
+        <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-filter="duty">🌙 مناوبة</button>
+        <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-filter="nearest">📍 الأقرب</button>
+      </div>
+
+      <!-- Location Bar -->
+      <div class="mt-2 flex items-center gap-2">
+        <button id="btn-location" class="flex-1 flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-2 text-sm text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+          <span>📍</span>
+          <span id="location-text" class="truncate">تحديد الموقع...</span>
+          <span class="mr-auto text-xs text-primary-600 font-medium">تغيير</span>
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div id="locating-indicator" class="hidden mt-2 flex items-center gap-2 text-xs text-primary-600">
+        <span class="w-2 h-2 bg-primary-500 rounded-full animate-ping"></span>
+        <span>جاري تحديد موقعك...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-lg mx-auto px-4 py-4 pb-24">
+
+    <!-- Stats -->
+    <div class="flex gap-3 mb-4">
+      <div class="flex-1 card p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold text-primary-600" id="stat-open">0</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">مفتوحة الآن</div>
+      </div>
+      <div class="flex-1 card p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold text-slate-700 dark:text-slate-300" id="stat-total">0</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">إجمالي</div>
+      </div>
+      <div class="flex-1 card p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold text-amber-600" id="stat-duty">0</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">مناوبة</div>
+      </div>
+    </div>
+
+    <!-- Map View -->
+    <div id="map-view" class="hidden mb-4" style="height: 400px;">
+      <div class="card overflow-hidden h-full shadow-lg">
+        <div id="map"></div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading-view" class="hidden py-12 text-center">
+      <div class="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-sm text-slate-500 dark:text-slate-400">جاري التحميل...</p>
+    </div>
+
+    <!-- Empty -->
+    <div id="empty-view" class="hidden py-12 text-center">
+      <div class="text-6xl mb-3">🏥</div>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">لا توجد صيدليات مطابقة</p>
+    </div>
+
+    <!-- Pharmacy List -->
+    <div id="pharmacy-list" class="space-y-3"></div>
+
+  </main>
+
+  <!-- Floating Add Button -->
+  <button id="btn-add" class="fixed bottom-6 left-6 w-14 h-14 bg-primary-600 text-white rounded-full shadow-lg shadow-primary-600/30 flex items-center justify-center text-2xl hover:scale-110 transition z-20 active:scale-95">
+    +
+  </button>
+
+</div>
+
+<!-- Location Sheet -->
+<div id="location-overlay" class="overlay"></div>
+<div id="location-sheet" class="sheet">
+  <div class="p-4">
+    <div class="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-4"></div>
+    <h2 class="text-lg font-bold mb-4 dark:text-white">اختر الموقع</h2>
+
+    <div class="flex gap-2 overflow-x-auto hide-scroll mb-4">
+      <button class="country-tab active px-4 py-2 rounded-full text-sm font-medium bg-primary-600 text-white whitespace-nowrap" data-country="DZ">🇩🇿 الجزائر</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="FR">🇫🇷 فرنسا</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="MA">🇲🇦 المغرب</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="TN">🇹🇳 تونس</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="EG">🇪🇬 مصر</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="SA">🇸🇦 السعودية</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="AE">🇦🇪 الإمارات</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="TR">🇹🇷 تركيا</button>
+      <button class="country-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap" data-country="OTHER">🌍 أخرى</button>
+    </div>
+
+    <div class="relative mb-4">
+      <input type="text" id="city-search" placeholder="ابحث عن مدينة..." 
+        class="w-full bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 pr-10 text-sm dark:text-white outline-none focus:ring-2 focus:ring-primary-500">
+      <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+    </div>
+
+    <div id="cities-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+
+    <button id="btn-fetch-osm" class="w-full mt-3 bg-primary-600 text-white rounded-xl py-3 font-medium hover:bg-primary-700 transition">
+      🌍 جلب صيدليات من الخريطة
+    </button>
+  </div>
+</div>
+
+<!-- Add Pharmacy Sheet -->
+<div id="add-overlay" class="overlay"></div>
+<div id="add-sheet" class="sheet">
+  <div class="p-4">
+    <div class="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-4"></div>
+    <h2 class="text-lg font-bold mb-4 dark:text-white">إضافة صيدلية</h2>
+    <form id="add-form" class="space-y-3">
+      <input type="text" id="add-name" placeholder="اسم الصيدلية *" required
+        class="w-full bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white outline-none focus:ring-2 focus:ring-primary-500">
+      <input type="text" id="add-address" placeholder="العنوان الكامل *" required
+        class="w-full bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white outline-none focus:ring-2 focus:ring-primary-500">
+      <input type="text" id="add-city" placeholder="المدينة *" required
+        class="w-full bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white outline-none focus:ring-2 focus:ring-primary-500">
+      <input type="tel" id="add-phone" placeholder="رقم الهاتف"
+        class="w-full bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white outline-none focus:ring-2 focus:ring-primary-500" dir="ltr">
+      <div class="flex gap-3">
+        <input type="number" id="add-open" placeholder="فتح" value="8" min="0" max="24"
+          class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white text-center outline-none focus:ring-2 focus:ring-primary-500">
+        <input type="number" id="add-close" placeholder="غلق" value="21" min="0" max="24"
+          class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-xl px-4 py-3 text-sm dark:text-white text-center outline-none focus:ring-2 focus:ring-primary-500">
+      </div>
+      <label class="flex items-center gap-2 text-sm dark:text-slate-300 cursor-pointer">
+        <input type="checkbox" id="add-duty" class="w-4 h-4 rounded border-slate-300 text-primary-600">
+        <span>صيدلية مناوبة (24 ساعة)</span>
+      </label>
+      <button type="submit" class="w-full bg-primary-600 text-white rounded-xl py-3 font-medium hover:bg-primary-700 transition shadow-lg shadow-primary-600/30">
+        إضافة الصيدلية
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Detail Sheet -->
+<div id="detail-overlay" class="overlay"></div>
+<div id="detail-sheet" class="sheet">
+  <div class="p-4" id="detail-content"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full text-sm shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 whitespace-nowrap font-medium">
+  رسالة
+</div>
+
+<script>
+// ==================== PHARISE PRO ====================
+
+const App = {
+  lang: 'ar',
+  darkMode: false,
+  country: 'DZ',
+  city: null,
+  userLoc: null,
+  pharmacies: [],
+  filter: 'all',
+  searchQuery: '',
+  map: null,
+  mapMarkers: [],
+  showMap: false,
+  favorites: new Set(),
+  db: null,
+
+  I18N: {
+    ar: {
+      subtitle: 'صيدليات مفتوحة', search: 'ابحث عن صيدلية...', map: 'خريطة',
+      all: 'الكل', open: 'مفتوحة', duty: 'مناوبة', nearest: 'الأقرب',
+      openNow: 'مفتوحة الآن', total: 'إجمالي', onDuty: 'مناوبة',
+      location: 'تحديد الموقع...', changeLocation: 'تغيير', locating: 'جاري تحديد موقعك...',
+      noResults: 'لا توجد صيدليات مطابقة', addPharmacy: 'إضافة صيدلية',
+      name: 'اسم الصيدلية', address: 'العنوان الكامل', city: 'المدينة',
+      phone: 'رقم الهاتف', hours: 'ساعات العمل', isDuty: 'صيدلية مناوبة (24 ساعة)',
+      add: 'إضافة الصيدلية', directions: 'الاتجاهات', call: 'اتصال', share: 'مشاركة',
+      copy: 'نسخ', copied: 'تم النسخ!', added: 'تمت الإضافة!', error: 'حدث خطأ',
+      km: 'كم', openStatus: 'مفتوحة', closedStatus: 'مغلقة', dutyStatus: 'مناوبة',
+      selectLocation: 'اختر الموقع', searchCity: 'ابحث عن مدينة...', fetchOSM: 'جلب صيدليات من الخريطة'
+    },
+    fr: {
+      subtitle: 'Pharmacies ouvertes', search: 'Rechercher une pharmacie...', map: 'Carte',
+      all: 'Tout', open: 'Ouvert', duty: 'Garde', nearest: 'Plus proche',
+      openNow: 'Ouvert maintenant', total: 'Total', onDuty: 'Garde',
+      location: 'Localisation...', changeLocation: 'Changer', locating: 'Détection de votre position...',
+      noResults: 'Aucune pharmacie trouvée', addPharmacy: 'Ajouter une pharmacie',
+      name: 'Nom de la pharmacie', address: 'Adresse complète', city: 'Ville',
+      phone: 'Téléphone', hours: 'Horaires', isDuty: 'Pharmacie de garde (24h)',
+      add: 'Ajouter', directions: 'Itinéraire', call: 'Appeler', share: 'Partager',
+      copy: 'Copier', copied: 'Copié!', added: 'Ajouté!', error: 'Erreur',
+      km: 'km', openStatus: 'Ouvert', closedStatus: 'Fermé', dutyStatus: 'Garde',
+      selectLocation: 'Choisir la localisation', searchCity: 'Rechercher une ville...', fetchOSM: 'Charger depuis la carte'
+    },
+    en: {
+      subtitle: 'Open Pharmacies', search: 'Search pharmacies...', map: 'Map',
+      all: 'All', open: 'Open', duty: 'On Duty', nearest: 'Nearest',
+      openNow: 'Open Now', total: 'Total', onDuty: 'On Duty',
+      location: 'Detecting location...', changeLocation: 'Change', locating: 'Detecting your location...',
+      noResults: 'No pharmacies found', addPharmacy: 'Add Pharmacy',
+      name: 'Pharmacy Name', address: 'Full Address', city: 'City',
+      phone: 'Phone', hours: 'Hours', isDuty: '24h Pharmacy',
+      add: 'Add Pharmacy', directions: 'Directions', call: 'Call', share: 'Share',
+      copy: 'Copy', copied: 'Copied!', added: 'Added!', error: 'Error',
+      km: 'km', openStatus: 'Open', closedStatus: 'Closed', dutyStatus: 'On Duty',
+      selectLocation: 'Select Location', searchCity: 'Search city...', fetchOSM: 'Load from map'
+    }
+  },
+
+  COUNTRIES: {
+    DZ: { name: 'الجزائر', flag: '🇩🇿' },
+    FR: { name: 'فرنسا', flag: '🇫🇷' },
+    MA: { name: 'المغرب', flag: '🇲🇦' },
+    TN: { name: 'تونس', flag: '🇹🇳' },
+    EG: { name: 'مصر', flag: '🇪🇬' },
+    SA: { name: 'السعودية', flag: '🇸🇦' },
+    AE: { name: 'الإمارات', flag: '🇦🇪' },
+    TR: { name: 'تركيا', flag: '🇹🇷' },
+    OTHER: { name: 'أخرى', flag: '🌍' }
+  },
+
+  CITIES: {
+    DZ: ['سيدي بلعباس', 'وهران', 'الجزائر', 'قسنطينة', 'عنابة', 'تلمسان'],
+    FR: ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'],
+    MA: ['Casablanca', 'Rabat', 'Marrakech', 'Fès', 'Tanger'],
+    TN: ['Tunis', 'Sfax', 'Sousse', 'Kairouan'],
+    EG: ['Cairo', 'Alexandria', 'Giza'],
+    SA: ['Riyadh', 'Jeddah', 'Mecca', 'Medina'],
+    AE: ['Dubai', 'Abu Dhabi', 'Sharjah'],
+    TR: ['Istanbul', 'Ankara', 'Izmir'],
+    OTHER: []
+  },
+
+  DEFAULT_PHARMACIES: [
+    { id: 'p1', name: 'صيدلية النور', address: 'شارع الأمير عبد القادر', city: 'سيدي بلعباس', country: 'DZ', lat: 35.2131, lng: -0.6308, open: 8, close: 21, duty: false, phone: '+21348123456' },
+    { id: 'p2', name: 'صيدلية الشفاء', address: 'حي 8 ماي 1945', city: 'سيدي بلعباس', country: 'DZ', lat: 35.2150, lng: -0.6350, open: 8, close: 22, duty: false, phone: '+21348123457' },
+    { id: 'p3', name: 'صيدلية الأمل', address: 'شارع محمد خميستي', city: 'سيدي بلعباس', country: 'DZ', lat: 35.2100, lng: -0.6280, open: 9, close: 17, duty: false, phone: null },
+    { id: 'p4', name: 'صيدلية السلام', address: 'حي 20 أوت', city: 'سيدي بلعباس', country: 'DZ', lat: 35.2180, lng: -0.6320, open: 0, close: 24, duty: true, phone: '+21348123458' },
+    { id: 'p5', name: 'صيدلية الحياة', address: 'شارع الحبيب بورقيبة', city: 'سيدي بلعباس', country: 'DZ', lat: 35.2115, lng: -0.6380, open: 8, close: 20, duty: false, phone: null },
+    { id: 'p6', name: 'Pharmacie de la Paix', address: '12 Rue de Rivoli', city: 'Paris', country: 'FR', lat: 48.8566, lng: 2.3522, open: 8, close: 20, duty: false, phone: '+33123456789' },
+    { id: 'p7', name: 'Pharmacie Centrale', address: 'Avenue Mohammed V', city: 'Casablanca', country: 'MA', lat: 33.5731, lng: -7.5898, open: 8, close: 22, duty: false, phone: '+212522123456' }
+  ],
+
+  t(key) { return this.I18N[this.lang][key] || key; },
+
+  showToast(msg, duration = 2000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    setTimeout(() => {
+      toast.classList.add('translate-y-20', 'opacity-0');
+      toast.classList.remove('translate-y-0', 'opacity-100');
+    }, duration);
+  },
+
+  isOpen(ph) {
+    if (ph.duty) return true;
+    const now = new Date();
+    const h = now.getHours() + now.getMinutes() / 60;
+    return h >= ph.open && h < ph.close;
+  },
+
+  getDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  },
+
+  init() {
+    // Load dark mode
+    try {
+      if (localStorage.getItem('pharise_dark') === '1') {
+        this.darkMode = true;
+        document.documentElement.classList.add('dark');
+        document.getElementById('btn-dark').textContent = '☀️';
+      }
+    } catch(e) {}
+
+    // Load favorites
+    try {
+      this.favorites = new Set(JSON.parse(localStorage.getItem('pharise_favorites') || '[]'));
+    } catch(e) {}
+
+    // Load user pharmacies
+    let userPharmacies = [];
+    try {
+      userPharmacies = JSON.parse(localStorage.getItem('pharise_user_pharmacies') || '[]');
+    } catch(e) {}
+
+    this.pharmacies = [...this.DEFAULT_PHARMACIES, ...userPharmacies];
+
+    // Detect language
+    const browserLang = navigator.language || 'ar';
+    if (browserLang.startsWith('fr')) this.lang = 'fr';
+    else if (browserLang.startsWith('en')) this.lang = 'en';
+
+    this.updateLanguage();
+    this.bindEvents();
+    this.renderPharmacies();
+    this.detectLocation();
+  },
+
+  updateLanguage() {
+    document.documentElement.lang = this.lang;
+    document.documentElement.dir = this.lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('header-subtitle').textContent = this.t('subtitle');
+    document.getElementById('search-input').placeholder = this.t('search');
+    document.getElementById('map-btn-text').textContent = this.t('map');
+    document.getElementById('location-text').textContent = this.city ? `${this.COUNTRIES[this.country].flag} ${this.city}` : this.t('location');
+    document.getElementById('locating-indicator').querySelector('span:last-child').textContent = this.t('locating');
+    document.getElementById('btn-lang').textContent = this.lang === 'ar' ? 'ع' : this.lang === 'fr' ? 'Fr' : 'En';
+    document.getElementById('btn-fetch-osm').textContent = '🌍 ' + this.t('fetchOSM');
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      const f = btn.dataset.filter;
+      if (f === 'all') btn.textContent = this.t('all');
+      else if (f === 'open') btn.textContent = '🟢 ' + this.t('open');
+      else if (f === 'duty') btn.textContent = '🌙 ' + this.t('duty');
+      else if (f === 'nearest') btn.textContent = '📍 ' + this.t('nearest');
+    });
+  },
+
+  bindEvents() {
+    // Dark mode
+    document.getElementById('btn-dark').addEventListener('click', () => {
+      this.darkMode = !this.darkMode;
+      document.documentElement.classList.toggle('dark', this.darkMode);
+      document.getElementById('btn-dark').textContent = this.darkMode ? '☀️' : '🌙';
+      try { localStorage.setItem('pharise_dark', this.darkMode ? '1' : '0'); } catch(e) {}
+    });
+
+    // Language
+    document.getElementById('btn-lang').addEventListener('click', () => {
+      const langs = ['ar', 'fr', 'en'];
+      this.lang = langs[(langs.indexOf(this.lang) + 1) % langs.length];
+      this.updateLanguage();
+      this.renderPharmacies();
+    });
+
+    // Search
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      this.searchQuery = e.target.value;
+      this.renderPharmacies();
+    });
+
+    // Filters
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('active', 'bg-primary-600', 'text-white');
+          b.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+        });
+        btn.classList.add('active', 'bg-primary-600', 'text-white');
+        btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+        this.filter = btn.dataset.filter;
+        this.renderPharmacies();
+        if (this.map) this.updateMapMarkers();
+      });
+    });
+
+    // Map toggle
+    document.getElementById('btn-map-toggle').addEventListener('click', () => this.toggleMap());
+
+    // Location
+    document.getElementById('btn-location').addEventListener('click', () => {
+      this.renderCities();
+      this.openSheet('location');
+    });
+    document.getElementById('location-overlay').addEventListener('click', () => this.closeSheet('location'));
+
+    // Country tabs
+    document.querySelectorAll('.country-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.country = btn.dataset.country;
+        this.city = null;
+        document.querySelectorAll('.country-tab').forEach(b => {
+          b.classList.toggle('active', b.dataset.country === this.country);
+          b.classList.toggle('bg-primary-600', b.dataset.country === this.country);
+          b.classList.toggle('text-white', b.dataset.country === this.country);
+          b.classList.toggle('bg-slate-100', b.dataset.country !== this.country);
+          b.classList.toggle('dark:bg-slate-800', b.dataset.country !== this.country);
+        });
+        this.renderCities();
+      });
+    });
+
+    // City search
+    document.getElementById('city-search').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('#cities-list button').forEach(btn => {
+        btn.style.display = btn.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    // Fetch OSM
+    document.getElementById('btn-fetch-osm').addEventListener('click', () => this.fetchOSM());
+
+    // Add pharmacy
+    document.getElementById('btn-add').addEventListener('click', () => this.openSheet('add'));
+    document.getElementById('add-overlay').addEventListener('click', () => this.closeSheet('add'));
+    document.getElementById('add-form').addEventListener('submit', (e) => this.addPharmacy(e));
+
+    // Detail
+    document.getElementById('detail-overlay').addEventListener('click', () => this.closeSheet('detail'));
+  },
+
+  renderPharmacies() {
+    const list = document.getElementById('pharmacy-list');
+    const emptyView = document.getElementById('empty-view');
+
+    let filtered = this.pharmacies.filter(p => {
+      if (this.country !== 'OTHER' && p.country !== this.country) return false;
+      if (this.city && p.city !== this.city) return false;
+      if (this.filter === 'open') return this.isOpen(p);
+      if (this.filter === 'duty') return p.duty;
+      return true;
+    });
+
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.address.toLowerCase().includes(q));
+    }
+
+    if (this.filter === 'nearest' && this.userLoc) {
+      filtered.sort((a, b) => this.getDistance(this.userLoc.lat, this.userLoc.lng, a.lat, a.lng) - this.getDistance(this.userLoc.lat, this.userLoc.lng, b.lat, b.lng));
+    }
+
+    // Stats
+    const openCount = filtered.filter(p => this.isOpen(p)).length;
+    const dutyCount = filtered.filter(p => p.duty).length;
+    document.getElementById('stat-open').textContent = openCount;
+    document.getElementById('stat-total').textContent = filtered.length;
+    document.getElementById('stat-duty').textContent = dutyCount;
+
+    if (filtered.length === 0) {
+      list.innerHTML = '';
+      emptyView.classList.remove('hidden');
+      return;
+    }
+    emptyView.classList.add('hidden');
+
+    list.innerHTML = filtered.map((ph, i) => {
+      const open = this.isOpen(ph);
+      const dist = this.userLoc ? this.getDistance(this.userLoc.lat, this.userLoc.lng, ph.lat, ph.lng).toFixed(1) : null;
+      const isFav = this.favorites.has(ph.id);
+
+      return `
+        <div class="card p-4 animate-fade-in cursor-pointer" style="animation-delay: ${i * 0.05}s" onclick="App.showDetail('${ph.id}')">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 ${open ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'} dark:${open ? 'bg-emerald-900/50 text-emerald-400' : 'bg-slate-800 text-slate-500'}">
+              💊
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-sm dark:text-white truncate">${ph.name}</h3>
+                ${ph.duty ? '<span class="badge-duty text-[10px] px-2 py-0.5 rounded-full">' + this.t('dutyStatus') + '</span>' : ''}
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">${ph.address}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="${open ? 'badge-open' : 'badge-closed'} text-[10px] px-2 py-0.5 rounded-full font-medium">${open ? this.t('openStatus') : this.t('closedStatus')}</span>
+                ${dist ? `<span class="text-[10px] text-slate-400">📍 ${dist} ${this.t('km')}</span>` : ''}
+                ${ph.phone ? `<span class="text-[10px] text-slate-400">📞</span>` : ''}
+                ${isFav ? '<span class="text-[10px]">❤️</span>' : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  toggleMap() {
+    this.showMap = !this.showMap;
+    const mapView = document.getElementById('map-view');
+    const btn = document.getElementById('btn-map-toggle');
+
+    if (this.showMap) {
+      mapView.classList.remove('hidden');
+      btn.classList.add('bg-primary-700');
+      if (!this.map) {
+        setTimeout(() => this.initMap(), 100);
+      } else {
+        setTimeout(() => { this.map.invalidateSize(); this.updateMapMarkers(); }, 100);
+      }
+    } else {
+      mapView.classList.add('hidden');
+      btn.classList.remove('bg-primary-700');
+    }
+  },
+
+  initMap() {
+    const center = this.userLoc || { lat: 35.2131, lng: -0.6308 };
+    this.map = L.map('map').setView([center.lat, center.lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(this.map);
+    this.updateMapMarkers();
+  },
+
+  updateMapMarkers() {
+    if (!this.map) return;
+    this.mapMarkers.forEach(m => this.map.removeLayer(m));
+    this.mapMarkers = [];
+
+    if (this.userLoc) {
+      const userIcon = L.divIcon({
+        className: '',
+        html: '<div style="width:14px;height:14px;background:#3b82f6;border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+        iconSize: [14, 14]
+      });
+      const m = L.marker([this.userLoc.lat, this.userLoc.lng], { icon: userIcon }).addTo(this.map);
+      m.bindPopup('📍 ' + this.t('location'));
+      this.mapMarkers.push(m);
+    }
+
+    let filtered = this.pharmacies.filter(p => {
+      if (this.country !== 'OTHER' && p.country !== this.country) return false;
+      if (this.city && p.city !== this.city) return false;
+      if (this.filter === 'open') return this.isOpen(p);
+      if (this.filter === 'duty') return p.duty;
+      return true;
+    });
+
+    filtered.forEach(ph => {
+      const open = this.isOpen(ph);
+      const color = open ? '#10b981' : ph.duty ? '#f59e0b' : '#ef4444';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:32px;height:32px;background:${color};border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);color:white;font-size:14px;">💊</div>`,
+        iconSize: [32, 32]
+      });
+      const m = L.marker([ph.lat, ph.lng], { icon }).addTo(this.map);
+      m.bindPopup(`
+        <div style="font-family:sans-serif;text-align:${this.lang==='ar'?'right':'left'};direction:${this.lang==='ar'?'rtl':'ltr'};min-width:180px;">
+          <h3 style="margin:0 0 6px;font-size:14px;font-weight:bold;">${ph.name}</h3>
+          <p style="margin:0 0 4px;font-size:12px;color:#666;">${ph.address}</p>
+          <p style="margin:0 0 8px;font-size:12px;color:${open?'#10b981':'#ef4444'};font-weight:bold;">${open ? this.t('openStatus') : this.t('closedStatus')}</p>
+          <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${ph.lat},${ph.lng}','_blank')" style="background:#10b981;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;width:100%;">${this.t('directions')}</button>
+        </div>
+      `);
+      m.on('click', () => this.showDetail(ph.id));
+      this.mapMarkers.push(m);
+    });
+
+    if (this.mapMarkers.length > 0) {
+      const group = new L.featureGroup(this.mapMarkers);
+      this.map.fitBounds(group.getBounds().pad(0.1));
+    }
+  },
+
+  detectLocation() {
+    if (!navigator.geolocation) return;
+    document.getElementById('locating-indicator').classList.remove('hidden');
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        this.userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        document.getElementById('locating-indicator').classList.add('hidden');
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${this.userLoc.lat}&lon=${this.userLoc.lng}&format=json&accept-language=${this.lang}`);
+          const data = await res.json();
+          const city = data.address?.city || data.address?.town || data.address?.village || '';
+          if (city) {
+            this.city = city;
+            document.getElementById('location-text').textContent = `${this.COUNTRIES[this.country].flag} ${city}`;
+          }
+        } catch(e) {}
+        this.showToast(this.t('location') + ' ✅');
+        this.renderPharmacies();
+        if (this.map) this.updateMapMarkers();
+      },
+      () => { document.getElementById('locating-indicator').classList.add('hidden'); },
+      { timeout: 15000, enableHighAccuracy: true }
+    );
+  },
+
+  renderCities() {
+    const list = document.getElementById('cities-list');
+    const cities = this.CITIES[this.country] || [];
+    list.innerHTML = cities.map(city => `
+      <button class="w-full text-right px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition text-sm dark:text-white" 
+        onclick="App.selectCity('${city}')">
+        ${this.COUNTRIES[this.country].flag} ${city}
+      </button>
+    `).join('');
+  },
+
+  selectCity(city) {
+    this.city = city;
+    document.getElementById('location-text').textContent = `${this.COUNTRIES[this.country].flag} ${city}`;
+    this.closeSheet('location');
+    this.renderPharmacies();
+    if (this.map) this.updateMapMarkers();
+  },
+
+  async fetchOSM() {
+    if (!this.city) { this.showToast(this.t('error')); return; }
+    this.showToast('جاري الجلب...');
+    try {
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(this.city)}&format=json&limit=1`);
+      const geoData = await geoRes.json();
+      if (!geoData.length) return;
+      const bbox = geoData[0].boundingbox.map(Number);
+      const query = `[out:json][timeout:25];(node["amenity"="pharmacy"](${bbox[0]},${bbox[2]},${bbox[1]},${bbox[3]}););out body;`;
+      const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query));
+      const data = await res.json();
+
+      const osmPharmacies = data.elements.map((el, i) => {
+        const t = el.tags || {};
+        return {
+          id: `osm_${el.id}_${i}`,
+          name: t['name:ar'] || t.name || this.t('name'),
+          address: [t['addr:street'], t['addr:housenumber']].filter(Boolean).join(' ') || '',
+          city: this.city,
+          country: this.country,
+          lat: el.lat,
+          lng: el.lon,
+          open: 8,
+          close: 21,
+          duty: t.opening_hours?.includes('24/7') || false,
+          phone: t.phone || null,
+          fromOSM: true
+        };
+      });
+
+      this.pharmacies = [...this.DEFAULT_PHARMACIES, ...osmPharmacies];
+      this.showToast(`✅ ${osmPharmacies.length} ${this.t('total')}`);
+      this.renderPharmacies();
+      if (this.map) this.updateMapMarkers();
+    } catch(e) {
+      this.showToast(this.t('error'));
+    }
+  },
+
+  async addPharmacy(e) {
+    e.preventDefault();
+    const name = document.getElementById('add-name').value.trim();
+    const address = document.getElementById('add-address').value.trim();
+    const city = document.getElementById('add-city').value.trim();
+    const phone = document.getElementById('add-phone').value.trim();
+    const open = parseInt(document.getElementById('add-open').value) || 8;
+    const close = parseInt(document.getElementById('add-close').value) || 21;
+    const duty = document.getElementById('add-duty').checked;
+
+    if (!name || !address || !city) { this.showToast(this.t('error')); return; }
+
+    let lat = 35.2131 + (Math.random() - 0.5) * 0.01;
+    let lng = -0.6308 + (Math.random() - 0.5) * 0.01;
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ', ' + city)}&format=json&limit=1`);
+      const data = await res.json();
+      if (data.length > 0) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
+    } catch(e) {}
+
+    const newPh = { id: 'user_' + Date.now(), name, address, city, country: this.country, lat, lng, open, close, duty, phone: phone || null, userAdded: true };
+    this.pharmacies.push(newPh);
+
+    try {
+      const userPharmacies = JSON.parse(localStorage.getItem('pharise_user_pharmacies') || '[]');
+      userPharmacies.push(newPh);
+      localStorage.setItem('pharise_user_pharmacies', JSON.stringify(userPharmacies));
+    } catch(e) {}
+
+    this.closeSheet('add');
+    document.getElementById('add-form').reset();
+    this.showToast(this.t('added'));
+    this.renderPharmacies();
+    if (this.map) this.updateMapMarkers();
+  },
+
+  showDetail(id) {
+    const ph = this.pharmacies.find(p => p.id === id);
+    if (!ph) return;
+    const open = this.isOpen(ph);
+    const dist = this.userLoc ? this.getDistance(this.userLoc.lat, this.userLoc.lng, ph.lat, ph.lng).toFixed(1) : null;
+    const isFav = this.favorites.has(ph.id);
+
+    document.getElementById('detail-content').innerHTML = `
+      <div class="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-4"></div>
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${open ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'} dark:${open ? 'bg-emerald-900/50 text-emerald-400' : 'bg-slate-800 text-slate-500'}">
+          💊
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg font-bold dark:text-white">${ph.name}</h2>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="${open ? 'badge-open' : 'badge-closed'} text-xs px-2 py-0.5 rounded-full font-medium">${open ? this.t('openStatus') : this.t('closedStatus')}</span>
+            ${ph.duty ? '<span class="badge-duty text-xs px-2 py-0.5 rounded-full">' + this.t('dutyStatus') + '</span>' : ''}
+          </div>
+        </div>
+        <button onclick="App.toggleFavorite('${ph.id}')" class="text-2xl ${isFav ? 'text-rose-500' : 'text-slate-300'}">${isFav ? '❤️' : '🤍'}</button>
+      </div>
+
+      <div class="space-y-3 mb-6">
+        <div class="flex items-center gap-3 text-sm dark:text-slate-300">
+          <span class="text-slate-400">📍</span>
+          <span>${ph.address}${ph.city ? ', ' + ph.city : ''}</span>
+        </div>
+        ${ph.phone ? `
+        <div class="flex items-center gap-3 text-sm dark:text-slate-300">
+          <span class="text-slate-400">📞</span>
+          <span dir="ltr">${ph.phone}</span>
+        </div>` : ''}
+        ${dist ? `
+        <div class="flex items-center gap-3 text-sm dark:text-slate-300">
+          <span class="text-slate-400">📏</span>
+          <span>${dist} ${this.t('km')}</span>
+        </div>` : ''}
+        <div class="flex items-center gap-3 text-sm dark:text-slate-300">
+          <span class="text-slate-400">⏰</span>
+          <span>${ph.duty ? '24/7' : ph.open + ':00 - ' + ph.close + ':00'}</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2">
+        <a href="https://www.google.com/maps/dir/?api=1&destination=${ph.lat},${ph.lng}" target="_blank" 
+          class="bg-primary-600 text-white rounded-xl py-3 text-center text-sm font-medium hover:bg-primary-700 transition shadow-lg shadow-primary-600/30">
+          🧭 ${this.t('directions')}
+        </a>
+        ${ph.phone ? `
+        <a href="tel:${ph.phone.replace(/\s/g, '')}" 
+          class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl py-3 text-center text-sm font-medium hover:bg-slate-200 transition">
+          📞 ${this.t('call')}
+        </a>` : '<div></div>'}
+        <button onclick="App.sharePharmacy('${ph.id}')" 
+          class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl py-3 text-center text-sm font-medium hover:bg-slate-200 transition">
+          🔗 ${this.t('share')}
+        </button>
+      </div>
+    `;
+    this.openSheet('detail');
+  },
+
+  toggleFavorite(id) {
+    if (this.favorites.has(id)) this.favorites.delete(id);
+    else this.favorites.add(id);
+    try { localStorage.setItem('pharise_favorites', JSON.stringify([...this.favorites])); } catch(e) {}
+    this.showToast(this.favorites.has(id) ? '❤️ ' + this.t('added') : this.t('error'));
+    this.renderPharmacies();
+    this.showDetail(id); // Refresh detail view
+  },
+
+  sharePharmacy(id) {
+    const ph = this.pharmacies.find(p => p.id === id);
+    if (!ph) return;
+    const text = `${ph.name} - ${ph.address} (${this.isOpen(ph) ? this.t('openStatus') : this.t('closedStatus')})`;
+    const url = `https://www.google.com/maps/search/?api=1&query=${ph.lat},${ph.lng}`;
+    if (navigator.share) navigator.share({ title: ph.name, text, url });
+    else { navigator.clipboard.writeText(text + ' ' + url); this.showToast(this.t('copied')); }
+  },
+
+  openSheet(name) {
+    document.getElementById(name + '-overlay').classList.add('active');
+    document.getElementById(name + '-sheet').classList.add('active');
+  },
+
+  closeSheet(name) {
+    document.getElementById(name + '-overlay').classList.remove('active');
+    document.getElementById(name + '-sheet').classList.remove('active');
+  }
+};
+
+// Start
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+
+</body>
+</html>
