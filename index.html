@@ -1,418 +1,116 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You</title>
-  <meta name="description" content="Pharis — find open pharmacies near you in seconds. Real-time status, emergency mode, Algeria & worldwide." />
-  <meta name="theme-color" content="#022c22" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Pharis" />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Pharis — Open Pharmacies Near You" />
-  <meta property="og:description" content="Find open pharmacies in seconds. Emergency mode, real map data, multilanguage." />
-  <meta property="og:locale" content="ar_DZ" />
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Pharis — Open Pharmacies" />
-  <link rel="canonical" href="https://dadid.github.io/Pharise/" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23022c22'/><path d='M35 25h30v20h20v30H65v20H35V75H15V45h20V25z' fill='%2334d399'/></svg>" />
-  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
-              400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
-              800: '#065f46', 900: '#064e3b', 950: '#022c22'
-            }
-          },
-          fontFamily: {
-            arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
-            sans: ['IBM Plex Sans', 'IBM Plex Sans Arabic', 'sans-serif'],
-            mono: ['IBM Plex Mono', 'monospace']
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.25s ease-out',
-            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            'pulse-soft': 'pulseSoft 2s ease-in-out infinite'
-          },
-          keyframes: {
-            fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
-            slideUp: { from: { transform: 'translateY(100%)', opacity: 0.5 }, to: { transform: 'translateY(0)', opacity: 1 } },
-            pulseSoft: { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.6 } }
-          }
-        }
-      }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Pharis — صيدليات مفتوحة بالقرب منك</title>
+<meta name="description" content="اعرف أي صيدلية مفتوحة الآن بالقرب منك، فـ أي ولاية جزائرية مدعومة" />
+<meta name="theme-color" content="#022c22" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Pharis" />
+<link rel="icon" href="icon-192.png" />
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js" crossorigin></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHMYoNaXnkrILKM38Q0f-bL1u72AXRbkE",
+    authDomain: "maftouha-ap.firebaseapp.com",
+    projectId: "maftouha-ap",
+    storageBucket: "maftouha-ap.firebasestorage.app",
+    messagingSenderId: "584528603494",
+    appId: "1:584528603494:web:46f17d9c9bee0cb208c0a7",
+    measurementId: "G-BNSGCRJ4X6"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+</script>
+<script>
+  window.addEventListener("error", function (e) {
+    var el = document.getElementById("root");
+    if (el && !el.dataset.mounted) {
+      el.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#7f1d1d;background:#fef2f2;direction:rtl;text-align:right"><b>صار خطأ أثناء تحميل التطبيق:</b><br><br>' + (e.message || "unknown error") + '<br><br><span style="color:#666;font-size:13px">' + (e.filename || "") + ":" + (e.lineno || "") + '</span></div>';
     }
-  </script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
-    html, body { margin: 0; padding: 0; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
-    .leaflet-container { font-family: inherit; }
-    .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15); }
-    .scrollbar-thin::-webkit-scrollbar { width: 4px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
-    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  });
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+  html, body { margin: 0; padding: 0; overscroll-behavior-y: none; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .pulse-dot::before { content: ''; position: absolute; inset: -4px; border-radius: 9999px; background: currentColor; opacity: 0.35; animation: pulse-ring 2s ease-out infinite; }
+  @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.5; } 70% { transform: scale(1.8); opacity: 0; } 100% { transform: scale(1.8); opacity: 0; } }
+  @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .sheet-anim { animation: slideUp 0.2s ease-out; }
+
+    html.dark body { background: #0f172a !important; }
+    html.dark .bg-stone-50 { background-color: #1e293b !important; }
+    html.dark .bg-white { background-color: #1e293b !important; }
+    html.dark .text-stone-900 { color: #f1f5f9 !important; }
+    html.dark .text-stone-800 { color: #e2e8f0 !important; }
+    html.dark .text-stone-700 { color: #cbd5e1 !important; }
+    html.dark .text-stone-600 { color: #94a3b8 !important; }
+    html.dark .text-stone-500 { color: #64748b !important; }
+    html.dark .border-stone-200 { border-color: #334155 !important; }
+    html.dark .border-stone-100 { border-color: #1e293b !important; }
+    html.dark .bg-stone-100 { background-color: #334155 !important; }
+    html.dark .bg-stone-200 { background-color: #475569 !important; }
+    html.dark .bg-stone-300 { background-color: #475569 !important; }
+    html.dark .text-stone-300 { color: #94a3b8 !important; }
+    html.dark .text-stone-400 { color: #64748b !important; }
+    html.dark .bg-emerald-50 { background-color: #064e3b !important; }
+    html.dark .bg-amber-50 { background-color: #451a03 !important; }
+    html.dark .text-amber-900 { color: #fef3c7 !important; }
+    html.dark .bg-rose-50 { background-color: #450a0a !important; }
+    html.dark .text-rose-900 { color: #fee2e2 !important; }
+    html.dark .bg-sky-50 { background-color: #0c4a6e !important; }
+    html.dark .text-sky-900 { color: #e0f2fe !important; }
+    html.dark .bg-violet-50 { background-color: #2e1065 !important; }
+    html.dark .text-violet-900 { color: #ede9fe !important; }
+    html.dark .bg-orange-50 { background-color: #431407 !important; }
+    html.dark .text-orange-900 { color: #ffedd5 !important; }
+    html.dark .bg-emerald-100 { background-color: #065f46 !important; }
+    html.dark .text-emerald-800 { color: #a7f3d0 !important; }
+    html.dark .bg-amber-100 { background-color: #78350f !important; }
+    html.dark .text-amber-800 { color: #fde68a !important; }
+    html.dark .bg-rose-100 { background-color: #991b1b !important; }
+    html.dark .text-rose-800 { color: #fecaca !important; }
+    html.dark .bg-sky-100 { background-color: #075985 !important; }
+    html.dark .text-sky-800 { color: #bae6fd !important; }
+    html.dark .bg-violet-100 { background-color: #5b21b6 !important; }
+    html.dark .text-violet-800 { color: #ddd6fe !important; }
+    html.dark .bg-orange-100 { background-color: #9a3412 !important; }
+    html.dark .text-orange-800 { color: #fed7aa !important; }
+    html.dark input, html.dark select, html.dark textarea { background-color: #334155 !important; color: #f1f5f9 !important; border-color: #475569 !important; }
+    html.dark input::placeholder { color: #64748b !important; }
+
   </style>
 </head>
-<body class="bg-brand-50 text-stone-900 antialiased">
-  <div id="root">
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#065f46;direction:rtl">
-      <div style="text-align:center">
-        <div style="width:40px;height:40px;border:3px solid #10b981;border-top-color:transparent;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite"></div>
-        <p style="font-size:14px;opacity:0.7">جاري تحميل Pharis...</p>
-      </div>
-    </div>
-  </div>
+<body>
+<div id="root" style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#065f46;direction:rtl">جاري تحميل التطبيق...</div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+const Icon = ({ children, className }) => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>);
+const MapPin = ({ className }) => (<Icon className={className}><path d="M12 21s-6-5.686-6-10a6 6 0 1112 0c0 4.314-6 10-6 10z" /><circle cx="12" cy="11" r="2" /></Icon>);
+const Clock = ({ className }) => (<Icon className={className}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" /></Icon>);
+const Phone = ({ className }) => (<Icon className={className}><path d="M5 4h3.5l1.8 4.5-2 1.5a10.5 10.5 0 005.7 5.7l1.5-2L20 15.5V19a1.5 1.5 0 01-1.6 1.5A15.5 15.5 0 013.5 5.6 1.5 1.5 0 015 4z" /></Icon>);
+const Search = ({ className }) => (<Icon className={className}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></Icon>);
+const X = ({ className }) => (<Icon className={className}><path d="M6 6l12 12M6 18L18 6" /></Icon>);
+const Flag = ({ className }) => (<Icon className={className}><path d="M5 21V4h13l-3 4 3 4H5" /></Icon>);
+const AlertTriangle = ({ className }) => (<Icon className={className}><path d="M12 3l10 18H2L12 3z" /><path d="M12 10v4" /><path d="M12 17h.01" /></Icon>);
+const Navigation = ({ className }) => (<Icon className={className}><path d="M3 11l18-8-8 18-2-8-8-2z" /></Icon>);
+const Heart = ({ className, fill }) => (<svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 21s-7.5-4.686-10-9A5.5 5.5 0 0112 6a5.5 5.5 0 0110 6c-2.5 4.314-10 9-10 9z" /></svg>);
+const Star = ({ className, fill }) => (<svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>);
 
-  <script>
-    // Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDHMYoNaXnkrILKM38Q0f-bL1u72AXRbkE",
-      authDomain: "maftouha-ap.firebaseapp.com",
-      projectId: "maftouha-ap",
-      storageBucket: "maftouha-ap.firebasestorage.app",
-      messagingSenderId: "584528603494",
-      appId: "1:584528603494:web:46f17d9c9bee0cb208c0a7",
-      measurementId: "G-BNSGCRJ4X6"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-  </script>
-
-  <script type="text/babel" data-presets="react">
-    const { useState, useEffect, useMemo, useCallback, useRef, memo } = React;
-
-    // ═══════════════════════════════════════════════════════════
-    // ICONS
-    // ═══════════════════════════════════════════════════════════
-    const Icon = ({ children, className = "w-5 h-5" }) => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
-    );
-    const Icons = {
-      MapPin: (p) => <Icon {...p}><path d="M12 21s-6-5.686-6-10a6 6 0 1112 0c0 4.314-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></Icon>,
-      Clock: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></Icon>,
-      Phone: (p) => <Icon {...p}><path d="M5 4h3.5l1.8 4.5-2 1.5a10.5 10.5 0 005.7 5.7l1.5-2L20 15.5V19a1.5 1.5 0 01-1.6 1.5A15.5 15.5 0 013.5 5.6 1.5 1.5 0 015 4z"/></Icon>,
-      Search: (p) => <Icon {...p}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></Icon>,
-      X: (p) => <Icon {...p}><path d="M6 6l12 12M6 18L18 6"/></Icon>,
-      Flag: (p) => <Icon {...p}><path d="M5 21V4h13l-3 4 3 4H5"/></Icon>,
-      Alert: (p) => <Icon {...p}><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></Icon>,
-      Nav: (p) => <Icon {...p}><path d="M3 11l18-8-8 18-2-8-8-2z"/></Icon>,
-      Heart: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 21s-7.5-4.686-10-9A5.5 5.5 0 0112 6a5.5 5.5 0 0110 6c-2.5 4.314-10 9-10 9z"/></svg>,
-      Star: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
-      Share: (p) => <Icon {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></Icon>,
-      Plus: (p) => <Icon {...p}><path d="M12 5v14M5 12h14"/></Icon>,
-      Map: (p) => <Icon {...p}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></Icon>,
-      Globe: (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></Icon>,
-      Moon: (p) => <Icon {...p}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></Icon>,
-      Sun: (p) => <Icon {...p}><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></Icon>,
-      Cross: (p) => <Icon {...p}><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z"/></Icon>,
-    };
-
-    // ═══════════════════════════════════════════════════════════
-    // TRANSLATIONS (complete)
-    // ═══════════════════════════════════════════════════════════
-    const T = {
-      ar: {
-        tagline: "صيدليات {place}، الآن",
-        dashboard: "لوحة التحكم",
-        openStat: "مفتوحة من أصل {total}",
-        searchPlaceholder: "ابحث باسم الصيدلية أو الحي...",
-        filterAll: "الكل", filterOpen: "مفتوحة", filterUrgent: "مناوبة 24س",
-        filterFavorites: "المفضلة", filterLate: "مفتوحة ليلاً",
-        emergency: "طوارئ", emergencyTitle: "مفتوح الآن بالقرب منك",
-        emergencySubtitle: "أقرب الصيدليات المفتوحة · اضغط للاتصال أو الاتجاهات",
-        emergencyEmpty: "لا توجد صيدليات مفتوحة قريبة حالياً",
-        nearest: "الأقرب", callNow: "اتصال", goNow: "اتجاهات",
-        sourceLocal: "محلية", sourceOSM: "خريطة", sourceUser: "مستخدم",
-        trustVerified: "موثقة", viewAll: "عرض الكل",
-        emergencyHint: "وضع الطوارئ — نتائج سريعة",
-        confirmOpen: "مفتوحة الآن؟", confirmClosed: "مغلقة؟",
-        thanksConfirm: "شكراً — تم تسجيل ملاحظتك",
-        confirmedOpen: "أكّد مستخدمون أنها مفتوحة",
-        confirmedClosed: "أكّد مستخدمون أنها مغلقة",
-        addedFavorite: 'أُضيفت "{name}" للمفضلة',
-        removedFavorite: 'أُزيلت "{name}" من المفضلة',
-        noFavorites: "لا توجد صيدليات مفضلة بعد. اضغط على القلب لإضافة واحدة.",
-        noRatingsYet: "لا تقييمات بعد",
-        ratingsCount: "({n})",
-        yourRating: "قيّم هذه الصيدلية",
-        reviewPlaceholder: "شاركنا تجربتك (اختياري)...",
-        submitReview: "إرسال التقييم",
-        reviewSubmitted: "شكراً على تقييمك!",
-        pickStarsFirst: "اختر عدد النجوم أولاً",
-        reviewsTitle: "التقييمات",
-        changeLocation: "تغيير الموقع",
-        noResults: "لا توجد نتائج مطابقة",
-        openNow: "مفتوحة الآن", closedNow: "مغلقة", closedNowFull: "مغلقة الآن",
-        onDutyLabel: "مناوبة · 24 ساعة",
-        closesAt: "تغلق الساعة {time}", opensAt: "تفتح الساعة {time}",
-        reportTitle: "الإبلاغ عن هذه الصيدلية",
-        directions: "الاتجاهات",
-        underReviewBanner: "وصلت لـ {n} شكاوى — قيد المراجعة",
-        underReviewDetail: "هذه الصيدلية وصلت إلى {n} شكاوى وهي الآن قيد المراجعة اليدوية.",
-        adminTitle: "لوحة التحكم",
-        adminSubtitle: "صيدليات قيد المراجعة (الحد: {n} شكاوى)",
-        adminEmpty: "لا توجد صيدليات قيد المراجعة",
-        verifyReturn: "تحقق — إعادتها",
-        deleteFinal: "حذف نهائي",
-        comingSoon: "قريباً",
-        alreadyReported: "تم الإبلاغ مسبقاً",
-        thanksReport: "شكراً، تم استلام بلاغك",
-        thresholdReached: 'وصلت "{name}" إلى {n} شكاوى — أُرسلت للمراجعة',
-        dismissedToast: 'تمت إعادة "{name}" للقائمة',
-        removedToast: 'تم حذف "{name}" نهائياً',
-        addPharmacyBtn: "أضف صيدليتك",
-        addPharmacyTitle: "تسجيل صيدلية جديدة",
-        addPharmacySubtitle: "تظهر في القائمة مباشرة بعد الإرسال",
-        formName: "اسم الصيدلية", formArea: "الحي / المنطقة", formAddress: "العنوان الكامل",
-        formPhone: "الهاتف (اختياري)", formOpenHour: "ساعة الفتح", formCloseHour: "ساعة الغلق",
-        formOnDuty: "مناوبة 24 ساعة",
-        useMyLocation: "استخدم موقعي الحالي",
-        locationCaptured: "تم تحديد الموقع ✓",
-        locationFailed: "تعذر تحديد الموقع",
-        submitNewPharmacy: "إرسال التسجيل",
-        submittingPharmacy: "جاري الإرسال...",
-        newPharmacySuccess: "تم تسجيل الصيدلية بنجاح",
-        newPharmacyError: "حدث خطأ، حاول مرة أخرى",
-        formRequiredError: "أدخل اسم الصيدلية والعنوان على الأقل",
-        unverifiedBadge: "غير موثقة",
-        unverifiedNote: "أُضيفت من صاحبها ولم تُتحقق بعد",
-        adminLoginTitle: "دخول المسؤول",
-        loginBtn: "دخول", loginError: "بيانات غير صحيحة",
-        logoutBtn: "خروج",
-        allPharmaciesTab: "كل الصيدليات ({n})",
-        allPharmaciesSubtitle: "احذف أي صيدلية نهائياً",
-        kmAway: "كم",
-        copy: "نسخ", call: "اتصل",
-        map: "خريطة", list: "قائمة",
-        loadFromMap: "جلب من الخريطة",
-        searchCity: "ابحث عن مدينة...",
-        detecting: "جاري تحديد موقعك...",
-        geoError: "تعذر تحديد الموقع. استخدم القائمة يدوياً.",
-        country: "الدولة", city: "المدينة",
-        darkMode: "الوضع الداكن", lightMode: "الوضع الفاتح",
-        share: "مشاركة",
-        pharmaciesFound: "✅ {n} صيدلية في {name}",
-        loadFailed: "❌ تعذر الجلب",
-        wait30s: "⏳ انتظر 30 ثانية قبل إضافة أخرى",
-        invalidPhone: "❌ رقم هاتف غير صالح",
-        locatingAddress: "جاري تحديد الموقع من العنوان...",
-        noLocation: "حدد موقعاً أو أدخل عنواناً صالحاً",
-        protected: "الحقول محمية ضد البيانات الزائفة",
-        worldwide: "أضف صيدليتك من أي مكان في العالم",
-        reviewBtn: "قيد المراجعة ({n})",
-        openLate: "مفتوحة ليلاً",
-      },
-      fr: {
-        tagline: "Pharmacies de {place}, en direct",
-        dashboard: "Tableau de bord",
-        openStat: "ouvertes sur {total}",
-        searchPlaceholder: "Rechercher une pharmacie ou un quartier...",
-        filterAll: "Toutes", filterOpen: "Ouvertes", filterUrgent: "De garde 24h",
-        filterFavorites: "Favoris", filterLate: "Ouvert tard",
-        emergency: "Urgence", emergencyTitle: "Ouvertes près de vous",
-        emergencySubtitle: "Pharmacies ouvertes les plus proches · appeler ou y aller",
-        emergencyEmpty: "Aucune pharmacie ouverte à proximité",
-        nearest: "La plus proche", callNow: "Appeler", goNow: "Y aller",
-        sourceLocal: "Locale", sourceOSM: "Carte", sourceUser: "Utilisateur",
-        trustVerified: "Vérifiée", viewAll: "Tout voir",
-        emergencyHint: "Mode urgence — résultats rapides",
-        confirmOpen: "Ouverte maintenant ?", confirmClosed: "Fermée ?",
-        thanksConfirm: "Merci — votre observation est enregistrée",
-        confirmedOpen: "Des utilisateurs confirment qu'elle est ouverte",
-        confirmedClosed: "Des utilisateurs confirment qu'elle est fermée",
-        addedFavorite: '"{name}" ajoutée aux favoris',
-        removedFavorite: '"{name}" retirée des favoris',
-        noFavorites: "Aucune pharmacie favorite. Touchez le cœur pour en ajouter.",
-        noRatingsYet: "Pas encore d'avis",
-        ratingsCount: "({n})",
-        yourRating: "Notez cette pharmacie",
-        reviewPlaceholder: "Partagez votre expérience (optionnel)...",
-        submitReview: "Envoyer l'avis",
-        reviewSubmitted: "Merci pour votre avis !",
-        pickStarsFirst: "Choisissez d'abord une note",
-        reviewsTitle: "Avis",
-        changeLocation: "Changer de lieu",
-        noResults: "Aucun résultat",
-        openNow: "Ouverte", closedNow: "Fermée", closedNowFull: "Fermée maintenant",
-        onDutyLabel: "De garde · 24h",
-        closesAt: "Ferme à {time}", opensAt: "Ouvre à {time}",
-        reportTitle: "Signaler cette pharmacie",
-        directions: "Itinéraire",
-        underReviewBanner: "{n} signalements — en revue",
-        underReviewDetail: "Cette pharmacie a reçu {n} signalements et est en revue manuelle.",
-        adminTitle: "Tableau de bord",
-        adminSubtitle: "Pharmacies en revue (seuil : {n})",
-        adminEmpty: "Aucune pharmacie en revue",
-        verifyReturn: "Vérifiée — restaurer",
-        deleteFinal: "Supprimer",
-        comingSoon: "Bientôt",
-        alreadyReported: "Déjà signalée",
-        thanksReport: "Merci, signalement reçu",
-        thresholdReached: '"{name}" a atteint {n} signalements — envoyée en revue',
-        dismissedToast: '"{name}" restaurée',
-        removedToast: '"{name}" supprimée définitivement',
-        addPharmacyBtn: "Ajouter votre pharmacie",
-        addPharmacyTitle: "Enregistrer une pharmacie",
-        addPharmacySubtitle: "Elle apparaît immédiatement après envoi",
-        formName: "Nom de la pharmacie", formArea: "Quartier", formAddress: "Adresse complète",
-        formPhone: "Téléphone (optionnel)", formOpenHour: "Heure d'ouverture", formCloseHour: "Heure de fermeture",
-        formOnDuty: "De garde 24h/24",
-        useMyLocation: "Utiliser ma position",
-        locationCaptured: "Position enregistrée ✓",
-        locationFailed: "Impossible de localiser",
-        submitNewPharmacy: "Envoyer",
-        submittingPharmacy: "Envoi...",
-        newPharmacySuccess: "Pharmacie enregistrée avec succès",
-        newPharmacyError: "Erreur, réessayez",
-        formRequiredError: "Indiquez au moins le nom et l'adresse",
-        unverifiedBadge: "Non vérifiée",
-        unverifiedNote: "Ajoutée par son propriétaire, pas encore vérifiée",
-        adminLoginTitle: "Connexion admin",
-        loginBtn: "Se connecter", loginError: "Identifiants incorrects",
-        logoutBtn: "Déconnexion",
-        allPharmaciesTab: "Toutes ({n})",
-        allPharmaciesSubtitle: "Supprimez n'importe quelle pharmacie",
-        kmAway: "km",
-        copy: "Copier", call: "Appeler",
-        map: "Carte", list: "Liste",
-        loadFromMap: "Charger depuis la carte",
-        searchCity: "Rechercher une ville...",
-        detecting: "Détection de votre position...",
-        geoError: "Impossible de détecter la position. Utilisez le menu.",
-        country: "Pays", city: "Ville",
-        darkMode: "Mode sombre", lightMode: "Mode clair",
-        share: "Partager",
-        pharmaciesFound: "✅ {n} pharmacies à {name}",
-        loadFailed: "❌ Échec du chargement",
-        wait30s: "⏳ Attendez 30 secondes",
-        invalidPhone: "❌ Numéro invalide",
-        locatingAddress: "Localisation de l'adresse...",
-        noLocation: "Indiquez une position ou une adresse valide",
-        protected: "Champs protégés contre les injections",
-        worldwide: "Ajoutez votre pharmacie de n'importe où",
-        reviewBtn: "En revue ({n})",
-        openLate: "Ouvert tard",
-      },
-      en: {
-        tagline: "{place} pharmacies, live",
-        dashboard: "Dashboard",
-        openStat: "open out of {total}",
-        searchPlaceholder: "Search by name or neighborhood...",
-        filterAll: "All", filterOpen: "Open", filterUrgent: "24h duty",
-        filterFavorites: "Favorites", filterLate: "Open late",
-        emergency: "Emergency", emergencyTitle: "Open near you now",
-        emergencySubtitle: "Nearest open pharmacies · tap to call or go",
-        emergencyEmpty: "No open pharmacies nearby right now",
-        nearest: "Nearest", callNow: "Call", goNow: "Go",
-        sourceLocal: "Local", sourceOSM: "Map", sourceUser: "User",
-        trustVerified: "Verified", viewAll: "View all",
-        emergencyHint: "Emergency mode — fast results",
-        confirmOpen: "Open now?", confirmClosed: "Closed?",
-        thanksConfirm: "Thanks — your note was saved",
-        confirmedOpen: "Users confirmed it is open",
-        confirmedClosed: "Users confirmed it is closed",
-        addedFavorite: '"{name}" added to favorites',
-        removedFavorite: '"{name}" removed from favorites',
-        noFavorites: "No favorites yet. Tap the heart to add one.",
-        noRatingsYet: "No ratings yet",
-        ratingsCount: "({n})",
-        yourRating: "Rate this pharmacy",
-        reviewPlaceholder: "Share your experience (optional)...",
-        submitReview: "Submit rating",
-        reviewSubmitted: "Thanks for your rating!",
-        pickStarsFirst: "Pick a star rating first",
-        reviewsTitle: "Reviews",
-        changeLocation: "Change location",
-        noResults: "No matching results",
-        openNow: "Open now", closedNow: "Closed", closedNowFull: "Closed now",
-        onDutyLabel: "On duty · 24h",
-        closesAt: "Closes at {time}", opensAt: "Opens at {time}",
-        reportTitle: "Report this pharmacy",
-        directions: "Directions",
-        underReviewBanner: "{n} complaints — under review",
-        underReviewDetail: "This pharmacy has {n} complaints and is under manual review.",
-        adminTitle: "Dashboard",
-        adminSubtitle: "Pharmacies under review (threshold: {n})",
-        adminEmpty: "No pharmacies under review",
-        verifyReturn: "Verified — restore",
-        deleteFinal: "Delete permanently",
-        comingSoon: "Coming soon",
-        alreadyReported: "Already reported",
-        thanksReport: "Thanks, report received",
-        thresholdReached: '"{name}" reached {n} complaints — sent for review',
-        dismissedToast: '"{name}" restored to listing',
-        removedToast: '"{name}" permanently removed',
-        addPharmacyBtn: "Add your pharmacy",
-        addPharmacyTitle: "Register a new pharmacy",
-        addPharmacySubtitle: "Appears in the list right after submitting",
-        formName: "Pharmacy name", formArea: "Neighborhood / Area", formAddress: "Full address",
-        formPhone: "Phone (optional)", formOpenHour: "Opening hour", formCloseHour: "Closing hour",
-        formOnDuty: "On duty 24h",
-        useMyLocation: "Use my current location",
-        locationCaptured: "Location captured ✓",
-        locationFailed: "Could not get location",
-        submitNewPharmacy: "Submit registration",
-        submittingPharmacy: "Submitting...",
-        newPharmacySuccess: "Pharmacy registered successfully",
-        newPharmacyError: "Something went wrong, try again",
-        formRequiredError: "Fill in at least the name and address",
-        unverifiedBadge: "Unverified",
-        unverifiedNote: "Added by its owner, not yet verified by the team",
-        adminLoginTitle: "Admin login",
-        loginBtn: "Log in", loginError: "Incorrect credentials",
-        logoutBtn: "Log out",
-        allPharmaciesTab: "All pharmacies ({n})",
-        allPharmaciesSubtitle: "Permanently delete any pharmacy",
-        kmAway: "km",
-        copy: "Copy", call: "Call",
-        map: "Map", list: "List",
-        loadFromMap: "Load from map",
-        searchCity: "Search a city...",
-        detecting: "Detecting your location...",
-        geoError: "Could not detect location. Use the menu manually.",
-        country: "Country", city: "City",
-        darkMode: "Dark mode", lightMode: "Light mode",
-        share: "Share",
-        pharmaciesFound: "✅ {n} pharmacies in {name}",
-        loadFailed: "❌ Failed to load",
-        wait30s: "⏳ Wait 30 seconds before adding another",
-        invalidPhone: "❌ Invalid phone number",
-        locatingAddress: "Locating address...",
-        noLocation: "Provide a location or valid address",
-        protected: "Fields protected against injection",
-        worldwide: "Add your pharmacy from anywhere in the world",
-        reviewBtn: "Under review ({n})",
-        openLate: "Open late",
-      }
-    };
-
-    function tr(lang, key, vars = {}) {
-      let str = (T[lang] && T[lang][key]) || T.ar[key] || key;
-      Object.entries(vars).forEach(([k, v]) => { str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v); });
-      return str;
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // DATA — Full pharmacies (Sidi Bel Abbès, Oran, Algiers)
-    // ═══════════════════════════════════════════════════════════
-    const SBA = [
-{ id: 1, name: "صيدلية بوعشة فريد", area: "شارع 08 نوفمبر", address: "Rue 08 Novembre, Sidi Bel Abbès", phone: null, lat: 35.1994115, lng: -0.6453492, hours: { open: 8, close: 24 }, onDuty: false },
+const SBA_PHARMACIES = [
+  { id: 1, name: "صيدلية بوعشة فريد", area: "شارع 08 نوفمبر", address: "Rue 08 Novembre, Sidi Bel Abbès", phone: null, lat: 35.1994115, lng: -0.6453492, hours: { open: 8, close: 24 }, onDuty: false },
   { id: 2, name: "صيدلية أنس بن الأزهر", area: "سيدي جيلالي", address: "Agence Foncière, Sidi Djilali", phone: "040 73 11 11", lat: 35.2100923, lng: -0.6308727, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 3, name: "صيدلية منصور وفاء", area: "سيدي جيلالي", address: "250 Segar Abdelaziz, Secteur 1, Sidi Djilali", phone: null, lat: 35.2156413, lng: -0.6350891, hours: { open: 8.5, close: 24 }, onDuty: false },
   { id: 4, name: "صيدلية بن حمودة", area: "سيدي بلعباس", address: "Unnamed Rd, Sidi Bel Abbès 22000", phone: "0557 48 64 80", lat: 35.2194202, lng: -0.6259365, hours: { open: 8, close: 25 }, onDuty: false },
@@ -567,10 +265,24 @@
   { id: 353, name: "صيدلية مصطفى بن ابراهيم 24", area: "حي الفتح", address: "Cité El Feth, M. Ben Brahim", phone: null, lat: 35.1970, lng: -0.3680, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 354, name: "صيدلية بئر الحمام 24", area: "طريق تلمسان", address: "Route de Tlemcen, Bir El Hammam", phone: "0698 44 55 66", lat: 34.7480, lng: -0.6480, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 355, name: "صيدلية بن عشيبة 24", area: "الطريق الوطني 7", address: "RN7, Benachiba", phone: null, lat: 35.0140, lng: -0.4480, hours: { open: 0, close: 24 }, onDuty: true },
-    ].map(p => ({ ...p, wilaya: "سيدي بلعباس", commune: p.area, verified: true }));
+].map((p) => ({ ...p, wilaya: "سيدي بلعباس", commune: "سيدي بلعباس", verified: true }));
+const ORAN_COMMUNE_MAP = {
+  201: "وهران", 202: "وهران", 203: "بئر الجير", 204: "بئر الجير", 205: "وهران",
+  206: "بئر الجير", 207: "وهران", 208: "بئر الجير", 209: "وهران", 210: "وهران",
+  211: "وهران", 212: "بئر الجير", 213: "وهران", 214: "بئر الجير", 215: "بئر الجير",
+  216: "بئر الجير", 217: "وهران", 218: "بئر الجير", 219: "وهران", 220: "وهران",
+  221: "وهران", 222: "وهران", 223: "بئر الجير", 224: "وهران", 225: "وهران",
+  226: "وهران", 227: "وهران", 228: "وهران", 229: "بئر الجير", 230: "وهران",
+  231: "السانية", 232: "السانية", 233: "السانية", 234: "أرزيو", 235: "أرزيو",
+  236: "بطيوة", 237: "قديل", 238: "حاسي بونيف", 239: "بئر الجير", 240: "سيدي الشحمي",
+  241: "الكرمة", 242: "عين الترك", 243: "المرسى الكبير", 244: "بوسفر", 245: "وادي تليلات",
+  246: "حاسي مفسوخ", 247: "مسرغين", 248: "بوتليليس", 249: "عين البية", 250: "بن فريحة",
+  251: "حاسي بن عقبة", 252: "تفراوي", 253: "مرسى الحجاج", 254: "بوفاطيس", 255: "سيدي بن يبقى",
+  256: "وهران", 257: "بئر الجير", 258: "وهران", 259: "وهران", 260: "وهران",
+};
 
-    const ORAN = [
-{ id: 201, name: "صيدلية بوزيان", area: "شارع الشيخ عبد القادر", address: "50 Av. Cheikh Abdelkader, Oran", phone: "041 23 17 75", lat: 35.6903998, lng: -0.6409355, hours: { open: 0, close: 24 }, onDuty: true },
+const ORAN_PHARMACIES = [
+  { id: 201, name: "صيدلية بوزيان", area: "شارع الشيخ عبد القادر", address: "50 Av. Cheikh Abdelkader, Oran", phone: "041 23 17 75", lat: 35.6903998, lng: -0.6409355, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 202, name: "صيدلية الحاج", area: "وهران", address: "Oran", phone: "041 23 25 78", lat: 35.674515, lng: -0.6503951, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 203, name: "صيدلية بوزيان (الجامع الكبير)", area: "بوليفار عبد الحميد بن باديس", address: "Pole Abdelhamid Ibn Badis, Bir El Djir", phone: "041 23 17 75", lat: 35.6970558, lng: -0.6072521, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 204, name: "صيدلية درڨال", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "041 74 84 16", lat: 35.7149093, lng: -0.6026964, hours: { open: 8, close: 24 }, onDuty: false },
@@ -630,10 +342,10 @@
   { id: 258, name: "صيدلية فرون", area: "حي فرون", address: "Cité Feraoun, Oran", phone: null, lat: 35.6980, lng: -0.6400, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 259, name: "صيدلية مرافال", area: "حي مرافال", address: "Cité Maraval, Oran", phone: "0690 11 22 33", lat: 35.7100, lng: -0.6550, hours: { open: 8, close: 22.5 }, onDuty: false },
   { id: 260, name: "صيدلية ديتوش", area: "حي ديتوش", address: "Cité Detouche, Oran", phone: null, lat: 35.7150, lng: -0.6500, hours: { open: 8.5, close: 21 }, onDuty: false },
-    ].map(p => ({ ...p, wilaya: "وهران", commune: p.area, verified: true }));
+].map((p) => ({ ...p, wilaya: "وهران", commune: ORAN_COMMUNE_MAP[p.id] || "وهران", verified: true }));
 
-    const ALGER = [
-{ id: 401, name: "صيدلية خلدون 24/7", area: "الحراش", address: "12 Rue Si Hanafi, El-Harrach 16004", phone: "020 43 43 34", lat: 36.7172244, lng: 3.1461069, hours: { open: 0, close: 24 }, onDuty: true },
+const ALGER_PHARMACIES = [
+  { id: 401, name: "صيدلية خلدون 24/7", area: "الحراش", address: "12 Rue Si Hanafi, El-Harrach 16004", phone: "020 43 43 34", lat: 36.7172244, lng: 3.1461069, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 402, name: "صيدلية الزيتونة", area: "بئر مراد رايس", address: "Bir Mourad Raïs 16000", phone: "0560 28 51 99", lat: 36.7341897, lng: 3.0359469, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 403, name: "صيدلية ميمونة", area: "الجزائر الوسطى", address: "115 Rue Didouche Mourad, Alger Centre", phone: "0784 23 03 37", lat: 36.763382, lng: 3.0482317, hours: { open: 7.5, close: 19.5 }, onDuty: false },
   { id: 404, name: "صيدلية محب الدين نسيمة", area: "الجزائر الوسطى", address: "Rue Didouche Mourad, Alger Centre", phone: "0770 97 38 52", lat: 36.7661213, lng: 3.0520001, hours: { open: 8.5, close: 19 }, onDuty: false },
@@ -703,1956 +415,711 @@
   { id: 468, name: "صيدلية بني مسوس", area: "بني مسوس", address: "Cité Beni Messous", phone: null, lat: 36.7833, lng: 2.9833, hours: { open: 8.5, close: 21.5 }, onDuty: false },
   { id: 469, name: "صيدلية المرسى", area: "المرسى", address: "Bord de Mer, El Marsa", phone: "021 83 55 66", lat: 36.8000, lng: 3.2500, hours: { open: 8, close: 22 }, onDuty: false },
   { id: 470, name: "صيدلية الحراوة", area: "الحراوة", address: "Centre, Heraoua", phone: null, lat: 36.7667, lng: 3.3167, hours: { open: 8, close: 21 }, onDuty: false },
-    ].map(p => ({ ...p, wilaya: "الجزائر", commune: p.area, verified: true }));
+].map((p) => ({ ...p, wilaya: "الجزائر", commune: p.area, verified: true }));
 
-    const RAW = [...SBA, ...ORAN, ...ALGER];
+const RAW_PHARMACIES = [...SBA_PHARMACIES, ...ORAN_PHARMACIES, ...ALGER_PHARMACIES];
 
+const WILAYAS = [
+  "أدرار", "الشلف", "الأغواط", "أم البواقي", "باتنة", "بجاية", "بسكرة", "بشار",
+  "البليدة", "البويرة", "تمنراست", "تبسة", "تلمسان", "تيارت", "تيزي وزو", "الجزائر",
+  "الجلفة", "جيجل", "سطيف", "سعيدة", "سكيكدة", "سيدي بلعباس", "عنابة", "قالمة",
+  "قسنطينة", "المدية", "مستغانم", "المسيلة", "معسكر", "ورقلة", "وهران", "البيض",
+  "إليزي", "برج بوعريريج", "بومرداس", "الطارف", "تندوف", "تيسمسيلت", "الوادي",
+  "خنشلة", "سوق أهراس", "تيبازة", "ميلة", "عين الدفلى", "النعامة", "عين تموشنت",
+  "غرداية", "غليزان", "تيميمون", "برج باجي مختار", "أولاد جلال", "بني عباس",
+  "عين صالح", "عين قزام", "تقرت", "جانت", "المغير", "المنيعة",
+].map((name, i) => ({ id: i + 1, name, enabled: ["سيدي بلعباس", "وهران", "الجزائر"].includes(name) }));
 
+const COMMUNES_BY_WILAYA = {
+  "سيدي بلعباس": ["سيدي بلعباس", "تلاغ", "تسالة", "مرين", "الحصايبة", "بن باديس", "سيدي علي بوسيدي", "مصطفى بن إبراهيم", "رأس الماء", "سيدي خالد", "عين البرد", "سفيزف", "بوجبهة", "المكدرة", "أولاد خالد"].map((name, i) => ({ id: i + 1, name })),
+  "وهران": ["وهران", "بئر الجير", "السانية", "أرزيو", "بطيوة", "قديل", "حاسي بونيف", "سيدي الشحمي", "الكرمة", "عين الترك", "المرسى الكبير", "بوسفر", "وادي تليلات", "حاسي مفسوخ", "مسرغين", "بوتليليس", "عين البية", "بن فريحة", "حاسي بن عقبة", "تفراوي", "مرسى الحجاج", "بوفاطيس", "سيدي بن يبقى"].map((name, i) => ({ id: i + 1, name })),
+  "الجزائر": ["الجزائر الوسطى", "سيدي امحمد", "المدنية", "بلوزداد", "باب الوادي", "بولوغين", "القصبة", "وادي قريش", "بئر مراد رايس", "الأبيار", "بوزريعة", "بئر خادم", "الحراش", "براقي", "وادي السمار", "بوروبة", "حسين داي", "القبة", "باش جراح", "الدار البيضاء", "باب الزوار", "بن عكنون", "دالي إبراهيم", "الحمامات", "الرايس حميدو", "جسر قسنطينة", "المرادية", "حيدرة", "المحمدية", "برج الكيفان", "بني مسوس", "الكاليتوس", "بئر توتة", "تسالة المرجة", "أولاد شبل", "سيدي موسى", "عين طاية", "برج البحري", "المرسى", "الحراوة", "الرويبة", "الرغاية", "عين البنيان", "سطاوالي", "زرالدة", "الرحمانية", "سويدانية", "الشراقة", "أولاد فايت", "العاشور", "درارية", "الدويرة", "بابا حسن", "خرايسية", "سعولة"].map((name, i) => ({ id: i + 1, name })),
+};
+const T = {
+  ar: {
+    tagline: "صيدليات {wilaya}، الآن", dashboard: "لوحة التحكم",
+    openStat: "صيدلية مفتوحة حالياً من أصل {total}",
+    searchPlaceholder: "ابحث باسم الصيدلية أو الحي...",
+    filterAll: "الكل", filterOpen: "المفتوحة فقط", filterUrgent: "مستعجل ❗",
+    filterFavorites: "المفضلة ♥",
+    addedFavorite: 'أُضيفت "{name}" للمفضلة.', removedFavorite: 'أُزيلت "{name}" من المفضلة.',
+    noFavorites: "ما عندك صيدليات مفضلة بعد. دوس على القلب لتضيفها.",
+    noRatingsYet: "لا توجد تقييمات بعد", ratingsCount: "({n} تقييم)",
+    yourRating: "قيّم هذه الصيدلية", reviewPlaceholder: "شاركنا تجربتك (اختياري)...",
+    submitReview: "إرسال التقييم", reviewSubmitted: "شكراً على تقييمك!",
+    pickStarsFirst: "اختر عدد النجوم أول.", reviewsTitle: "المراجعات",
+    communeLabel: "البلدية", allCommunes: "كل بلديات الولاية", changeWilaya: "تغيير الولاية",
+    reviewBtn: "قيد المراجعة ({n})", noResults: "لا توجد نتائج مطابقة لبحثك.",
+    underReviewBanner: "وصلت لـ {n} شكاوى — بانتظار مراجعة المسؤول قبل أي إجراء",
+    openNow: "مفتوحة الآن", closedNow: "مغلقة", closedNowFull: "مغلقة الآن",
+    onDutyLabel: "مناوبة · 24 ساعة", closesAt: "يغلق الساعة {time}", opensAt: "يفتح الساعة {time}",
+    reportTitle: "الإبلاغ عن هذه الصيدلية", directions: "فتح الاتجاهات",
+    underReviewDetail: "هذه الصيدلية وصلت إلى {n} شكاوى وهي الآن قيد المراجعة اليدوية. لن تُحذف تلقائياً — القرار النهائي يتطلب تحقق المسؤول.",
+    adminTitle: "لوحة التحكم", adminSubtitle: "صيدليات قيد المراجعة — وصلت للحد الأدنى من الشكاوى ({n}) وتنتظر قرارك",
+    adminEmpty: "لا توجد صيدليات قيد المراجعة حالياً.", verifyReturn: "تحققت — إعادتها للقائمة", deleteFinal: "حذف نهائي",
+    wilayaLabel: "الولاية", comingSoon: "قريباً",
+    alreadyReported: "تم إرسال شكواك على هذه الصيدلية مسبقاً.", thanksReport: "شكرًا، تم استلام بلاغك.",
+    thresholdReached: 'تم رصد {n} شكاوى على "{name}" — أُرسلت للمراجعة اليدوية.',
+    dismissedToast: 'تمت إعادة "{name}" للقائمة العادية ومسح الشكاوى عنها.',
+    removedToast: 'تم حذف "{name}" نهائياً من التطبيق.',
+    wilayaComingSoonToast: '{name} — لا توجد بيانات بعد، قريباً إن شاء الله.',
+    addPharmacyBtn: "أضف صيدليتك", addPharmacyTitle: "تسجيل صيدلية جديدة",
+    addPharmacySubtitle: "صيدليتك تظهر مباشرة فـ القائمة بعد الإرسال.",
+    formName: "اسم الصيدلية", formArea: "الحي / المنطقة", formAddress: "العنوان الكامل",
+    formPhone: "رقم الهاتف (اختياري)", formOpenHour: "ساعة الفتح", formCloseHour: "ساعة الغلق",
+    formOnDuty: "مناوبة 24 ساعة", useMyLocation: "استعمل موقعي الحالي",
+    locationCaptured: "تم تحديد الموقع ✓", locationFailed: "تعذر تحديد الموقع، حاول يدوياً أو تأكد من تفعيل GPS.",
+    submitNewPharmacy: "إرسال التسجيل", submittingPharmacy: "جاري الإرسال...",
+    newPharmacySuccess: "تم تسجيل صيدليتك بنجاح، وتظهر الآن فـ القائمة.",
+    newPharmacyError: "صار خطأ أثناء الإرسال، حاول مرة أخرى.",
+    formRequiredError: "عمر اسم الصيدلية والعنوان على الأقل.",
+    unverifiedBadge: "غير موثقة", unverifiedNote: "أُضيفت من طرف صاحبها ولم تُتحقق بعد من الفريق.",
+    adminLoginTitle: "دخول المسؤول", loginBtn: "دخول", loginError: "بيانات الدخول غير صحيحة.",
+    logoutBtn: "خروج", allPharmaciesTab: "كل الصيدليات ({n})",
+    allPharmaciesSubtitle: "احذف أي صيدلية نهائياً فـ أي وقت، حتى لو ما وصلتش لشكاوى.",
+  },
+  fr: {
+    tagline: "Pharmacies de {wilaya}, en direct", dashboard: "Tableau de bord",
+    openStat: "pharmacie(s) ouverte(s) sur {total}",
+    searchPlaceholder: "Rechercher une pharmacie ou un quartier...",
+    filterAll: "Toutes", filterOpen: "Ouvertes uniquement", filterUrgent: "Urgent ❗",
+    filterFavorites: "Favoris ♥",
+    addedFavorite: '"{name}" ajoutée aux favoris.', removedFavorite: '"{name}" retirée des favoris.',
+    noFavorites: "Aucune pharmacie favorite pour l'instant. Touchez le cœur pour en ajouter.",
+    noRatingsYet: "Pas encore d'avis", ratingsCount: "({n} avis)",
+    yourRating: "Notez cette pharmacie", reviewPlaceholder: "Partagez votre expérience (facultatif)...",
+    submitReview: "Envoyer l'avis", reviewSubmitted: "Merci pour votre avis !",
+    pickStarsFirst: "Choisissez d'abord un nombre d'étoiles.", reviewsTitle: "Avis",
+    communeLabel: "Commune", allCommunes: "Toutes les communes", changeWilaya: "Changer de wilaya",
+    reviewBtn: "En révision ({n})", noResults: "Aucun résultat pour votre recherche.",
+    underReviewBanner: "{n} signalements reçus — en attente de vérification par l'administrateur",
+    openNow: "Ouverte maintenant", closedNow: "Fermée", closedNowFull: "Fermée maintenant",
+    onDutyLabel: "De garde · 24h/24", closesAt: "Ferme à {time}", opensAt: "Ouvre à {time}",
+    reportTitle: "Signaler cette pharmacie", directions: "Itinéraire",
+    underReviewDetail: "Cette pharmacie a reçu {n} signalements et est en cours de vérification. Aucune suppression automatique — la décision finale revient à l'administrateur.",
+    adminTitle: "Tableau de bord", adminSubtitle: "Pharmacies en révision — ont atteint le seuil de {n} signalements et attendent votre décision",
+    adminEmpty: "Aucune pharmacie en révision pour le moment.", verifyReturn: "Vérifié — la remettre en ligne", deleteFinal: "Supprimer définitivement",
+    wilayaLabel: "Wilaya", comingSoon: "Bientôt",
+    alreadyReported: "Vous avez déjà signalé cette pharmacie.", thanksReport: "Merci, votre signalement a été reçu.",
+    thresholdReached: 'Seuil de {n} signalements atteint pour "{name}" — envoyée en révision.',
+    dismissedToast: '"{name}" a été remise en ligne et ses signalements effacés.',
+    removedToast: '"{name}" a été définitivement supprimée de l\'application.',
+    wilayaComingSoonToast: '{name} — pas encore de données, bientôt disponible.',
+    addPharmacyBtn: "Ajouter votre pharmacie", addPharmacyTitle: "Enregistrer une nouvelle pharmacie",
+    addPharmacySubtitle: "Votre pharmacie apparaît immédiatement dans la liste après l'envoi.",
+    formName: "Nom de la pharmacie", formArea: "Quartier / Secteur", formAddress: "Adresse complète",
+    formPhone: "Téléphone (facultatif)", formOpenHour: "Heure d'ouverture", formCloseHour: "Heure de fermeture",
+    formOnDuty: "De garde 24h/24", useMyLocation: "Utiliser ma position actuelle",
+    locationCaptured: "Position enregistrée ✓", locationFailed: "Impossible de localiser, réessayez ou activez le GPS.",
+    submitNewPharmacy: "Envoyer l'inscription", submittingPharmacy: "Envoi en cours...",
+    newPharmacySuccess: "Votre pharmacie a été enregistrée et apparaît maintenant dans la liste.",
+    newPharmacyError: "Une erreur est survenue, réessayez.",
+    formRequiredError: "Renseignez au moins le nom et l'adresse.",
+    unverifiedBadge: "Non vérifiée", unverifiedNote: "Ajoutée par son propriétaire, pas encore vérifiée par l'équipe.",
+    adminLoginTitle: "Connexion administrateur", loginBtn: "Se connecter", loginError: "Identifiants incorrects.",
+    logoutBtn: "Déconnexion", allPharmaciesTab: "Toutes les pharmacies ({n})",
+    allPharmaciesSubtitle: "Supprimez définitivement n'importe quelle pharmacie, à tout moment.",
+  },
+  en: {
+    tagline: "{wilaya} pharmacies, live", dashboard: "Dashboard",
+    openStat: "pharmacies open now out of {total}",
+    searchPlaceholder: "Search by pharmacy name or neighborhood...",
+    filterAll: "All", filterOpen: "Open only", filterUrgent: "Urgent ❗",
+    filterFavorites: "Favorites ♥",
+    addedFavorite: '"{name}" added to favorites.', removedFavorite: '"{name}" removed from favorites.',
+    noFavorites: "No favorite pharmacies yet. Tap the heart to add one.",
+    noRatingsYet: "No ratings yet", ratingsCount: "({n} ratings)",
+    yourRating: "Rate this pharmacy", reviewPlaceholder: "Share your experience (optional)...",
+    submitReview: "Submit rating", reviewSubmitted: "Thanks for your rating!",
+    pickStarsFirst: "Pick a star rating first.", reviewsTitle: "Reviews",
+    communeLabel: "Commune", allCommunes: "All communes", changeWilaya: "Change wilaya",
+    reviewBtn: "Under review ({n})", noResults: "No results match your search.",
+    underReviewBanner: "{n} complaints received — awaiting admin review",
+    openNow: "Open now", closedNow: "Closed", closedNowFull: "Closed now",
+    onDutyLabel: "On duty · 24h", closesAt: "Closes at {time}", opensAt: "Opens at {time}",
+    reportTitle: "Report this pharmacy", directions: "Get directions",
+    underReviewDetail: "This pharmacy has received {n} complaints and is under manual review. It won't be removed automatically — the final decision requires admin verification.",
+    adminTitle: "Dashboard", adminSubtitle: "Pharmacies under review — reached the {n}-complaint threshold and await your decision",
+    adminEmpty: "No pharmacies under review right now.", verifyReturn: "Verified — restore listing", deleteFinal: "Delete permanently",
+    wilayaLabel: "Wilaya", comingSoon: "Coming soon",
+    alreadyReported: "You've already reported this pharmacy.", thanksReport: "Thanks, your report was received.",
+    thresholdReached: 'Threshold of {n} complaints reached for "{name}" — sent for manual review.',
+    dismissedToast: '"{name}" was restored to the listing and its complaints cleared.',
+    removedToast: '"{name}" was permanently removed from the app.',
+    wilayaComingSoonToast: '{name} — no data yet, coming soon.',
+    addPharmacyBtn: "Add your pharmacy", addPharmacyTitle: "Register a new pharmacy",
+    addPharmacySubtitle: "Your pharmacy appears in the list immediately after submitting.",
+    formName: "Pharmacy name", formArea: "Neighborhood / Area", formAddress: "Full address",
+    formPhone: "Phone (optional)", formOpenHour: "Opening hour", formCloseHour: "Closing hour",
+    formOnDuty: "On duty 24h", useMyLocation: "Use my current location",
+    locationCaptured: "Location captured ✓", locationFailed: "Couldn't get location, try again or enable GPS.",
+    submitNewPharmacy: "Submit registration", submittingPharmacy: "Submitting...",
+    newPharmacySuccess: "Your pharmacy was registered and now appears in the list.",
+    newPharmacyError: "Something went wrong, please try again.",
+    formRequiredError: "Fill in at least the name and address.",
+    unverifiedBadge: "Unverified", unverifiedNote: "Added by its owner, not yet verified by the team.",
+    adminLoginTitle: "Admin login", loginBtn: "Log in", loginError: "Incorrect credentials.",
+    logoutBtn: "Log out", allPharmaciesTab: "All pharmacies ({n})",
+    allPharmaciesSubtitle: "Permanently delete any pharmacy, at any time.",
+  },
+};
 
-    const COUNTRIES = [
-      { id: "DZ", name: "🇩🇿 الجزائر", nameFr: "Algérie", nameEn: "Algeria" },
-      { id: "FR", name: "🇫🇷 فرنسا", nameFr: "France", nameEn: "France" },
-      { id: "MA", name: "🇲🇦 المغرب", nameFr: "Maroc", nameEn: "Morocco" },
-      { id: "TN", name: "🇹🇳 تونس", nameFr: "Tunisie", nameEn: "Tunisia" },
-      { id: "EG", name: "🇪🇬 مصر", nameFr: "Égypte", nameEn: "Egypt" },
-      { id: "SA", name: "🇸🇦 السعودية", nameFr: "Arabie Saoudite", nameEn: "Saudi Arabia" },
-      { id: "AE", name: "🇦🇪 الإمارات", nameFr: "Émirats", nameEn: "UAE" },
-      { id: "TR", name: "🇹🇷 تركيا", nameFr: "Turquie", nameEn: "Turkey" },
-      { id: "ES", name: "🇪🇸 إسبانيا", nameFr: "Espagne", nameEn: "Spain" },
-      { id: "IT", name: "🇮🇹 إيطاليا", nameFr: "Italie", nameEn: "Italy" },
-      { id: "DE", name: "🇩🇪 ألمانيا", nameFr: "Allemagne", nameEn: "Germany" },
-      { id: "GB", name: "🇬🇧 بريطانيا", nameFr: "R.-U.", nameEn: "UK" },
-      { id: "US", name: "🇺🇸 أمريكا", nameFr: "États-Unis", nameEn: "USA" },
-      { id: "CA", name: "🇨🇦 كندا", nameFr: "Canada", nameEn: "Canada" },
-      { id: "OTHER", name: "🌍 أخرى", nameFr: "Autre", nameEn: "Other" },
-    ];
+function tr(lang, key, vars = {}) {
+  let str = T[lang][key] || T.ar[key] || key;
+  Object.entries(vars).forEach(([k, v]) => { str = str.replace(`{${k}}`, v); });
+  return str;
+}
 
-    // Popular cities per country (shown immediately when country is selected)
-    const CITIES_BY_COUNTRY = {
-      DZ: [
-        // Local data available
-        { name: "الجزائر", nameEn: "Algiers", lat: 36.7538, lng: 3.0588, wilayaId: 16 },
-        { name: "وهران", nameEn: "Oran", lat: 35.6971, lng: -0.6337, wilayaId: 31 },
-        { name: "سيدي بلعباس", nameEn: "Sidi Bel Abbès", lat: 35.1917, lng: -0.6355, wilayaId: 22 },
-        // Rest of Algeria — loaded via OSM
-        { name: "قسنطينة", nameEn: "Constantine", lat: 36.365, lng: 6.6147 },
-        { name: "عنابة", nameEn: "Annaba", lat: 36.9, lng: 7.7667 },
-        { name: "سطيف", nameEn: "Sétif", lat: 36.1911, lng: 5.4137 },
-        { name: "تلمسان", nameEn: "Tlemcen", lat: 34.8783, lng: -1.315 },
-        { name: "بجاية", nameEn: "Béjaïa", lat: 36.75, lng: 5.0833 },
-        { name: "باتنة", nameEn: "Batna", lat: 35.555, lng: 6.174 },
-        { name: "البليدة", nameEn: "Blida", lat: 36.47, lng: 2.83 },
-        { name: "تيزي وزو", nameEn: "Tizi Ouzou", lat: 36.7167, lng: 4.05 },
-        { name: "ورقلة", nameEn: "Ouargla", lat: 31.95, lng: 5.333 },
-        { name: "بشار", nameEn: "Béchar", lat: 31.6167, lng: -2.2167 },
-        { name: "سكيكدة", nameEn: "Skikda", lat: 36.8667, lng: 6.9 },
-        { name: "جيجل", nameEn: "Jijel", lat: 36.8, lng: 5.7667 },
-        { name: "مستغانم", nameEn: "Mostaganem", lat: 35.9333, lng: 0.0833 },
-        { name: "معسكر", nameEn: "Mascara", lat: 35.4, lng: 0.15 },
-        { name: "الشلف", nameEn: "Chlef", lat: 36.165, lng: 1.335 },
-        { name: "عين تموشنت", nameEn: "Aïn Témouchent", lat: 35.3, lng: -1.14 },
-        { name: "غليزان", nameEn: "Relizane", lat: 35.7333, lng: 0.55 },
-        { name: "تيارت", nameEn: "Tiaret", lat: 35.3706, lng: 1.3217 },
-        { name: "سعيدة", nameEn: "Saïda", lat: 34.8333, lng: 0.15 },
-        { name: "الجلفة", nameEn: "Djelfa", lat: 34.6667, lng: 3.25 },
-        { name: "المسيلة", nameEn: "M'Sila", lat: 35.7, lng: 4.55 },
-        { name: "برج بوعريريج", nameEn: "Bordj Bou Arréridj", lat: 36.0667, lng: 4.7667 },
-        { name: "المدية", nameEn: "Médéa", lat: 36.2667, lng: 2.75 },
-        { name: "البويرة", nameEn: "Bouira", lat: 36.3833, lng: 3.9 },
-        { name: "بومرداس", nameEn: "Boumerdès", lat: 36.7667, lng: 3.4833 },
-        { name: "تيبازة", nameEn: "Tipaza", lat: 36.5833, lng: 2.45 },
-        { name: "عين الدفلى", nameEn: "Aïn Defla", lat: 36.2667, lng: 1.9667 },
-        { name: "قالمة", nameEn: "Guelma", lat: 36.4667, lng: 7.4333 },
-        { name: "سوق أهراس", nameEn: "Souk Ahras", lat: 36.2833, lng: 7.95 },
-        { name: "تبسة", nameEn: "Tébessa", lat: 35.4, lng: 8.1167 },
-        { name: "أم البواقي", nameEn: "Oum El Bouaghi", lat: 35.8667, lng: 7.1167 },
-        { name: "خنشلة", nameEn: "Khenchela", lat: 35.4333, lng: 7.15 },
-        { name: "بسكرة", nameEn: "Biskra", lat: 34.85, lng: 5.7333 },
-        { name: "الوادي", nameEn: "El Oued", lat: 33.3667, lng: 6.8667 },
-        { name: "غرداية", nameEn: "Ghardaïa", lat: 32.4833, lng: 3.6667 },
-        { name: "الأغواط", nameEn: "Laghouat", lat: 33.8, lng: 2.8667 },
-        { name: "البيض", nameEn: "El Bayadh", lat: 33.6833, lng: 1.0167 },
-        { name: "النعامة", nameEn: "Naâma", lat: 33.2667, lng: -0.3167 },
-        { name: "تمنراست", nameEn: "Tamanrasset", lat: 22.785, lng: 5.5228 },
-        { name: "إليزي", nameEn: "Illizi", lat: 26.5, lng: 8.4833 },
-        { name: "أدرار", nameEn: "Adrar", lat: 27.8667, lng: -0.2833 },
-        { name: "تندوف", nameEn: "Tindouf", lat: 27.6667, lng: -8.1333 },
-        { name: "تيسمسيلت", nameEn: "Tissemsilt", lat: 35.6, lng: 1.8167 },
-        { name: "ميلة", nameEn: "Mila", lat: 36.45, lng: 6.2667 },
-        { name: "الطارف", nameEn: "El Tarf", lat: 36.7667, lng: 8.3167 },
-      ],
-      FR: [
-        { name: "Paris", nameEn: "Paris", lat: 48.8566, lng: 2.3522 },
-        { name: "Marseille", nameEn: "Marseille", lat: 43.2965, lng: 5.3698 },
-        { name: "Lyon", nameEn: "Lyon", lat: 45.764, lng: 4.8357 },
-        { name: "Toulouse", nameEn: "Toulouse", lat: 43.6047, lng: 1.4442 },
-        { name: "Nice", nameEn: "Nice", lat: 43.7102, lng: 7.262 },
-        { name: "Bordeaux", nameEn: "Bordeaux", lat: 44.8378, lng: -0.5792 },
-        { name: "Lille", nameEn: "Lille", lat: 50.6292, lng: 3.0573 },
-        { name: "Strasbourg", nameEn: "Strasbourg", lat: 48.5734, lng: 7.7521 },
-        { name: "Nantes", nameEn: "Nantes", lat: 47.2184, lng: -1.5536 },
-        { name: "Montpellier", nameEn: "Montpellier", lat: 43.6108, lng: 3.8767 },
-      ],
-      MA: [
-        { name: "Casablanca", nameEn: "Casablanca", lat: 33.5731, lng: -7.5898 },
-        { name: "Rabat", nameEn: "Rabat", lat: 34.0209, lng: -6.8416 },
-        { name: "Marrakech", nameEn: "Marrakech", lat: 31.6295, lng: -7.9811 },
-        { name: "Fès", nameEn: "Fes", lat: 34.0181, lng: -5.0078 },
-        { name: "Tanger", nameEn: "Tangier", lat: 35.7595, lng: -5.834 },
-        { name: "Agadir", nameEn: "Agadir", lat: 30.4278, lng: -9.5981 },
-        { name: "Meknès", nameEn: "Meknes", lat: 33.8935, lng: -5.5547 },
-        { name: "Oujda", nameEn: "Oujda", lat: 34.6814, lng: -1.9086 },
-      ],
-      TN: [
-        { name: "Tunis", nameEn: "Tunis", lat: 36.8065, lng: 10.1815 },
-        { name: "Sfax", nameEn: "Sfax", lat: 34.7398, lng: 10.76 },
-        { name: "Sousse", nameEn: "Sousse", lat: 35.8256, lng: 10.6411 },
-        { name: "Kairouan", nameEn: "Kairouan", lat: 35.6781, lng: 10.0963 },
-        { name: "Bizerte", nameEn: "Bizerte", lat: 37.2744, lng: 9.8739 },
-        { name: "Gabès", nameEn: "Gabes", lat: 33.8815, lng: 10.0982 },
-      ],
-      EG: [
-        { name: "القاهرة", nameEn: "Cairo", lat: 30.0444, lng: 31.2357 },
-        { name: "الإسكندرية", nameEn: "Alexandria", lat: 31.2001, lng: 29.9187 },
-        { name: "الجيزة", nameEn: "Giza", lat: 30.0131, lng: 31.2089 },
-        { name: "الأقصر", nameEn: "Luxor", lat: 25.6872, lng: 32.6396 },
-        { name: "أسوان", nameEn: "Aswan", lat: 24.0889, lng: 32.8998 },
-        { name: "بورسعيد", nameEn: "Port Said", lat: 31.2653, lng: 32.3019 },
-      ],
-      SA: [
-        { name: "الرياض", nameEn: "Riyadh", lat: 24.7136, lng: 46.6753 },
-        { name: "جدة", nameEn: "Jeddah", lat: 21.4858, lng: 39.1925 },
-        { name: "مكة", nameEn: "Mecca", lat: 21.3891, lng: 39.8579 },
-        { name: "المدينة", nameEn: "Medina", lat: 24.5247, lng: 39.5692 },
-        { name: "الدمام", nameEn: "Dammam", lat: 26.4207, lng: 50.0888 },
-        { name: "الخبر", nameEn: "Khobar", lat: 26.2172, lng: 50.1971 },
-      ],
-      AE: [
-        { name: "دبي", nameEn: "Dubai", lat: 25.2048, lng: 55.2708 },
-        { name: "أبوظبي", nameEn: "Abu Dhabi", lat: 24.4539, lng: 54.3773 },
-        { name: "الشارقة", nameEn: "Sharjah", lat: 25.3463, lng: 55.4209 },
-        { name: "عجمان", nameEn: "Ajman", lat: 25.4052, lng: 55.5136 },
-      ],
-      TR: [
-        { name: "Istanbul", nameEn: "Istanbul", lat: 41.0082, lng: 28.9784 },
-        { name: "Ankara", nameEn: "Ankara", lat: 39.9334, lng: 32.8597 },
-        { name: "Izmir", nameEn: "Izmir", lat: 38.4237, lng: 27.1428 },
-        { name: "Antalya", nameEn: "Antalya", lat: 36.8969, lng: 30.7133 },
-        { name: "Bursa", nameEn: "Bursa", lat: 40.1885, lng: 29.061 },
-      ],
-      ES: [
-        { name: "Madrid", nameEn: "Madrid", lat: 40.4168, lng: -3.7038 },
-        { name: "Barcelona", nameEn: "Barcelona", lat: 41.3874, lng: 2.1686 },
-        { name: "Valencia", nameEn: "Valencia", lat: 39.4699, lng: -0.3763 },
-        { name: "Sevilla", nameEn: "Seville", lat: 37.3891, lng: -5.9845 },
-        { name: "Málaga", nameEn: "Malaga", lat: 36.7213, lng: -4.4214 },
-      ],
-      IT: [
-        { name: "Roma", nameEn: "Rome", lat: 41.9028, lng: 12.4964 },
-        { name: "Milano", nameEn: "Milan", lat: 45.4642, lng: 9.19 },
-        { name: "Napoli", nameEn: "Naples", lat: 40.8518, lng: 14.2681 },
-        { name: "Torino", nameEn: "Turin", lat: 45.0703, lng: 7.6869 },
-        { name: "Firenze", nameEn: "Florence", lat: 43.7696, lng: 11.2558 },
-      ],
-      DE: [
-        { name: "Berlin", nameEn: "Berlin", lat: 52.52, lng: 13.405 },
-        { name: "München", nameEn: "Munich", lat: 48.1351, lng: 11.582 },
-        { name: "Hamburg", nameEn: "Hamburg", lat: 53.5511, lng: 9.9937 },
-        { name: "Frankfurt", nameEn: "Frankfurt", lat: 50.1109, lng: 8.6821 },
-        { name: "Köln", nameEn: "Cologne", lat: 50.9375, lng: 6.9603 },
-      ],
-      GB: [
-        { name: "London", nameEn: "London", lat: 51.5074, lng: -0.1278 },
-        { name: "Manchester", nameEn: "Manchester", lat: 53.4808, lng: -2.2426 },
-        { name: "Birmingham", nameEn: "Birmingham", lat: 52.4862, lng: -1.8904 },
-        { name: "Edinburgh", nameEn: "Edinburgh", lat: 55.9533, lng: -3.1883 },
-        { name: "Glasgow", nameEn: "Glasgow", lat: 55.8642, lng: -4.2518 },
-      ],
-      US: [
-        { name: "New York", nameEn: "New York", lat: 40.7128, lng: -74.006 },
-        { name: "Los Angeles", nameEn: "Los Angeles", lat: 34.0522, lng: -118.2437 },
-        { name: "Chicago", nameEn: "Chicago", lat: 41.8781, lng: -87.6298 },
-        { name: "Houston", nameEn: "Houston", lat: 29.7604, lng: -95.3698 },
-        { name: "Miami", nameEn: "Miami", lat: 25.7617, lng: -80.1918 },
-      ],
-      CA: [
-        { name: "Toronto", nameEn: "Toronto", lat: 43.6532, lng: -79.3832 },
-        { name: "Montréal", nameEn: "Montreal", lat: 45.5017, lng: -73.5673 },
-        { name: "Vancouver", nameEn: "Vancouver", lat: 49.2827, lng: -123.1207 },
-        { name: "Ottawa", nameEn: "Ottawa", lat: 45.4215, lng: -75.6972 },
-        { name: "Calgary", nameEn: "Calgary", lat: 51.0447, lng: -114.0719 },
-      ],
-      OTHER: [],
+function useNow() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    if (darkMode) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+    try { localStorage.setItem("pharise_dark", darkMode ? "1" : "0"); } catch(e) {}
+  }, [darkMode]);
+
+useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+  return now;
+}
+
+function computeStatus(ph, now) {
+  const hour = now.getHours() + now.getMinutes() / 60;
+  if (ph.onDuty) return { open: true, kind: "onDuty" };
+  const { open, close } = ph.hours;
+  const isOpen = close > 24 ? hour >= open || hour < close - 24 : hour >= open && hour < close;
+  return { open: isOpen, kind: isOpen ? "closesAt" : "opensAt", time: isOpen ? close % 24 : open };
+}
+
+function fmtHour(h) {
+  const hh = Math.floor(h) % 24;
+  const mm = Math.round((h - Math.floor(h)) * 60);
+  return String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+const DEFAULT_LOC = { lat: 35.1917, lng: -0.6355 };
+const COMPLAINT_THRESHOLD = 3;
+
+function PharmacyFinder() {
+  const now = useNow();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [selected, setSelected] = useState(null);
+  const [complaints, setComplaints] = useState(() => Object.fromEntries(RAW_PHARMACIES.map((p) => [p.id, p.complaints])));
+  const [reportedByMe, setReportedByMe] = useState(() => new Set());
+  const [showReview, setShowReview] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [adminView, setAdminView] = useState(false);
+  const [removedIds, setRemovedIds] = useState(() => new Set());
+  const [lang, setLang] = useState("ar");
+  const [darkMode, setDarkMode] = useState(false);
+  const [wilayaId, setWilayaId] = useState(22);
+  const [communeId, setCommuneId] = useState(0);
+  const [wilayaOpen, setWilayaOpen] = useState(false);
+  const [favorites, setFavorites] = useState(() => new Set());
+  const [ratings, setRatings] = useState(() => Object.fromEntries(RAW_PHARMACIES.map((p) => [p.id, { sum: p.ratingSum, count: p.ratingCount }])));
+  const [myReviews, setMyReviews] = useState({});
+  const [draftStars, setDraftStars] = useState(0);
+  const [draftText, setDraftText] = useState("");
+  const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
+  const [submittedPharmacies, setSubmittedPharmacies] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formName, setFormName] = useState("");
+  const [formArea, setFormArea] = useState("");
+  const [formAddress, setFormAddress] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formOpen, setFormOpen] = useState(8);
+  const [formClose, setFormClose] = useState(21);
+  const [formOnDuty, setFormOnDuty] = useState(false);
+  const [formLoc, setFormLoc] = useState(null);
+  const [formLocStatus, setFormLocStatus] = useState(null);
+  const [formCommune, setFormCommune] = useState(null);
+  const [adminUser, setAdminUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState(null);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [adminTab, setAdminTab] = useState("review");
+  const dir = lang === "ar" ? "rtl" : "ltr";
+
+  const wilaya = WILAYAS.find((w) => w.id === wilayaId);
+  const t = (key, vars) => tr(lang, key, vars);
+
+  const communesForWilayaRaw = COMMUNES_BY_WILAYA[wilaya.name] || [];
+  const presentCommunes = useMemo(() => {
+    const all = [...RAW_PHARMACIES, ...submittedPharmacies];
+    return new Set(all.filter((p) => p.wilaya === wilaya.name).map((p) => p.commune));
+  }, [submittedPharmacies, wilaya.name]);
+
+  const communesForWilaya = [
+    { id: 0, name: wilaya.name, label: t("allCommunes"), enabled: true },
+    ...communesForWilayaRaw.map((c) => ({ ...c, enabled: presentCommunes.has(c.name) })),
+  ];
+  const commune = communesForWilaya.find((c) => c.id === communeId) || communesForWilaya[0];
+  const statusLabel = (status) => status.kind === "onDuty" ? t("onDutyLabel") : t(status.kind, { time: fmtHour(status.time) });
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { timeout: 8000 }
+    );
+  }, []);
+
+  useEffect(() => { setCommuneId(0); }, [wilayaId]);
+
+  useEffect(() => {
+    const list = COMMUNES_BY_WILAYA[wilaya.name] || [];
+    setFormCommune((list[0] && list[0].name) || wilaya.name);
+  }, [wilaya.name]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!db) return;
+    db.collection("pharmacies_submitted").where("wilaya", "==", wilaya.name).get()
+      .then((snap) => { if (!cancelled) setSubmittedPharmacies(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [wilaya.name]);
+
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((user) => setAdminUser(user));
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    db.collection("removed_pharmacies").get()
+      .then((snap) => { if (!cancelled) setRemovedIds(new Set(snap.docs.map((d) => (isNaN(d.id) ? d.id : Number(d.id))))); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (selected) {
+      const mine = myReviews[selected.id];
+      setDraftStars(mine ? mine.stars : 0);
+      setDraftText(mine ? mine.text : "");
+    }
+  }, [selected && selected.id]);
+
+  const selectWilaya = (w) => {
+    if (!w.enabled) { setToast(t("wilayaComingSoonToast", { name: w.name })); setTimeout(() => setToast(null), 3000); return; }
+    setWilayaId(w.id);
+  };
+
+  const selectCommune = (c) => {
+    setWilayaOpen(false);
+    if (c.id === 0) { setCommuneId(0); return; }
+    if (!c.enabled) { setToast(t("wilayaComingSoonToast", { name: c.name })); setTimeout(() => setToast(null), 3000); return; }
+    setCommuneId(c.id);
+  };
+
+  const dismissComplaints = (id, name) => {
+    setComplaints((prev) => ({ ...prev, [id]: 0 }));
+    setToast(t("dismissedToast", { name }));
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const openAdmin = () => { if (adminUser) setAdminView(true); else setShowLogin(true); };
+
+  const submitLogin = async () => {
+    setLoginError(null); setLoginLoading(true);
+    try {
+      await auth.signInWithEmailAndPassword(loginEmail.trim(), loginPassword);
+      setShowLogin(false); setAdminView(true); setLoginPassword("");
+    } catch (err) { setLoginError(t("loginError")); }
+    finally { setLoginLoading(false); }
+  };
+
+  const logoutAdmin = () => { auth.signOut(); setAdminView(false); };
+
+  const toggleFavorite = (id, name) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); setToast(t("removedFavorite", { name })); }
+      else { next.add(id); setToast(t("addedFavorite", { name })); }
+      return next;
+    });
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const submitRating = (id) => {
+    if (draftStars === 0) { setToast(t("pickStarsFirst")); setTimeout(() => setToast(null), 2500); return; }
+    setRatings((prev) => {
+      const cur = prev[id] || { sum: 0, count: 0 };
+      const already = myReviews[id];
+      const sum = already ? cur.sum - already.stars + draftStars : cur.sum + draftStars;
+      const count = already ? cur.count : cur.count + 1;
+      return { ...prev, [id]: { sum, count } };
+    });
+    setMyReviews((prev) => ({ ...prev, [id]: { stars: draftStars, text: draftText } }));
+    setToast(t("reviewSubmitted"));
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const captureFormLocation = () => {
+    if (!navigator.geolocation) { setFormLocStatus("failed"); return; }
+    setFormLocStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setFormLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setFormLocStatus("ok"); },
+      () => setFormLocStatus("failed"),
+      { timeout: 8000 }
+    );
+  };
+
+  const resetForm = () => {
+    setFormName(""); setFormArea(""); setFormAddress(""); setFormPhone("");
+    setFormOpen(8); setFormClose(21); setFormOnDuty(false);
+    setFormLoc(null); setFormLocStatus(null);
+  };
+
+  const submitNewPharmacy = async () => {
+    if (!formName.trim() || !formAddress.trim()) { setToast(t("formRequiredError")); setTimeout(() => setToast(null), 3000); return; }
+    setSubmitting(true);
+    const loc = formLoc || userLoc;
+    const payload = {
+      name: formName.trim(), area: formArea.trim(), address: formAddress.trim(),
+      phone: formPhone.trim() || null, lat: loc.lat, lng: loc.lng,
+      wilaya: wilaya.name, commune: formCommune || wilaya.name,
+      hours: { open: Number(formOpen), close: Number(formClose) },
+      onDuty: formOnDuty, verified: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
+    try {
+      const ref = await db.collection("pharmacies_submitted").add(payload);
+      setSubmittedPharmacies((prev) => [...prev, { id: ref.id, ...payload }]);
+      setToast(t("newPharmacySuccess")); resetForm(); setShowAddForm(false);
+    } catch (err) { setToast(t("newPharmacyError")); }
+    finally { setSubmitting(false); setTimeout(() => setToast(null), 3500); }
+  };
 
-    const WILAYAS = [
-      { id: 16, name: "الجزائر", enabled: true },
-      { id: 31, name: "وهران", enabled: true },
-      { id: 22, name: "سيدي بلعباس", enabled: true },
-      { id: 999, name: "🌍 OpenStreetMap", enabled: true },
-    ];
-
-    // ═══════════════════════════════════════════════════════════
-    // UTILS
-    // ═══════════════════════════════════════════════════════════
-    const COMPLAINT_THRESHOLD = 3;
-    const DEFAULT_LOC = { lat: 35.1917, lng: -0.6355 };
-
-    function useNow() {
-      const [now, setNow] = useState(() => new Date());
-      useEffect(() => {
-        const t = setInterval(() => setNow(new Date()), 30000);
-        return () => clearInterval(t);
-      }, []);
-      return now;
-    }
-
-    function computeStatus(ph, now) {
-      if (ph.onDuty) return { open: true, kind: "onDuty" };
-      const hour = now.getHours() + now.getMinutes() / 60;
-      const { open, close } = ph.hours || { open: 8, close: 21 };
-      const isOpen = close > 24 ? (hour >= open || hour < close - 24) : (hour >= open && hour < close);
-      return { open: isOpen, kind: isOpen ? "closesAt" : "opensAt", time: isOpen ? close % 24 : open };
-    }
-
-    function fmtHour(h) {
-      const hh = Math.floor(h) % 24;
-      const mm = Math.round((h - Math.floor(h)) * 60);
-      return String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
-    }
-
-    function haversine(lat1, lng1, lat2, lng2) {
-      const R = 6371;
-      const dLat = ((lat2 - lat1) * Math.PI) / 180;
-      const dLng = ((lng2 - lng1) * Math.PI) / 180;
-      const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
-    function sanitize(text, max = 100) {
-      if (!text || typeof text !== "string") return null;
-      const cleaned = text.trim().replace(/[<>\x00-\x1F\x7F]/g, "").substring(0, max);
-      return cleaned.length > 0 ? cleaned : null;
-    }
-
-    function isValidPhone(phone) {
-      if (!phone) return true;
-      return /^[+\d\s\-()]{6,20}$/.test(phone.trim());
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // API HELPERS
-    // ═══════════════════════════════════════════════════════════
-    async function searchCities(query, countryCode) {
-      if (!query.trim()) return [];
-      const cc = countryCode === "OTHER" ? "" : countryCode;
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + (cc ? ", " + cc : ""))}&format=json&addressdetails=1&limit=8&accept-language=ar,en,fr`;
-      const res = await fetch(url, { headers: { "Accept-Language": "ar,en,fr" } });
-      const data = await res.json();
-      return data
-        .filter(item => ["city", "town", "village", "municipality"].includes(item.type) || item.class === "place")
-        .map(item => ({
-          name: item.display_name.split(",")[0],
-          fullName: item.display_name,
-          lat: parseFloat(item.lat),
-          lng: parseFloat(item.lon),
-          country: item.address?.country || ""
-        }));
-    }
-
-    async function geocodeAddress(address, countryHint) {
-      const q = countryHint ? `${address}, ${countryHint}` : address;
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&addressdetails=1`);
-      const data = await res.json();
-      if (!data.length) throw new Error("Address not found");
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
-        displayName: data[0].display_name,
-        city: data[0].address?.city || data[0].address?.town || data[0].address?.village || "",
-        countryCode: (data[0].address?.country_code || "").toUpperCase()
-      };
-    }
-
-    const OVERPASS_ENDPOINTS = [
-      "https://overpass-api.de/api/interpreter",
-      "https://overpass.kumi.systems/api/interpreter",
-      "https://overpass.nchc.org.tw/api/interpreter",
-    ];
-
-    function parseOpeningHours(oh) {
-      if (!oh) return { open: 8, close: 21, onDuty: false };
-      const s = String(oh).toLowerCase().replace(/\s/g, "");
-      if (s.includes("24/7") || s === "24hours" || s.includes("mo-su00:00-24:00")) {
-        return { open: 0, close: 24, onDuty: true };
+  const removePermanently = async (id, name) => {
+    setRemovedIds((prev) => new Set(prev).add(id));
+    setToast(t("removedToast", { name }));
+    setTimeout(() => setToast(null), 3500);
+    try {
+      if (typeof id === "string") {
+        await db.collection("pharmacies_submitted").doc(id).delete();
+        setSubmittedPharmacies((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        await db.collection("removed_pharmacies").doc(String(id)).set({
+          name, removedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
       }
-      // Try to extract first time range like 08:00-22:00
-      const m = oh.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
-      if (m) {
-        const open = parseInt(m[1], 10) + parseInt(m[2], 10) / 60;
-        let close = parseInt(m[3], 10) + parseInt(m[4], 10) / 60;
-        if (close <= open) close += 24;
-        return { open, close, onDuty: false };
-      }
-      return { open: 8, close: 21, onDuty: false };
-    }
+    } catch (err) {}
+  };
 
-    function mapOSMElement(el, idx, defaultCity = "") {
-      const t = el.tags || {};
-      // Ways have center from "out center"
-      const lat = el.lat || el.center?.lat;
-      const lng = el.lon || el.center?.lon;
-      if (!lat || !lng) return null;
+  const reportPharmacy = (id, name) => {
+    if (reportedByMe.has(id)) { setToast(t("alreadyReported")); return; }
+    setComplaints((prev) => {
+      const next = { ...prev, [id]: (prev[id] || 0) + 1 };
+      setToast(next[id] === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+      return next;
+    });
+    setReportedByMe((prev) => new Set(prev).add(id));
+    setTimeout(() => setToast(null), 3500);
+  };
 
-      const rawName = t["name:ar"] || t["name:fr"] || t.name || t["brand"] || "";
-      const name = rawName
-        ? (/صيدلية|pharmacie|pharmacy|صيدليه/i.test(rawName) ? rawName : `صيدلية ${rawName}`)
-        : (defaultCity ? `صيدلية ${defaultCity}` : "صيدلية");
+  const basePharmacies = useMemo(() => {
+    const submitted = submittedPharmacies.map((p) => ({ ...p, verified: false, hours: p.hours || { open: p.formOpen ?? 8, close: p.formClose ?? 21 }, complaints: 0, ratingSum: 0, ratingCount: 0 }));
+    const merged = [...RAW_PHARMACIES, ...submitted].filter((ph) => ph.wilaya === wilaya.name);
+    if (communeId === 0) return merged;
+    return merged.filter((ph) => ph.commune === commune.name);
+  }, [submittedPharmacies, wilaya.name, communeId, commune]);
 
-      const hours = parseOpeningHours(t.opening_hours);
-      const address = [
-        t["addr:housenumber"],
-        t["addr:street"] || t["addr:place"],
-        t["addr:suburb"] || t["addr:quarter"],
-        t["addr:city"]
-      ].filter(Boolean).join(", ");
+  const allComputed = useMemo(() => {
+    return basePharmacies.filter((ph) => !removedIds.has(ph.id)).map((ph) => {
+      const status = computeStatus(ph, now);
+      const distance = haversine(userLoc.lat, userLoc.lng, ph.lat, ph.lng);
+      const complaintCount = complaints[ph.id] || 0;
+      const r = ratings[ph.id] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
+      return { ...ph, status, distance, complaintCount, underReview: complaintCount >= COMPLAINT_THRESHOLD, avgRating: r.count > 0 ? r.sum / r.count : null, ratingCount: r.count, isFavorite: favorites.has(ph.id) };
+    });
+  }, [basePharmacies, now, complaints, removedIds, ratings, favorites, userLoc]);
 
-      return {
-        id: `osm_${el.type || "n"}_${el.id}`,
-        name,
-        area: t["addr:suburb"] || t["addr:city"] || t["addr:district"] || t["addr:municipality"] || defaultCity,
-        address: address || defaultCity,
-        phone: t.phone || t["contact:phone"] || t["contact:mobile"] || t.mobile || null,
-        lat,
-        lng,
-        hours: { open: hours.open, close: hours.close },
-        onDuty: hours.onDuty,
-        wilaya: defaultCity || "OSM",
-        commune: t["addr:city"] || defaultCity,
-        verified: true,
-        fromOSM: true,
-        openingHoursRaw: t.opening_hours || null
-      };
-    }
+  const selectedLive = selected ? allComputed.find((p) => p.id === selected.id) || selected : null;
 
-    function dedupePharmacies(list) {
-      const seen = new Set();
-      return list.filter(p => {
-        if (!p) return false;
-        // Dedupe by rounded coords + name
-        const key = `${p.lat.toFixed(4)}_${p.lng.toFixed(4)}_${(p.name || "").slice(0, 20)}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    }
+  const list = useMemo(() => {
+    return allComputed.filter((ph) => (ph.name + ph.area + ph.address).toLowerCase().includes(query.toLowerCase()))
+      .filter((ph) => (filter === "open" ? ph.status.open : true))
+      .filter((ph) => (filter === "urgent" ? ph.onDuty : true))
+      .filter((ph) => (filter === "favorites" ? ph.isFavorite : true))
+      .filter((ph) => (showReview ? true : !ph.underReview))
+      .sort((a, b) => a.distance - b.distance);
+  }, [allComputed, query, filter, showReview]);
 
-    function getOSMCache(key) {
-      try {
-        const raw = localStorage.getItem("pharis_osm_" + key);
-        if (!raw) return null;
-        const { ts, data } = JSON.parse(raw);
-        if (Date.now() - ts > 3 * 60 * 60 * 1000) return null; // 3h
-        return data;
-      } catch { return null; }
-    }
-    function setOSMCache(key, data) {
-      try {
-        localStorage.setItem("pharis_osm_" + key, JSON.stringify({ ts: Date.now(), data }));
-      } catch {}
-    }
+  const reviewQueue = useMemo(() => {
+    return RAW_PHARMACIES.filter((ph) => !removedIds.has(ph.id))
+      .map((ph) => ({ ...ph, complaintCount: complaints[ph.id] || 0 }))
+      .filter((ph) => ph.complaintCount >= COMPLAINT_THRESHOLD)
+      .sort((a, b) => b.complaintCount - a.complaintCount);
+  }, [complaints, removedIds]);
 
-    async function overpassFetch(query) {
-      let lastErr;
-      for (const endpoint of OVERPASS_ENDPOINTS) {
-        try {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 22000);
-          const res = await fetch(endpoint, {
-            method: "POST",
-            body: "data=" + encodeURIComponent(query),
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            signal: controller.signal
-          });
-          clearTimeout(timer);
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const data = await res.json();
-          if (!data.elements) throw new Error("Invalid response");
-          return data;
-        } catch (e) {
-          lastErr = e;
-        }
-      }
-      throw lastErr || new Error("All Overpass endpoints failed");
-    }
-
-    // Core: fetch real pharmacies around a point (nodes + ways)
-    async function fetchOSMPharmacies(lat, lng, radius = 15000) {
-      const cacheKey = `near_${lat.toFixed(3)}_${lng.toFixed(3)}_${radius}`;
-      const cached = getOSMCache(cacheKey);
-      if (cached && cached.length > 0) return cached;
-
-      // Query both nodes and ways, with center for buildings
-      const query = `[out:json][timeout:20];
-(
-  node["amenity"="pharmacy"](around:${radius},${lat},${lng});
-  way["amenity"="pharmacy"](around:${radius},${lat},${lng});
-  node["healthcare"="pharmacy"](around:${radius},${lat},${lng});
-  way["healthcare"="pharmacy"](around:${radius},${lat},${lng});
-  node["shop"="pharmacy"](around:${radius},${lat},${lng});
-);
-out center tags;`;
-
-      const data = await overpassFetch(query);
-      const result = dedupePharmacies(
-        (data.elements || []).map((el, idx) => mapOSMElement(el, idx))
-      );
-      if (result.length > 0) setOSMCache(cacheKey, result);
-      return result;
-    }
-
-    // Fetch by city name — uses coordinates when available (fast path)
-    async function fetchOSMByCity(cityName, lat, lng) {
-      const cacheKey = "city_" + String(cityName).toLowerCase().replace(/\s+/g, "_").slice(0, 50);
-      const cached = getOSMCache(cacheKey);
-      if (cached && cached.length > 0) return cached;
-
-      let cityLat = lat;
-      let cityLng = lng;
-      let displayCity = cityName;
-
-      if (!cityLat || !cityLng) {
-        const geoRes = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`,
-          { headers: { "Accept-Language": "ar,en,fr" } }
-        );
-        const geoData = await geoRes.json();
-        if (!geoData.length) throw new Error("City not found");
-        cityLat = parseFloat(geoData[0].lat);
-        cityLng = parseFloat(geoData[0].lon);
-        displayCity = geoData[0].display_name.split(",")[0];
-      }
-
-      // Try increasing radius if few results (city centers vs suburbs)
-      let result = [];
-      for (const radius of [12000, 20000, 30000]) {
-        result = await fetchOSMPharmacies(cityLat, cityLng, radius);
-        if (result.length >= 5) break;
-      }
-
-      const tagged = result.map(p => ({
-        ...p,
-        wilaya: displayCity,
-        commune: p.commune || displayCity,
-        area: p.area || displayCity
-      }));
-      if (tagged.length > 0) setOSMCache(cacheKey, tagged);
-      return tagged;
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // COMPONENTS
-    // ═══════════════════════════════════════════════════════════
-    function Toast({ message, onClose }) {
-      useEffect(() => {
-        const t = setTimeout(onClose, 3200);
-        return () => clearTimeout(t);
-      }, [onClose]);
-      return (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-brand-950 text-brand-50 text-sm px-5 py-2.5 rounded-full shadow-xl max-w-[90%] text-center animate-fade-in">
-          {message}
-        </div>
-      );
-    }
-
-    function StatusDot({ open }) {
-      return (
-        <span className={`relative flex h-2.5 w-2.5 flex-shrink-0`}>
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-40 ${open ? "bg-emerald-400" : "bg-rose-400"}`} />
-          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${open ? "bg-emerald-500" : "bg-rose-500"}`} />
-        </span>
-      );
-    }
-
-    const sourceBadge = (ph, t) => {
-      if (ph.fromOSM) return { label: t("sourceOSM"), cls: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300" };
-      if (ph.verified === false) return { label: t("sourceUser"), cls: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300" };
-      return { label: t("sourceLocal"), cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" };
-    };
-
-    const PharmacyCard = memo(function PharmacyCard({ ph, lang, t, onSelect, onToggleFav, onReport }) {
-      const src = sourceBadge(ph, t);
-      return (
-        <div className={`bg-white dark:bg-brand-900 rounded-2xl p-4 shadow-sm border transition hover:shadow-md ${ph.underReview ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20" : "border-stone-100 dark:border-brand-800"}`}>
-          {ph.underReview && (
-            <div className="flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 mb-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-lg px-2.5 py-1.5">
-              <Icons.Alert className="w-3.5 h-3.5 flex-shrink-0" />
-              {t("underReviewBanner", { n: ph.complaintCount })}
+  const reviewCount = Object.values(complaints).filter((c) => c >= COMPLAINT_THRESHOLD).length;
+  const openCount = list.filter((p) => p.status.open).length;
+  const localeMap = { ar: "ar-DZ", fr: "fr-DZ", en: "en-GB" };
+  const timeStr = now.toLocaleTimeString(localeMap[lang], { hour: "2-digit", minute: "2-digit" });
+  return (
+    <div dir={dir} className="min-h-screen bg-emerald-50 text-stone-900" style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', 'IBM Plex Sans Arabic', sans-serif" }}>
+      <header className="sticky top-0 z-20 bg-emerald-950 text-emerald-50 px-5 pt-4 pb-5 rounded-b-2xl shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md bg-emerald-700 flex items-center justify-center flex-shrink-0 shadow-md">
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z" fill="#F0F4F1" /></svg>
             </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-emerald-400 leading-tight" dir="ltr">Pharis</h1>
+              <p className="text-xs text-emerald-300">{commune.name}</p>
+            </div>
+          </div>
+          <div className="text-left flex items-center gap-1.5">
+            <button onClick={openAdmin} className="mono text-emerald-400 text-[10px] border border-emerald-800 rounded-md px-2 py-1 hover:bg-emerald-900 transition">{t("dashboard")}</button>
+            <div className="mono text-emerald-400 text-xs border border-emerald-800 rounded-md px-2 py-1">{timeStr}</div>
+          </div>
+        </div>
+
+        <button onClick={() => setWilayaOpen((s) => !s)} className={`mt-3 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 border transition ${wilayaOpen ? "bg-emerald-500 border-emerald-400 text-emerald-950" : "bg-emerald-900 border-emerald-700 text-emerald-100 hover:bg-emerald-800"}`}>
+          <span className="flex items-center gap-2 text-sm font-medium"><MapPin className="w-4 h-4" />{t("tagline", { wilaya: commune.name })}</span>
+          <span className={`text-xs font-semibold underline ${wilayaOpen ? "text-emerald-950" : "text-emerald-300"}`}>{t("changeWilaya")}</span>
+        </button>
+
+        <div className="flex items-center gap-2 mt-2">
+          <button onClick={() => setDarkMode(d => !d)} className="w-8 h-8 rounded-full bg-emerald-900 text-emerald-200 flex items-center justify-center text-lg flex-shrink-0">{darkMode ? "☀️" : "🌙"}</button>
+          <div className="flex gap-1.5 flex-1">
+          {[{ code: "ar", label: "العربية" }, { code: "fr", label: "Français" }, { code: "en", label: "English" }].map((l) => (
+            <button key={l.code} onClick={() => setLang(l.code)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${lang === l.code ? "bg-emerald-400 text-emerald-950" : "bg-emerald-900 text-emerald-300"}`}>{l.label}</button>
+          ))}
+          </div>
+        </div>
+
+        {wilayaOpen && (
+          <div className="mt-3 bg-emerald-950 rounded-2xl p-3 max-h-80 overflow-y-auto border border-emerald-800 space-y-3">
+            <div>
+              <p className="text-xs text-emerald-300 px-1 pb-2">{t("wilayaLabel")}</p>
+              <div className="grid grid-cols-2 gap-1">
+                {WILAYAS.map((w) => (
+                  <button key={w.id} onClick={() => selectWilaya(w)} className={`text-right text-xs px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-1 transition ${w.id === wilayaId ? "bg-emerald-500 text-emerald-950 font-medium" : w.enabled ? "text-emerald-200 hover:bg-emerald-900" : "text-emerald-600"}`}>
+                    <span className="truncate">{w.name}</span>
+                    {!w.enabled && <span className="text-[9px] flex-shrink-0 opacity-70">{t("comingSoon")}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-emerald-800">
+              <p className="text-xs text-emerald-300 px-1 pb-2">{t("communeLabel")}</p>
+              <div className="grid grid-cols-2 gap-1">
+                {communesForWilaya.map((c) => (
+                  <button key={c.id} onClick={() => selectCommune(c)} className={`text-right text-xs px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-1 transition ${c.id === communeId ? "bg-emerald-500 text-emerald-950 font-medium" : c.enabled ? "text-emerald-200 hover:bg-emerald-900" : "text-emerald-600"}`}>
+                    <span className="truncate">{c.label || c.name}</span>
+                    {!c.enabled && <span className="text-[9px] flex-shrink-0 opacity-70">{t("comingSoon")}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3 flex items-baseline gap-2">
+          <span className="text-3xl font-bold mono text-emerald-400">{openCount}</span>
+          <span className="text-xs text-emerald-200">{t("openStat", { total: list.length })}</span>
+        </div>
+
+        <div className="mt-3 relative">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchPlaceholder")} className="w-full bg-emerald-900 placeholder-stone-500 text-emerald-50 rounded-xl pr-10 pl-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition" />
+        </div>
+
+        <div className="flex gap-2 mt-2 flex-wrap">
+          <button onClick={() => setFilter("all")} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filter === "all" ? "bg-emerald-500 text-emerald-950" : "bg-emerald-900 text-emerald-200"}`}>{t("filterAll")}</button>
+          <button onClick={() => setFilter("urgent")} className={`px-3 py-1 rounded-full text-xs font-bold transition ${filter === "urgent" ? "bg-rose-500 text-white" : "bg-rose-950 text-rose-300"}`}>{t("filterUrgent")}</button>
+          <button onClick={() => setFilter("open")} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filter === "open" ? "bg-emerald-500 text-emerald-950" : "bg-emerald-900 text-emerald-200"}`}>{t("filterOpen")}</button>
+          <button onClick={() => setFilter("favorites")} className={`px-3 py-1 rounded-full text-xs font-medium transition flex items-center gap-1 ${filter === "favorites" ? "bg-emerald-500 text-emerald-950" : "bg-emerald-900 text-emerald-200"}`}><Heart className="w-3 h-3" fill={filter === "favorites" ? "currentColor" : "none"} />{t("filterFavorites")}</button>
+          {reviewCount > 0 && (
+            <button onClick={() => setShowReview((s) => !s)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition flex items-center gap-1 ${showReview ? "bg-rose-500 text-white" : "bg-emerald-900 text-rose-300"}`}><AlertTriangle className="w-3 h-3" />{t("reviewBtn", { n: reviewCount })}</button>
           )}
-          <div className="flex items-center gap-3">
-            <button onClick={() => onSelect(ph)} className="flex-1 min-w-0 text-start flex items-center gap-3">
-              <StatusDot open={ph.status.open} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-semibold text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
-                    {ph.name}
-                  </h3>
-                  <span className="font-mono text-xs text-stone-400 flex-shrink-0">
-                    {ph.distance.toFixed(1)} {t("kmAway")}
-                  </span>
-                </div>
-                <p className="text-xs text-stone-500 dark:text-brand-300 mt-0.5 truncate">{ph.area}{ph.address ? ` · ${ph.address}` : ""}</p>
-                <div className="flex items-center justify-between mt-1.5 gap-2">
-                  <p className={`text-xs font-medium ${ph.status.open ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
-                    {ph.status.open ? t("openNow") : t("closedNow")}
-                    {ph.status.kind !== "onDuty" && ` · ${t(ph.status.kind, { time: fmtHour(ph.status.time) })}`}
-                    {ph.status.kind === "onDuty" && ` · ${t("onDutyLabel")}`}
-                  </p>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <span className={`text-[9px] font-medium rounded-full px-1.5 py-0.5 ${src.cls}`}>{src.label}</span>
-                    {ph.avgRating !== null && (
-                      <span className="flex items-center gap-0.5 text-xs text-amber-500">
-                        <Icons.Star className="w-3 h-3" fill="currentColor" />
-                        {ph.avgRating.toFixed(1)}
-                      </span>
-                    )}
+          <button onClick={() => setShowAddForm(true)} className="mr-auto px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-400 text-emerald-950 flex items-center gap-1">+ {t("addPharmacyBtn")}</button>
+        </div>
+      </header>
+
+      {toast && <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 bg-emerald-950 text-emerald-50 text-sm px-4 py-2.5 rounded-full shadow-lg max-w-[90%] text-center">{toast}</div>}
+
+      <main className="px-5 py-5 space-y-3 max-w-md mx-auto">
+        {list.length === 0 && <p className="text-center text-stone-500 mt-10">{filter === "favorites" ? t("noFavorites") : t("noResults")}</p>}
+        {list.map((ph) => (
+          <div key={ph.id} className={`w-full bg-white rounded-2xl p-4 shadow-sm border transition ${ph.underReview ? "border-rose-300 bg-rose-50" : "border-stone-200 hover:shadow-md"}`}>
+            {ph.underReview && (
+              <div className="flex items-center gap-1.5 text-xs font-medium text-rose-500 mb-2 bg-rose-50 rounded-lg px-2.5 py-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />{t("underReviewBanner", { n: ph.complaintCount })}
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSelected(ph)} className="flex-1 min-w-0 text-right flex items-center gap-3">
+                <div className={`relative w-3 h-3 rounded-full pulse-dot flex-shrink-0 ${ph.status.open ? "text-emerald-500 bg-emerald-500" : "text-rose-500 bg-rose-500"}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-stone-900 truncate flex items-center gap-1.5">
+                      {ph.name}
+                      {ph.verified === false && (<span className="text-[9px] font-medium bg-amber-100 text-amber-700 rounded-full px-1.5 py-0.5 flex-shrink-0">{t("unverifiedBadge")}</span>)}
+                    </h3>
+                    <span className="mono text-xs text-stone-500 flex-shrink-0 mr-2">{ph.distance.toFixed(1)} {lang === "ar" ? "كم" : "km"}</span>
+                  </div>
+                  <p className="text-xs text-stone-500 mt-0.5">{ph.area} · {ph.address}</p>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className={`text-xs font-medium ${ph.status.open ? "text-emerald-700" : "text-rose-500"}`}>{ph.status.open ? t("openNow") : t("closedNow")} · {statusLabel(ph.status)}</p>
+                    {ph.avgRating !== null && (<span className="flex items-center gap-0.5 text-xs text-amber-600 flex-shrink-0 mr-2"><Star className="w-3 h-3" fill="currentColor" />{ph.avgRating.toFixed(1)}</span>)}
                   </div>
                 </div>
+              </button>
+              <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                <button onClick={() => toggleFavorite(ph.id, ph.name)} className={`p-2 rounded-full transition ${ph.isFavorite ? "text-rose-500" : "text-stone-400 hover:bg-rose-50 hover:text-rose-500"}`}><Heart className="w-4 h-4" fill={ph.isFavorite ? "currentColor" : "none"} /></button>
+                <button onClick={() => reportPharmacy(ph.id, ph.name)} className="p-2 rounded-full text-stone-400 hover:bg-rose-50 hover:text-rose-500 transition"><Flag className="w-4 h-4" /></button>
               </div>
-            </button>
-            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-              <button onClick={() => onToggleFav(ph.id, ph.name)} className={`p-2 rounded-full transition ${ph.isFavorite ? "text-rose-500" : "text-stone-300 dark:text-brand-600 hover:text-rose-400"}`}>
-                <Icons.Heart className="w-4 h-4" fill={ph.isFavorite ? "currentColor" : "none"} />
-              </button>
-              <button onClick={() => onReport(ph.id, ph.name)} className="p-2 rounded-full text-stone-300 dark:text-brand-600 hover:text-rose-400 transition">
-                <Icons.Flag className="w-4 h-4" />
-              </button>
+            </div>
+          </div>
+        ))}
+      </main>
+
+      {selected && (
+        <div className="fixed inset-0 bg-black/60 flex items-end z-30" onClick={() => setSelected(null)}>
+          <div className="bg-white w-full rounded-t-3xl p-6 max-w-md mx-auto sheet-anim" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2">{selectedLive.name}{selectedLive.verified === false && (<span className="text-[10px] font-medium bg-amber-100 text-amber-700 rounded-full px-2 py-0.5">{t("unverifiedBadge")}</span>)}</h2>
+                <p className="text-sm text-stone-500 mt-0.5">{selectedLive.area}</p>
+                {selectedLive.verified === false && (<p className="text-xs text-amber-600 mt-1">{t("unverifiedNote")}</p>)}
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => toggleFavorite(selectedLive.id, selectedLive.name)} className={selectedLive.isFavorite ? "text-rose-500 p-1" : "text-stone-400 p-1"}><Heart className="w-5 h-5" fill={selectedLive.isFavorite ? "currentColor" : "none"} /></button>
+                <button onClick={() => setSelected(null)} className="text-stone-500 p-1"><X className="w-5 h-5" /></button>
+              </div>
+            </div>
+            <div className={`inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-sm font-medium ${selectedLive.status.open ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-500"}`}><span className={`w-2 h-2 rounded-full ${selectedLive.status.open ? "bg-emerald-500" : "bg-rose-500"}`} />{selectedLive.status.open ? t("openNow") : t("closedNowFull")}</div>
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="flex items-center gap-2 text-stone-900"><MapPin className="w-4 h-4 text-stone-500" />{selectedLive.address}</div>
+              <div className="flex items-center gap-2 text-stone-900 mono"><Navigation className="w-4 h-4 text-stone-500" />{selectedLive.distance.toFixed(1)} {lang === "ar" ? "كم عنك" : "km away"}</div>
+              <div className="flex items-center gap-2 text-stone-900"><Clock className="w-4 h-4 text-stone-500" />{statusLabel(selectedLive.status)}</div>
+              {selectedLive.phone && (<div className="flex items-center gap-2 text-stone-900 mono"><Phone className="w-4 h-4 text-stone-500" /><span dir="ltr">{selectedLive.phone}</span></div>)}
+            </div>
+            {selectedLive.underReview && (<div className="flex items-start gap-2 text-xs text-rose-500 mt-4 bg-rose-50 rounded-lg px-3 py-2.5"><AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />{t("underReviewDetail", { n: selectedLive.complaintCount })}</div>)}
+            <div className="mt-5 pt-4 border-t border-stone-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-stone-900">{t("reviewsTitle")}</h3>
+                {selectedLive.avgRating !== null ? (<span className="flex items-center gap-1 text-sm text-amber-600"><Star className="w-4 h-4" fill="currentColor" />{selectedLive.avgRating.toFixed(1)}<span className="text-stone-400 text-xs">{t("ratingsCount", { n: selectedLive.ratingCount })}</span></span>) : <span className="text-xs text-stone-400">{t("noRatingsYet")}</span>}
+              </div>
+              <p className="text-xs text-stone-500 mt-3 mb-1.5">{t("yourRating")}</p>
+              <div className="flex items-center gap-1">{[1,2,3,4,5].map((n) => (<button key={n} onClick={() => setDraftStars(n)} className="p-0.5"><Star className={`w-6 h-6 ${n <= draftStars ? "text-amber-500" : "text-stone-200"}`} fill={n <= draftStars ? "currentColor" : "none"} /></button>))}</div>
+              <textarea value={draftText} onChange={(e) => setDraftText(e.target.value)} placeholder={t("reviewPlaceholder")} rows={2} className="w-full mt-2 text-sm bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 transition resize-none" />
+              <button onClick={() => submitRating(selectedLive.id)} className="mt-2 w-full bg-emerald-700 text-emerald-50 rounded-xl py-2 text-sm font-medium">{t("submitReview")}</button>
+            </div>
+            <div className="flex gap-2 mt-5">
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${selectedLive.lat},${selectedLive.lng}`} target="_blank" rel="noopener noreferrer" className="flex-1 bg-emerald-950 text-emerald-50 rounded-xl py-3 font-medium text-center">{t("directions")}</a>
+              <button onClick={() => reportPharmacy(selectedLive.id, selectedLive.name)} className="px-4 rounded-xl border border-stone-200 text-rose-500 flex items-center justify-center"><Flag className="w-4 h-4" /></button>
             </div>
           </div>
         </div>
-      );
-    });
+      )}
 
-    function MapView({ pharmacies, userLoc, lang, onSelect }) {
-      const mapRef = useRef(null);
-      const mapInstance = useRef(null);
-
-      useEffect(() => {
-        if (!mapRef.current || mapInstance.current) return;
-        const map = L.map(mapRef.current, { zoomControl: false }).setView([userLoc.lat, userLoc.lng], 13);
-        L.control.zoom({ position: "bottomright" }).addTo(map);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "© OpenStreetMap"
-        }).addTo(map);
-
-        L.circleMarker([userLoc.lat, userLoc.lng], {
-          radius: 9, fillColor: "#3b82f6", color: "#fff", weight: 2.5, fillOpacity: 0.95
-        }).addTo(map).bindPopup(lang === "ar" ? "📍 أنت هنا" : lang === "fr" ? "📍 Vous êtes ici" : "📍 You are here");
-
-        const markers = [];
-        pharmacies.forEach(ph => {
-          const color = ph.status.open ? "#059669" : "#dc2626";
-          const m = L.circleMarker([ph.lat, ph.lng], {
-            radius: 11, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
-          }).addTo(map);
-          m.bindPopup(`<div style="font-family:sans-serif;text-align:${lang==="ar"?"right":"left"};direction:${lang==="ar"?"rtl":"ltr"};min-width:180px;padding:2px">
-            <b style="color:#064e3b">${ph.name}</b><br/>
-            <span style="font-size:12px;color:#666">${ph.area}</span><br/>
-            <span style="font-size:12px;font-weight:600;color:${ph.status.open?"#059669":"#dc2626"}">${ph.status.open ? "🟢 Open" : "🔴 Closed"}</span>
-          </div>`);
-          m.on("click", () => onSelect && onSelect(ph));
-          markers.push(m);
-        });
-
-        if (markers.length) {
-          const group = L.featureGroup(markers);
-          map.fitBounds(group.getBounds().pad(0.12));
-        }
-        mapInstance.current = map;
-        return () => {
-          map.remove();
-          mapInstance.current = null;
-        };
-      }, []);
-
-      return <div ref={mapRef} className="w-full h-full min-h-[50vh] rounded-2xl" />;
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // MAIN APP
-    // ═══════════════════════════════════════════════════════════
-    function PharisApp() {
-      const now = useNow();
-      const [lang, setLang] = useState(() => {
-        try {
-          const s = localStorage.getItem("pharis_lang");
-          if (s && ["ar", "fr", "en"].includes(s)) return s;
-        } catch {}
-        const b = (navigator.language || "ar").slice(0, 2);
-        return ["ar", "fr", "en"].includes(b) ? b : "ar";
-      });
-      const [dark, setDark] = useState(() => {
-        try {
-          const s = localStorage.getItem("pharis_dark");
-          if (s === "1") return true;
-          if (s === "0") return false;
-        } catch {}
-        return window.matchMedia("(prefers-color-scheme: dark)").matches;
-      });
-      const [showOnboarding, setShowOnboarding] = useState(() => {
-        try { return !localStorage.getItem("pharis_onboarded"); } catch { return true; }
-      });
-      const [query, setQuery] = useState("");
-      const [filter, setFilter] = useState("all");
-      const [selected, setSelected] = useState(null);
-      const [toast, setToast] = useState(null);
-      const [showMap, setShowMap] = useState(false);
-      const [emergencyMode, setEmergencyMode] = useState(() => {
-        const h = new Date().getHours();
-        return h >= 20 || h < 8; // night → emergency by default
-      });
-      const [showLocationPicker, setShowLocationPicker] = useState(false);
-      const [statusConfirms, setStatusConfirms] = useState(() => {
-        try { return JSON.parse(localStorage.getItem("pharis_confirms") || "{}"); } catch { return {}; }
-      });
-      const [canInstall, setCanInstall] = useState(false);
-      const [offline, setOffline] = useState(!navigator.onLine);
-      const [showAddForm, setShowAddForm] = useState(false);
-      const [showLogin, setShowLogin] = useState(false);
-      const [adminView, setAdminView] = useState(false);
-      const [adminTab, setAdminTab] = useState("review");
-
-      // Location & data
-      const [countryId, setCountryId] = useState("DZ");
-      const [wilayaId, setWilayaId] = useState(22);
-      const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
-      const [locating, setLocating] = useState(true);
-      const [geoError, setGeoError] = useState(null);
-      const [osmPharmacies, setOsmPharmacies] = useState([]);
-      const [loadingOSM, setLoadingOSM] = useState(false);
-      const [submitted, setSubmitted] = useState([]);
-      const [removedIds, setRemovedIds] = useState(new Set());
-      const [complaints, setComplaints] = useState({});
-      const [reportedByMe, setReportedByMe] = useState(new Set());
-      const [favorites, setFavorites] = useState(() => {
-        try {
-          const arr = JSON.parse(localStorage.getItem("pharis_favorites") || "[]");
-          return new Set(arr);
-        } catch { return new Set(); }
-      });
-      const [ratings, setRatings] = useState(() => {
-        try { return JSON.parse(localStorage.getItem("pharis_ratings") || "{}"); } catch { return {}; }
-      });
-      const [myReviews, setMyReviews] = useState(() => {
-        try { return JSON.parse(localStorage.getItem("pharis_my_reviews") || "{}"); } catch { return {}; }
-      });
-      const [draftStars, setDraftStars] = useState(0);
-      const [draftText, setDraftText] = useState("");
-
-      // City search
-      const [citySearch, setCitySearch] = useState("");
-      const [cityResults, setCityResults] = useState([]);
-      const [loadingCities, setLoadingCities] = useState(false);
-      const [showCityList, setShowCityList] = useState(false);
-      const [currentPlace, setCurrentPlace] = useState("سيدي بلعباس");
-
-      // Admin
-      const [adminUser, setAdminUser] = useState(null);
-      const [loginEmail, setLoginEmail] = useState("");
-      const [loginPassword, setLoginPassword] = useState("");
-      const [loginError, setLoginError] = useState(null);
-      const [loginLoading, setLoginLoading] = useState(false);
-
-      // Add form
-      const [form, setForm] = useState({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "" });
-      const [formLoc, setFormLoc] = useState(null);
-      const [formLocStatus, setFormLocStatus] = useState(null);
-      const [submitting, setSubmitting] = useState(false);
-      const [lastSubmit, setLastSubmit] = useState(0);
-
-      const t = useCallback((key, vars) => tr(lang, key, vars), [lang]);
-      const dir = lang === "ar" ? "rtl" : "ltr";
-
-      // Dark mode + persist prefs
-      useEffect(() => {
-        document.documentElement.classList.toggle("dark", dark);
-        try { localStorage.setItem("pharis_dark", dark ? "1" : "0"); } catch {}
-      }, [dark]);
-      useEffect(() => {
-        try { localStorage.setItem("pharis_lang", lang); } catch {}
-        document.documentElement.lang = lang;
-        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-      }, [lang]);
-
-      // Geolocation
-      useEffect(() => {
-        if (!navigator.geolocation) {
-          setLocating(false);
-          setGeoError("unsupported");
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setUserLoc({ lat, lng });
-            try {
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${lang}`);
-              const data = await res.json();
-              const addr = data.address || {};
-              const state = addr.state || addr.city || "";
-              const match = WILAYAS.find(w => w.enabled && w.id !== 999 && (state.includes(w.name) || w.name.includes(state)));
-              if (match) {
-                setWilayaId(match.id);
-                setCurrentPlace(match.name);
-              } else {
-                // Outside local data cities → load real OSM pharmacies near user
-                const place = addr.city || addr.town || addr.village || addr.state || "";
-                if (place) setCurrentPlace(place);
-                try {
-                  setLoadingOSM(true);
-                  const data = await fetchOSMPharmacies(lat, lng, 15000);
-                  if (data.length > 0) {
-                    setOsmPharmacies(data);
-                    setWilayaId(999);
-                    setCurrentPlace(place || (lang === "ar" ? "قريب منك" : "Near you"));
-                  }
-                } catch (e) {
-                  console.error(e);
-                } finally {
-                  setLoadingOSM(false);
-                }
-              }
-            } catch {}
-            setLocating(false);
-          },
-          () => { setGeoError("denied"); setLocating(false); },
-          { timeout: 12000, enableHighAccuracy: true }
-        );
-      }, []);
-
-
-      // PWA install + offline
-      useEffect(() => {
-        const onInstallable = () => setCanInstall(!!window.__pharisInstallPrompt);
-        const onOnline = () => setOffline(false);
-        const onOffline = () => setOffline(true);
-        window.addEventListener("pharis-installable", onInstallable);
-        window.addEventListener("online", onOnline);
-        window.addEventListener("offline", onOffline);
-        if (window.__pharisInstallPrompt) setCanInstall(true);
-        return () => {
-          window.removeEventListener("pharis-installable", onInstallable);
-          window.removeEventListener("online", onOnline);
-          window.removeEventListener("offline", onOffline);
-        };
-      }, []);
-
-      // Auth
-      useEffect(() => {
-        const unsub = auth.onAuthStateChanged(u => setAdminUser(u));
-        return unsub;
-      }, []);
-
-      // Load submitted + removed
-      useEffect(() => {
-        if (!db) return;
-        const place = WILAYAS.find(w => w.id === wilayaId)?.name;
-        if (place && place !== "🌍 OpenStreetMap") {
-          db.collection("pharmacies_submitted").where("wilaya", "==", place).get()
-            .then(snap => setSubmitted(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
-            .catch(() => {});
-        }
-        db.collection("removed_pharmacies").get()
-          .then(snap => setRemovedIds(new Set(snap.docs.map(d => isNaN(d.id) ? d.id : Number(d.id)))))
-          .catch(() => {});
-      }, [wilayaId]);
-
-      // Sync selected review draft
-      useEffect(() => {
-        if (selected) {
-          const mine = myReviews[selected.id];
-          setDraftStars(mine?.stars || 0);
-          setDraftText(mine?.text || "");
-        }
-      }, [selected?.id]);
-
-      // Computed list
-      const baseList = useMemo(() => {
-        const local = RAW.filter(p => {
-          if (wilayaId === 999) return false;
-          const w = WILAYAS.find(x => x.id === wilayaId);
-          return w && p.wilaya === w.name;
-        });
-        const submittedMapped = submitted.map(p => ({
-          ...p,
-          verified: false,
-          hours: p.hours || { open: 8, close: 21 },
-          complaints: 0,
-          ratingSum: 0,
-          ratingCount: 0
-        }));
-        return [...local, ...submittedMapped, ...osmPharmacies];
-      }, [wilayaId, submitted, osmPharmacies]);
-
-      const allComputed = useMemo(() => {
-        return baseList
-          .filter(ph => !removedIds.has(ph.id))
-          .map(ph => {
-            const status = computeStatus(ph, now);
-            const distance = haversine(userLoc.lat, userLoc.lng, ph.lat, ph.lng);
-            const complaintCount = complaints[ph.id] || 0;
-            const r = ratings[ph.id] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
-            return {
-              ...ph,
-              status,
-              distance,
-              complaintCount,
-              underReview: complaintCount >= COMPLAINT_THRESHOLD,
-              avgRating: r.count > 0 ? r.sum / r.count : null,
-              ratingCount: r.count,
-              isFavorite: favorites.has(ph.id)
-            };
-          });
-      }, [baseList, now, complaints, removedIds, ratings, favorites, userLoc]);
-
-      const list = useMemo(() => {
-        return allComputed
-          .filter(ph => (ph.name + " " + (ph.area || "") + " " + (ph.address || "")).toLowerCase().includes(query.toLowerCase()))
-          .filter(ph => filter === "open" ? ph.status.open : true)
-          .filter(ph => filter === "urgent" ? ph.onDuty : true)
-          .filter(ph => filter === "favorites" ? ph.isFavorite : true)
-          .filter(ph => filter === "late" ? (ph.status.open && (ph.hours?.close > 22 || ph.onDuty)) : true)
-          .sort((a, b) => a.distance - b.distance);
-      }, [allComputed, query, filter]);
-
-      const openCount = list.filter(p => p.status.open).length;
-
-      // Emergency: top open pharmacies by distance (max 8)
-      const emergencyList = useMemo(() => {
-        return allComputed
-          .filter(ph => ph.status.open)
-          .sort((a, b) => {
-            // 24h first, then by distance
-            if (a.onDuty !== b.onDuty) return a.onDuty ? -1 : 1;
-            return a.distance - b.distance;
-          })
-          .slice(0, 8);
-      }, [allComputed]);
-
-      const reviewQueue = useMemo(() => {
-        return RAW
-          .filter(ph => !removedIds.has(ph.id))
-          .map(ph => ({ ...ph, complaintCount: complaints[ph.id] || 0 }))
-          .filter(ph => ph.complaintCount >= COMPLAINT_THRESHOLD)
-          .sort((a, b) => b.complaintCount - a.complaintCount);
-      }, [complaints, removedIds]);
-
-      const selectedLive = selected ? allComputed.find(p => p.id === selected.id) || selected : null;
-      const timeStr = now.toLocaleTimeString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB", { hour: "2-digit", minute: "2-digit" });
-
-      // Actions
-      const showToast = (msg) => setToast(msg);
-
-      const handleInstall = async () => {
-        const prompt = window.__pharisInstallPrompt;
-        if (!prompt) return;
-        prompt.prompt();
-        const result = await prompt.userChoice;
-        if (result.outcome === "accepted") setCanInstall(false);
-        window.__pharisInstallPrompt = null;
-      };
-
-      const shareApp = async () => {
-        const data = {
-          title: "Pharis",
-          text: lang === "ar"
-            ? "Pharis — اعثر على صيدلية مفتوحة بالقرب منك في ثوانٍ"
-            : lang === "fr"
-            ? "Pharis — trouvez une pharmacie ouverte près de vous en quelques secondes"
-            : "Pharis — find an open pharmacy near you in seconds",
-          url: window.location.href.split("#")[0]
-        };
-        try {
-          if (navigator.share) await navigator.share(data);
-          else {
-            await navigator.clipboard.writeText(data.url);
-            showToast(lang === "ar" ? "تم نسخ الرابط" : lang === "fr" ? "Lien copié" : "Link copied");
-          }
-        } catch {}
-      };
-
-      const finishOnboarding = () => {
-        try { localStorage.setItem("pharis_onboarded", "1"); } catch {}
-        setShowOnboarding(false);
-      };
-
-      const toggleFavorite = (id, name) => {
-        setFavorites(prev => {
-          const next = new Set(prev);
-          if (next.has(id)) {
-            next.delete(id);
-            showToast(t("removedFavorite", { name }));
-          } else {
-            next.add(id);
-            showToast(t("addedFavorite", { name }));
-          }
-          try { localStorage.setItem("pharis_favorites", JSON.stringify([...next])); } catch {}
-          return next;
-        });
-      };
-
-      const confirmStatus = (id, isOpen) => {
-        setStatusConfirms(prev => {
-          const cur = prev[id] || { open: 0, closed: 0 };
-          const next = {
-            ...prev,
-            [id]: isOpen
-              ? { open: cur.open + 1, closed: cur.closed }
-              : { open: cur.open, closed: cur.closed + 1 }
-          };
-          try { localStorage.setItem("pharis_confirms", JSON.stringify(next)); } catch {}
-          return next;
-        });
-        showToast(t("thanksConfirm"));
-      };
-
-      const reportPharmacy = (id, name) => {
-        if (reportedByMe.has(id)) {
-          showToast(t("alreadyReported"));
-          return;
-        }
-        setComplaints(prev => {
-          const next = { ...prev, [id]: (prev[id] || 0) + 1 };
-          showToast(next[id] === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
-          return next;
-        });
-        setReportedByMe(prev => new Set(prev).add(id));
-      };
-
-      const submitRating = (id) => {
-        if (draftStars === 0) {
-          showToast(t("pickStarsFirst"));
-          return;
-        }
-        setRatings(prev => {
-          const cur = prev[id] || { sum: 0, count: 0 };
-          const already = myReviews[id];
-          const sum = already ? cur.sum - already.stars + draftStars : cur.sum + draftStars;
-          const count = already ? cur.count : cur.count + 1;
-          const next = { ...prev, [id]: { sum, count } };
-          try { localStorage.setItem("pharis_ratings", JSON.stringify(next)); } catch {}
-          return next;
-        });
-        setMyReviews(prev => {
-          const next = { ...prev, [id]: { stars: draftStars, text: draftText } };
-          try { localStorage.setItem("pharis_my_reviews", JSON.stringify(next)); } catch {}
-          return next;
-        });
-        showToast(t("reviewSubmitted"));
-      };
-
-      const loadOSMNearMe = async () => {
-        setLoadingOSM(true);
-        showToast(lang === "ar" ? "⏳ جاري البحث عن صيدليات قريبة..." : lang === "fr" ? "⏳ Recherche de pharmacies proches..." : "⏳ Searching nearby pharmacies...");
-        try {
-          let data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng, 15000);
-          if (data.length < 3) {
-            data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng, 30000);
-          }
-          setOsmPharmacies(data);
-          setWilayaId(999);
-          setCurrentPlace(lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you");
-          if (data.length === 0) {
-            showToast(lang === "ar" ? "⚠️ لا توجد صيدليات قريبة في بيانات الخريطة" : lang === "fr" ? "⚠️ Aucune pharmacie proche" : "⚠️ No nearby pharmacies");
-          } else {
-            showToast(t("pharmaciesFound", { n: data.length, name: lang === "ar" ? "قربك" : "nearby" }));
-          }
-        } catch (err) {
-          console.error("OSM near error:", err);
-          showToast(t("loadFailed"));
-        } finally {
-          setLoadingOSM(false);
-        }
-      };
-
-      const selectCountry = (c) => {
-        setCountryId(c.id);
-        setCitySearch("");
-        setCityResults([]);
-        setShowCityList(true);
-        // For Algeria, don't clear pharmacies yet — wait for city/wilaya
-        if (c.id !== "DZ") {
-          setOsmPharmacies([]);
-          setWilayaId(999);
-        }
-      };
-
-      const searchCityAndLoad = async () => {
-        if (!citySearch.trim()) return;
-        setLoadingCities(true);
-        try {
-          const results = await searchCities(citySearch, countryId);
-          setCityResults(results);
-          setShowCityList(true);
-        } catch {
-          setCityResults([]);
-        } finally {
-          setLoadingCities(false);
-        }
-      };
-
-      const selectCity = async (city) => {
-        setCityResults([]);
-        setShowCityList(false);
-        setCitySearch(city.name);
-        setUserLoc({ lat: city.lat, lng: city.lng });
-        setCurrentPlace(city.name);
-
-        // Algeria with local data
-        if (countryId === "DZ" && city.wilayaId) {
-          setWilayaId(city.wilayaId);
-          setOsmPharmacies([]);
-          setShowLocationPicker(false);
-          const count = RAW.filter(p => p.wilaya === city.name).length;
-          showToast(t("pharmaciesFound", { n: count, name: city.name }));
-          return;
-        }
-
-        // Real pharmacies from OpenStreetMap
-        setLoadingOSM(true);
-        showToast(lang === "ar" ? `⏳ جاري جلب صيدليات ${city.name}...` : lang === "fr" ? `⏳ Chargement des pharmacies de ${city.name}...` : `⏳ Loading pharmacies in ${city.name}...`);
-        try {
-          const countryName = COUNTRIES.find(c => c.id === countryId);
-          const q = city.nameEn
-            ? `${city.nameEn}, ${countryName?.nameEn || countryId}`
-            : `${city.name}${countryName ? ", " + (countryName.nameEn || countryName.name) : ""}`;
-          const data = await fetchOSMByCity(q, city.lat, city.lng);
-          setOsmPharmacies(data);
-          setWilayaId(999);
-          if (data.length === 0) {
-            showToast(lang === "ar" ? `⚠️ لم نجد صيدليات في ${city.name} على الخريطة` : lang === "fr" ? `⚠️ Aucune pharmacie trouvée à ${city.name}` : `⚠️ No pharmacies found in ${city.name}`);
-          } else {
-            showToast(t("pharmaciesFound", { n: data.length, name: city.name }));
-          }
-        } catch (err) {
-          console.error("OSM fetch error:", err);
-          showToast(t("loadFailed"));
-        } finally {
-          setLoadingOSM(false);
-          setShowLocationPicker(false);
-        }
-      };
-
-      const selectWilaya = (w) => {
-        if (!w.enabled) return;
-        setWilayaId(w.id);
-        setOsmPharmacies([]);
-        setCurrentPlace(w.name);
-        setShowLocationPicker(false);
-      };
-
-      // Filtered city suggestions for the selected country
-      const countryCities = CITIES_BY_COUNTRY[countryId] || [];
-      const filteredCities = citySearch.trim()
-        ? countryCities.filter(c =>
-            c.name.toLowerCase().includes(citySearch.toLowerCase()) ||
-            (c.nameEn && c.nameEn.toLowerCase().includes(citySearch.toLowerCase()))
-          )
-        : countryCities;
-
-      // Add pharmacy
-      const captureFormLocation = () => {
-        if (!navigator.geolocation) {
-          setFormLocStatus("failed");
-          return;
-        }
-        setFormLocStatus("loading");
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            setFormLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-            setFormLocStatus("ok");
-          },
-          () => setFormLocStatus("failed"),
-          { timeout: 8000 }
-        );
-      };
-
-      const submitNewPharmacy = async () => {
-        const vName = sanitize(form.name, 80);
-        const vAddress = sanitize(form.address, 200);
-        const vArea = sanitize(form.area, 80);
-        const vPhone = form.phone.trim() ? (isValidPhone(form.phone) ? form.phone.trim().substring(0, 20) : null) : null;
-
-        if (!vName || !vAddress) {
-          showToast(t("formRequiredError"));
-          return;
-        }
-        if (form.phone.trim() && !vPhone) {
-          showToast(t("invalidPhone"));
-          return;
-        }
-        if (Date.now() - lastSubmit < 30000) {
-          showToast(t("wait30s"));
-          return;
-        }
-
-        setSubmitting(true);
-        setLastSubmit(Date.now());
-        let loc = formLoc;
-        try {
-          if (!loc && form.address.trim()) {
-            const geo = await geocodeAddress(form.address, form.country === "DZ" ? "Algeria" : form.country);
-            loc = { lat: geo.lat, lng: geo.lng };
-          }
-          if (!loc) loc = userLoc;
-
-          const payload = {
-            name: vName,
-            area: vArea || form.city || "",
-            address: vAddress,
-            phone: vPhone,
-            lat: loc.lat,
-            lng: loc.lng,
-            wilaya: form.country === "DZ" ? (WILAYAS.find(w => w.id === wilayaId)?.name || "سيدي بلعباس") : form.city || "🌍",
-            commune: vArea || form.city || "",
-            country: form.country,
-            hours: { open: Number(form.open), close: Number(form.close) },
-            onDuty: form.onDuty,
-            verified: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
-
-          const ref = await db.collection("pharmacies_submitted").add(payload);
-          setSubmitted(prev => [...prev, { id: ref.id, ...payload }]);
-          showToast(t("newPharmacySuccess"));
-          setShowAddForm(false);
-          setForm({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "" });
-          setFormLoc(null);
-          setFormLocStatus(null);
-        } catch {
-          showToast(t("newPharmacyError"));
-        } finally {
-          setSubmitting(false);
-        }
-      };
-
-      // Admin
-      const submitLogin = async () => {
-        setLoginError(null);
-        setLoginLoading(true);
-        try {
-          await auth.signInWithEmailAndPassword(loginEmail.trim(), loginPassword);
-          setShowLogin(false);
-          setAdminView(true);
-          setLoginPassword("");
-        } catch {
-          setLoginError(t("loginError"));
-        } finally {
-          setLoginLoading(false);
-        }
-      };
-
-      const removePermanently = async (id, name) => {
-        setRemovedIds(prev => new Set(prev).add(id));
-        showToast(t("removedToast", { name }));
-        try {
-          if (typeof id === "string") {
-            await db.collection("pharmacies_submitted").doc(id).delete();
-            setSubmitted(prev => prev.filter(p => p.id !== id));
-          } else {
-            await db.collection("removed_pharmacies").doc(String(id)).set({
-              name,
-              removedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-          }
-        } catch {}
-      };
-
-      const dismissComplaints = (id, name) => {
-        setComplaints(prev => ({ ...prev, [id]: 0 }));
-        showToast(t("dismissedToast", { name }));
-      };
-
-      // ═══════════════════════════════════════════════════════════
-      // RENDER
-      // ═══════════════════════════════════════════════════════════
-      return (
-        <div dir={dir} className={`min-h-screen ${dark ? "dark bg-brand-950 text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
-          {/* Header */}
-          <header className="sticky top-0 z-20 bg-brand-950 text-brand-50 px-4 pt-3 pb-4 rounded-b-2xl shadow-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-brand-700 flex items-center justify-center shadow-md">
-                  <Icons.Cross className="w-4 h-4 text-brand-100" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold tracking-tight text-brand-400 leading-tight" dir="ltr">Pharis</h1>
-                  <p className="text-[11px] text-brand-300">{currentPlace}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button onClick={shareApp} className="p-1.5 rounded-lg hover:bg-brand-900 transition" title="Share">
-                  <Icons.Share className="w-4 h-4 text-brand-300" />
-                </button>
-                <button onClick={() => setDark(d => !d)} className="p-1.5 rounded-lg hover:bg-brand-900 transition" title={dark ? t("lightMode") : t("darkMode")}>
-                  {dark ? <Icons.Sun className="w-4 h-4 text-brand-300" /> : <Icons.Moon className="w-4 h-4 text-brand-300" />}
-                </button>
-                <button onClick={() => adminUser ? setAdminView(true) : setShowLogin(true)} className="font-mono text-brand-400 text-[10px] border border-brand-800 rounded-md px-2 py-1 hover:bg-brand-900 transition">
-                  {t("dashboard")}
-                </button>
-                <div className="font-mono text-brand-400 text-xs border border-brand-800 rounded-md px-2 py-1">{timeStr}</div>
-              </div>
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black/60 flex items-end z-30" onClick={() => !submitting && setShowAddForm(false)}>
+          <div className="bg-white w-full rounded-t-3xl p-6 max-w-md mx-auto sheet-anim max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start"><div><h2 className="text-xl font-bold">{t("addPharmacyTitle")}</h2><p className="text-sm text-stone-500 mt-0.5">{t("addPharmacySubtitle")}</p></div><button onClick={() => !submitting && setShowAddForm(false)} className="text-stone-500 p-1"><X className="w-5 h-5" /></button></div>
+            <div className="mt-4 space-y-3">
+              <div><label className="text-xs text-stone-500 mb-1 block">{t("formName")}</label><input value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" /></div>
+              <div><label className="text-xs text-stone-500 mb-1 block">{t("communeLabel")}</label><select value={formCommune || ""} onChange={(e) => setFormCommune(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">{(COMMUNES_BY_WILAYA[wilaya.name] || []).map((c) => (<option key={c.id} value={c.name}>{c.name}</option>))}</select></div>
+              <div><label className="text-xs text-stone-500 mb-1 block">{t("formArea")}</label><input value={formArea} onChange={(e) => setFormArea(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" /></div>
+              <div><label className="text-xs text-stone-500 mb-1 block">{t("formAddress")}</label><input value={formAddress} onChange={(e) => setFormAddress(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" /></div>
+              <div><label className="text-xs text-stone-500 mb-1 block">{t("formPhone")}</label><input value={formPhone} onChange={(e) => setFormPhone(e.target.value)} dir="ltr" className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" /></div>
+              <label className="flex items-center gap-2 text-sm text-stone-700 py-1"><input type="checkbox" checked={formOnDuty} onChange={(e) => setFormOnDuty(e.target.checked)} className="w-4 h-4 accent-emerald-600" />{t("formOnDuty")}</label>
+              {!formOnDuty && (<div className="grid grid-cols-2 gap-3"><div><label className="text-xs text-stone-500 mb-1 block">{t("formOpenHour")}</label><input type="number" min="0" max="24" step="0.5" value={formOpen} onChange={(e) => setFormOpen(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" /></div><div><label className="text-xs text-stone-500 mb-1 block">{t("formCloseHour")}</label><input type="number" min="0" max="30" step="0.5" value={formClose} onChange={(e) => setFormClose(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" /></div></div>)}
+              <button onClick={captureFormLocation} type="button" className="w-full flex items-center justify-center gap-2 border border-stone-200 rounded-xl py-2.5 text-sm font-medium text-stone-700"><Navigation className="w-4 h-4" />{formLocStatus === "ok" ? t("locationCaptured") : t("useMyLocation")}</button>
+              {formLocStatus === "failed" && <p className="text-xs text-rose-500">{t("locationFailed")}</p>}
+              <button onClick={submitNewPharmacy} disabled={submitting} className="w-full bg-emerald-700 disabled:opacity-60 text-emerald-50 rounded-xl py-3 text-sm font-semibold mt-2">{submitting ? t("submittingPharmacy") : t("submitNewPharmacy")}</button>
             </div>
-
-            {/* Location button */}
-            <button
-              onClick={() => setShowLocationPicker(s => !s)}
-              className={`mt-3 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
-            >
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <Icons.MapPin className="w-4 h-4" />
-                {t("tagline", { place: currentPlace })}
-              </span>
-              <span className={`text-xs font-semibold underline ${showLocationPicker ? "text-brand-950" : "text-brand-300"}`}>
-                {t("changeLocation")}
-              </span>
-            </button>
-
-            {/* Language */}
-            <div className="flex gap-1.5 mt-2">
-              {[{ code: "ar", label: "العربية" }, { code: "fr", label: "Français" }, { code: "en", label: "English" }].map(l => (
-                <button
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${lang === l.code ? "bg-brand-400 text-brand-950" : "bg-brand-900 text-brand-300"}`}
-                >
-                  {l.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Location picker panel */}
-            {showLocationPicker && (
-              <div className="mt-3 bg-brand-950 rounded-2xl p-3 max-h-[60vh] overflow-y-auto border border-brand-800 space-y-3 scrollbar-thin animate-fade-in">
-                {/* 1. Country — immediate change */}
-                <div>
-                  <p className="text-xs text-brand-300 px-1 pb-2 font-medium">{t("country")}</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {COUNTRIES.map(c => (
-                      <button
-                        key={c.id}
-                        onClick={() => selectCountry(c)}
-                        className={`text-start text-xs px-2.5 py-2 rounded-lg transition truncate ${c.id === countryId ? "bg-brand-500 text-brand-950 font-semibold shadow-sm" : "text-brand-200 hover:bg-brand-900"}`}
-                      >
-                        {lang === "ar" ? c.name : lang === "fr" ? c.nameFr : c.nameEn}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2. City — dropdown list for selected country */}
-                <div className="pt-2 border-t border-brand-800">
-                  <p className="text-xs text-brand-300 px-1 pb-2 font-medium">{t("city")}</p>
-
-                  {/* Search / filter input */}
-                  <div className="relative mb-2">
-                    <input
-                      value={citySearch}
-                      onChange={e => { setCitySearch(e.target.value); setShowCityList(true); }}
-                      onFocus={() => setShowCityList(true)}
-                      onKeyDown={e => e.key === "Enter" && searchCityAndLoad()}
-                      placeholder={lang === "ar" ? "ابحث أو اختر مدينة..." : lang === "fr" ? "Rechercher ou choisir une ville..." : "Search or choose a city..."}
-                      className="w-full bg-brand-900 placeholder-brand-600 text-brand-50 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
-                    />
-                    {loadingCities && <span className="absolute top-1/2 -translate-y-1/2 end-3 text-xs text-brand-400">…</span>}
-                  </div>
-
-                  {/* Predefined cities of the selected country */}
-                  {showCityList && filteredCities.length > 0 && (
-                    <div className="space-y-0.5 max-h-48 overflow-y-auto rounded-xl border border-brand-800 bg-brand-900/50 mb-2">
-                      {filteredCities.map((city, i) => (
-                        <button
-                          key={i}
-                          onClick={() => selectCity(city)}
-                          className="w-full text-start text-sm px-3 py-2.5 text-brand-100 hover:bg-brand-700 transition flex items-center justify-between border-b border-brand-800/50 last:border-0"
-                        >
-                          <span className="font-medium">{lang === "en" && city.nameEn ? city.nameEn : city.name}</span>
-                          {city.wilayaId && <span className="text-[10px] text-brand-400 bg-brand-800 px-1.5 py-0.5 rounded">محلي</span>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Nominatim search results (extra cities) */}
-                  {cityResults.length > 0 && (
-                    <div className="space-y-0.5 max-h-36 overflow-y-auto rounded-xl border border-brand-700 bg-brand-900/80">
-                      <p className="text-[10px] text-brand-500 px-3 pt-2 pb-1">{lang === "ar" ? "نتائج البحث" : lang === "fr" ? "Résultats" : "Search results"}</p>
-                      {cityResults.map((city, i) => (
-                        <button
-                          key={i}
-                          onClick={() => selectCity(city)}
-                          className="w-full text-start text-xs px-3 py-2 text-brand-200 hover:bg-brand-800 transition flex items-center justify-between"
-                        >
-                          <span className="truncate">{city.name}</span>
-                          <span className="text-[9px] text-brand-500 flex-shrink-0 ms-2">{city.country}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Search button for free text */}
-                  {citySearch.trim() && filteredCities.length === 0 && (
-                    <button
-                      onClick={searchCityAndLoad}
-                      disabled={loadingCities}
-                      className="w-full mt-1 py-2 rounded-xl text-xs font-semibold bg-brand-700 text-brand-50 disabled:opacity-50"
-                    >
-                      {loadingCities ? "…" : (lang === "ar" ? `🔍 بحث عن "${citySearch}"` : lang === "fr" ? `🔍 Chercher "${citySearch}"` : `🔍 Search "${citySearch}"`)}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Stats */}
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-3xl font-bold font-mono text-brand-400">{openCount}</span>
-              <span className="text-xs text-brand-200">{t("openStat", { total: list.length })}</span>
-            </div>
-
-            {/* Search */}
-            <div className="mt-3 relative">
-              <Icons.Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-brand-500 ${dir === "rtl" ? "right-3" : "left-3"}`} />
-              <input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder={t("searchPlaceholder")}
-                className={`w-full bg-brand-900 placeholder-brand-600 text-brand-50 rounded-xl py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition ${dir === "rtl" ? "pr-10 pl-4" : "pl-10 pr-4"}`}
-              />
-            </div>
-
-            {/* Filters */}
-            <div className="flex gap-1.5 mt-2.5 flex-wrap">
-              <button
-                onClick={() => { setEmergencyMode(true); setShowMap(false); }}
-                className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${emergencyMode ? "bg-rose-500 text-white shadow-md" : "bg-rose-950/70 text-rose-300"}`}
-              >
-                🚨 {t("emergency")}
-              </button>
-              {[
-                { id: "all", label: t("filterAll") },
-                { id: "open", label: t("filterOpen") },
-                { id: "urgent", label: t("filterUrgent"), urgent: true },
-                { id: "favorites", label: t("filterFavorites") },
-                { id: "late", label: t("filterLate") },
-              ].map(f => (
-                <button
-                  key={f.id}
-                  onClick={() => { setFilter(f.id); setEmergencyMode(false); }}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
-                    !emergencyMode && filter === f.id
-                      ? f.urgent ? "bg-rose-500 text-white" : "bg-brand-400 text-brand-950"
-                      : f.urgent ? "bg-rose-950/60 text-rose-300" : "bg-brand-900 text-brand-200"
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-              <button
-                onClick={() => { setShowMap(s => !s); setEmergencyMode(false); }}
-                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition flex items-center gap-1 ${showMap ? "bg-brand-400 text-brand-950" : "bg-brand-900 text-brand-200"}`}
-              >
-                <Icons.Map className="w-3 h-3" /> {showMap ? t("list") : t("map")}
-              </button>
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="ms-auto px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-400 text-brand-950 flex items-center gap-1"
-              >
-                <Icons.Plus className="w-3 h-3" /> {t("addPharmacyBtn")}
-              </button>
-            </div>
-
-            {/* OSM load */}
-            <div className="mt-2 flex gap-2 items-center flex-wrap">
-              <button
-                onClick={loadOSMNearMe}
-                disabled={loadingOSM}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-900/80 text-blue-200 disabled:opacity-50 flex items-center gap-1.5 transition hover:bg-blue-800"
-              >
-                {loadingOSM ? (
-                  <>
-                    <span className="inline-block w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
-                    {lang === "ar" ? "جاري الجلب..." : lang === "fr" ? "Chargement..." : "Loading..."}
-                  </>
-                ) : (
-                  <>
-                    <Icons.Globe className="w-3.5 h-3.5" />
-                    {lang === "ar" ? "صيدليات قريبة (خريطة)" : lang === "fr" ? "Pharmacies proches" : "Nearby pharmacies"}
-                  </>
-                )}
-              </button>
-              {loadingOSM && (
-                <span className="text-[10px] text-brand-400">
-                  {lang === "ar" ? "قد يستغرق ثوانٍ..." : lang === "fr" ? "Quelques secondes..." : "A few seconds..."}
-                </span>
-              )}
-            </div>
-
-            {locating && (
-              <div className="mt-2 flex items-center gap-2 text-xs text-brand-300">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
-                </span>
-                {t("detecting")}
-              </div>
-            )}
-            {geoError && !locating && (
-              <div className="mt-2 text-xs text-rose-300 bg-rose-950/40 rounded-lg px-2.5 py-1.5">{t("geoError")}</div>
-            )}
-          </header>
-
-          {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-
-          {offline && (
-            <div className="fixed top-0 inset-x-0 z-50 bg-amber-600 text-white text-center text-xs py-2 px-3">
-              {lang === "ar" ? "📡 أنت غير متصل — المفضلة والبيانات المحفوظة متاحة" : lang === "fr" ? "📡 Hors ligne — favoris et cache disponibles" : "📡 Offline — favorites and cache available"}
-            </div>
-          )}
-
-          {canInstall && !offline && (
-            <div className="fixed bottom-4 inset-x-4 z-40 max-w-lg mx-auto">
-              <div className="bg-brand-950 text-brand-50 rounded-2xl p-3 shadow-xl border border-brand-700 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{lang === "ar" ? "ثبّت Pharis على جهازك" : lang === "fr" ? "Installer Pharis" : "Install Pharis"}</p>
-                  <p className="text-[11px] text-brand-300">{lang === "ar" ? "وصول أسرع · يعمل بدون إنترنت جزئياً" : lang === "fr" ? "Accès rapide · hors ligne partiel" : "Faster access · partial offline"}</p>
-                </div>
-                <button onClick={handleInstall} className="bg-brand-400 text-brand-950 text-xs font-bold px-3 py-2 rounded-xl flex-shrink-0">
-                  {lang === "ar" ? "تثبيت" : lang === "fr" ? "Installer" : "Install"}
-                </button>
-                <button onClick={() => setCanInstall(false)} className="text-brand-400 p-1 flex-shrink-0"><Icons.X className="w-4 h-4" /></button>
-              </div>
-            </div>
-          )}
-
-          
-          {/* Onboarding — first visit */}
-          {showOnboarding && (
-            <div className="fixed inset-0 z-[60] bg-brand-950/95 flex items-end sm:items-center justify-center p-4">
-              <div className="bg-white dark:bg-brand-900 w-full max-w-md rounded-3xl p-6 shadow-2xl animate-slide-up">
-                <div className="w-14 h-14 rounded-2xl bg-brand-950 flex items-center justify-center mx-auto mb-4">
-                  <Icons.Cross className="w-7 h-7 text-brand-400" />
-                </div>
-                <h2 className="text-xl font-bold text-center text-stone-900 dark:text-brand-50">
-                  {lang === "ar" ? "مرحباً بك في Pharis" : lang === "fr" ? "Bienvenue sur Pharis" : "Welcome to Pharis"}
-                </h2>
-                <p className="text-sm text-center text-stone-500 dark:text-brand-300 mt-2 leading-relaxed">
-                  {lang === "ar"
-                    ? "اعثر على صيدلية مفتوحة بالقرب منك في ثوانٍ. وضع الطوارئ، بيانات حقيقية، وثلاث لغات."
-                    : lang === "fr"
-                    ? "Trouvez une pharmacie ouverte près de vous en quelques secondes. Mode urgence, données réelles, 3 langues."
-                    : "Find an open pharmacy near you in seconds. Emergency mode, real map data, 3 languages."}
-                </p>
-                <ul className="mt-5 space-y-3 text-sm text-stone-700 dark:text-brand-100">
-                  <li className="flex gap-2"><span className="text-rose-500 font-bold">🚨</span>{lang === "ar" ? "وضع طوارئ — الأقرب المفتوحة فوراً" : lang === "fr" ? "Mode urgence — les plus proches ouvertes" : "Emergency — nearest open now"}</li>
-                  <li className="flex gap-2"><span>🗺️</span>{lang === "ar" ? "صيدليات من الخريطة في أي مدينة" : lang === "fr" ? "Pharmacies cartographiques partout" : "Map pharmacies in any city"}</li>
-                  <li className="flex gap-2"><span>✓</span>{lang === "ar" ? "أكّد إن كانت مفتوحة أو مغلقة" : lang === "fr" ? "Confirmez ouverte ou fermée" : "Confirm open or closed"}</li>
-                </ul>
-                <button onClick={finishOnboarding} className="mt-6 w-full bg-brand-700 text-brand-50 rounded-xl py-3.5 text-sm font-bold hover:bg-brand-600 transition">
-                  {lang === "ar" ? "ابدأ الآن" : lang === "fr" ? "Commencer" : "Get started"}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Main */}
-          <main className="px-4 py-4 space-y-3 max-w-lg mx-auto safe-bottom">
-            {showMap ? (
-              <div className="h-[60vh] rounded-2xl overflow-hidden border border-stone-200 dark:border-brand-800">
-                <MapView pharmacies={list} userLoc={userLoc} lang={lang} onSelect={setSelected} />
-              </div>
-            ) : emergencyMode ? (
-              <>
-                <div className="rounded-2xl bg-rose-600 text-white p-4 shadow-lg">
-                  <p className="text-xs font-medium opacity-90">{t("emergencyHint")}</p>
-                  <h2 className="text-lg font-bold mt-0.5">{t("emergencyTitle")}</h2>
-                  <p className="text-xs opacity-80 mt-1">{t("emergencySubtitle")}</p>
-                </div>
-
-                {emergencyList.length === 0 ? (
-                  <div className="text-center py-12 text-stone-400 dark:text-brand-500">
-                    <Icons.Alert className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                    <p className="text-sm">{t("emergencyEmpty")}</p>
-                    <button
-                      onClick={() => setEmergencyMode(false)}
-                      className="mt-4 text-sm text-brand-600 dark:text-brand-400 underline"
-                    >
-                      {t("viewAll")}
-                    </button>
-                  </div>
-                ) : (
-                  emergencyList.map((ph, i) => {
-                    const src = sourceBadge(ph, t);
-                    return (
-                      <div
-                        key={ph.id}
-                        className={`bg-white dark:bg-brand-900 rounded-2xl p-4 shadow-md border-2 ${i === 0 ? "border-rose-400 dark:border-rose-600" : "border-stone-100 dark:border-brand-800"}`}
-                      >
-                        {i === 0 && (
-                          <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400 mb-2 uppercase tracking-wide">
-                            ★ {t("nearest")}
-                          </div>
-                        )}
-                        <div className="flex items-start gap-3">
-                          <StatusDot open={true} />
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-stone-900 dark:text-brand-50 text-base leading-tight">{ph.name}</h3>
-                            <p className="text-xs text-stone-500 dark:text-brand-300 mt-1 truncate">{ph.area}</p>
-                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                              <span className="font-mono text-sm font-semibold text-brand-700 dark:text-brand-300">
-                                {ph.distance.toFixed(1)} {t("kmAway")}
-                              </span>
-                              {ph.onDuty && (
-                                <span className="text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-300 px-2 py-0.5 rounded-full">
-                                  24h
-                                </span>
-                              )}
-                              <span className={`text-[9px] font-medium rounded-full px-1.5 py-0.5 ${src.cls}`}>{src.label}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          {ph.phone && (
-                            <a
-                              href={`tel:${ph.phone.replace(/\s/g, "")}`}
-                              className="flex-1 bg-emerald-600 text-white text-center text-sm font-semibold rounded-xl py-2.5 hover:bg-emerald-500 transition"
-                            >
-                              📞 {t("callNow")}
-                            </a>
-                          )}
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${ph.lat},${ph.lng}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 bg-brand-950 dark:bg-brand-700 text-white text-center text-sm font-semibold rounded-xl py-2.5 hover:opacity-90 transition"
-                          >
-                            🧭 {t("goNow")}
-                          </a>
-                          <button
-                            onClick={() => setSelected(ph)}
-                            className="px-3 rounded-xl border border-stone-200 dark:border-brand-700 text-stone-500 text-sm"
-                          >
-                            ···
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-
-                {emergencyList.length > 0 && (
-                  <button
-                    onClick={() => setEmergencyMode(false)}
-                    className="w-full py-3 text-sm font-medium text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 rounded-xl hover:bg-brand-50 dark:hover:bg-brand-900 transition"
-                  >
-                    {t("viewAll")} ({list.length})
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                {list.length === 0 && (
-                  <div className="text-center py-16 text-stone-400 dark:text-brand-500">
-                    <Icons.Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                    <p>{filter === "favorites" ? t("noFavorites") : t("noResults")}</p>
-                  </div>
-                )}
-                {list.map(ph => (
-                  <PharmacyCard
-                    key={ph.id}
-                    ph={ph}
-                    lang={lang}
-                    t={t}
-                    onSelect={setSelected}
-                    onToggleFav={toggleFavorite}
-                    onReport={reportPharmacy}
-                  />
-                ))}
-              </>
-            )}
-          </main>
-          <footer className="max-w-lg mx-auto px-4 pb-8 pt-2 text-center">
-            <p className="text-[10px] text-stone-400 dark:text-brand-600">
-              Pharis · {lang === "ar" ? "صيدليات مفتوحة بالقرب منك" : lang === "fr" ? "Pharmacies ouvertes près de vous" : "Open pharmacies near you"}
-            </p>
-            <p className="text-[10px] text-stone-300 dark:text-brand-700 mt-0.5">v2 · OpenStreetMap · {new Date().getFullYear()}</p>
-          </footer>
-
-          {/* Detail Sheet */}
-          {selectedLive && (
-            <div className="fixed inset-0 bg-black/50 z-30 flex items-end" onClick={() => setSelected(null)}>
-              <div className="bg-white dark:bg-brand-900 w-full rounded-t-3xl p-5 max-w-lg mx-auto animate-slide-up max-h-[85vh] overflow-y-auto safe-bottom" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-start gap-3">
-                  <div className="min-w-0">
-                    <h2 className="text-xl font-bold text-stone-900 dark:text-brand-50 flex items-center gap-2 flex-wrap">
-                      {selectedLive.name}
-                      {selectedLive.verified === false && (
-                        <span className="text-[10px] font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full px-2 py-0.5">{t("unverifiedBadge")}</span>
-                      )}
-                    </h2>
-                    <p className="text-sm text-stone-500 dark:text-brand-300 mt-0.5">{selectedLive.area}</p>
-                    {selectedLive.verified === false && <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{t("unverifiedNote")}</p>}
-                  </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => toggleFavorite(selectedLive.id, selectedLive.name)} className={selectedLive.isFavorite ? "text-rose-500 p-1.5" : "text-stone-400 p-1.5"}>
-                      <Icons.Heart className="w-5 h-5" fill={selectedLive.isFavorite ? "currentColor" : "none"} />
-                    </button>
-                    <button onClick={() => setSelected(null)} className="text-stone-400 p-1.5"><Icons.X className="w-5 h-5" /></button>
-                  </div>
-                </div>
-
-                <div className={`inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-sm font-medium ${selectedLive.status.open ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-rose-50 dark:bg-rose-950/40 text-rose-500"}`}>
-                  <span className={`w-2 h-2 rounded-full ${selectedLive.status.open ? "bg-emerald-500" : "bg-rose-500"}`} />
-                  {selectedLive.status.open ? t("openNow") : t("closedNowFull")}
-                </div>
-
-                {/* Community status confirmation */}
-                {(() => {
-                  const conf = statusConfirms[selectedLive.id] || { open: 0, closed: 0 };
-                  return (
-                    <div className="mt-3 rounded-xl border border-stone-100 dark:border-brand-800 p-3">
-                      {(conf.open > 0 || conf.closed > 0) && (
-                        <p className="text-xs text-stone-500 dark:text-brand-400 mb-2">
-                          {conf.open > conf.closed ? t("confirmedOpen") : conf.closed > conf.open ? t("confirmedClosed") : null}
-                          {(conf.open > 0 || conf.closed > 0) && (
-                            <span className="ms-1 opacity-70">({conf.open}✓ / {conf.closed}✗)</span>
-                          )}
-                        </p>
-                      )}
-                      <p className="text-[11px] text-stone-400 mb-1.5">{lang === "ar" ? "هل هي مفتوحة الآن فعلاً؟" : lang === "fr" ? "Est-elle vraiment ouverte ?" : "Is it really open now?"}</p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => confirmStatus(selectedLive.id, true)}
-                          className="flex-1 text-xs font-semibold py-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                        >
-                          ✓ {t("confirmOpen")}
-                        </button>
-                        <button
-                          onClick={() => confirmStatus(selectedLive.id, false)}
-                          className="flex-1 text-xs font-semibold py-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
-                        >
-                          ✗ {t("confirmClosed")}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                <div className="mt-4 space-y-2.5 text-sm text-stone-800 dark:text-brand-100">
-                  <div className="flex items-center gap-2"><Icons.MapPin className="w-4 h-4 text-stone-400" />{selectedLive.address || selectedLive.area}</div>
-                  <div className="flex items-center gap-2 font-mono"><Icons.Nav className="w-4 h-4 text-stone-400" />{selectedLive.distance.toFixed(1)} {t("kmAway")}</div>
-                  <div className="flex items-center gap-2"><Icons.Clock className="w-4 h-4 text-stone-400" />
-                    {selectedLive.status.kind === "onDuty" ? t("onDutyLabel") : t(selectedLive.status.kind, { time: fmtHour(selectedLive.status.time) })}
-                  </div>
-                  {selectedLive.phone && (
-                    <div className="flex items-center gap-2 font-mono flex-wrap">
-                      <Icons.Phone className="w-4 h-4 text-stone-400" />
-                      <span dir="ltr">{selectedLive.phone}</span>
-                      <button onClick={() => { navigator.clipboard.writeText(selectedLive.phone); showToast(lang === "ar" ? "📋 تم النسخ" : "📋 Copied"); }} className="text-xs bg-stone-100 dark:bg-brand-800 text-stone-600 dark:text-brand-200 px-2 py-0.5 rounded-md">{t("copy")}</button>
-                      <a href={`tel:${selectedLive.phone.replace(/\s/g, "")}`} className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md">{t("call")}</a>
-                    </div>
-                  )}
-                </div>
-
-                {selectedLive.underReview && (
-                  <div className="flex items-start gap-2 text-xs text-rose-500 mt-4 bg-rose-50 dark:bg-rose-950/30 rounded-lg px-3 py-2.5">
-                    <Icons.Alert className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    {t("underReviewDetail", { n: selectedLive.complaintCount })}
-                  </div>
-                )}
-
-                {/* Reviews */}
-                <div className="mt-5 pt-4 border-t border-stone-100 dark:border-brand-800">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{t("reviewsTitle")}</h3>
-                    {selectedLive.avgRating !== null ? (
-                      <span className="flex items-center gap-1 text-sm text-amber-500">
-                        <Icons.Star className="w-4 h-4" fill="currentColor" />
-                        {selectedLive.avgRating.toFixed(1)}
-                        <span className="text-stone-400 text-xs">{t("ratingsCount", { n: selectedLive.ratingCount })}</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs text-stone-400">{t("noRatingsYet")}</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-stone-500 mt-3 mb-1.5">{t("yourRating")}</p>
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <button key={n} onClick={() => setDraftStars(n)} className="p-0.5">
-                        <Icons.Star className={`w-6 h-6 ${n <= draftStars ? "text-amber-500" : "text-stone-200 dark:text-brand-700"}`} fill={n <= draftStars ? "currentColor" : "none"} />
-                      </button>
-                    ))}
-                  </div>
-                  <textarea
-                    value={draftText}
-                    onChange={e => setDraftText(e.target.value)}
-                    placeholder={t("reviewPlaceholder")}
-                    rows={2}
-                    className="w-full mt-2 text-sm bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-                  />
-                  <button onClick={() => submitRating(selectedLive.id)} className="mt-2 w-full bg-brand-700 text-brand-50 rounded-xl py-2.5 text-sm font-medium hover:bg-brand-600 transition">
-                    {t("submitReview")}
-                  </button>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 mt-5">
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedLive.lat},${selectedLive.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 bg-brand-950 dark:bg-brand-700 text-brand-50 rounded-xl py-3 font-medium text-center text-sm"
-                  >
-                    {t("directions")}
-                  </a>
-                  <button
-                    onClick={() => {
-                      const data = {
-                        title: selectedLive.name,
-                        text: `${selectedLive.name} — ${selectedLive.address || selectedLive.area}`,
-                        url: `https://www.google.com/maps/search/?api=1&query=${selectedLive.lat},${selectedLive.lng}`
-                      };
-                      if (navigator.share) navigator.share(data);
-                      else { navigator.clipboard.writeText(data.text + " " + data.url); showToast("📋"); }
-                    }}
-                    className="px-4 rounded-xl border border-stone-200 dark:border-brand-700 text-brand-600 dark:text-brand-300 flex items-center justify-center hover:bg-brand-50 dark:hover:bg-brand-800 transition"
-                  >
-                    <Icons.Share className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => reportPharmacy(selectedLive.id, selectedLive.name)} className="px-4 rounded-xl border border-stone-200 dark:border-brand-700 text-rose-500 flex items-center justify-center">
-                    <Icons.Flag className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Add Pharmacy Sheet */}
-          {showAddForm && (
-            <div className="fixed inset-0 bg-black/50 z-30 flex items-end" onClick={() => !submitting && setShowAddForm(false)}>
-              <div className="bg-white dark:bg-brand-900 w-full rounded-t-3xl p-5 max-w-lg mx-auto animate-slide-up max-h-[90vh] overflow-y-auto safe-bottom" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-bold">{t("addPharmacyTitle")}</h2>
-                    <p className="text-sm text-stone-500 dark:text-brand-300 mt-0.5">{t("worldwide")}</p>
-                    <p className="text-[10px] text-stone-400 mt-1">🔒 {t("protected")}</p>
-                  </div>
-                  <button onClick={() => !submitting && setShowAddForm(false)} className="text-stone-400 p-1"><Icons.X className="w-5 h-5" /></button>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <label className="text-xs text-stone-500 mb-1 block">{t("country")}</label>
-                    <select
-                      value={form.country}
-                      onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
-                      className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
-                    >
-                      {COUNTRIES.map(c => (
-                        <option key={c.id} value={c.id}>{lang === "ar" ? c.name : lang === "fr" ? c.nameFr : c.nameEn}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-stone-500 mb-1 block">{t("formName")}</label>
-                    <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-stone-500 mb-1 block">{t("city")}</label>
-                    <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="Paris, Dubai..." className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-stone-500 mb-1 block">{t("formArea")}</label>
-                    <input value={form.area} onChange={e => setForm(f => ({ ...f, area: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-stone-500 mb-1 block">{t("formAddress")}</label>
-                    <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-stone-500 mb-1 block">{t("formPhone")}</label>
-                    <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} dir="ltr" placeholder="+213..." className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  </div>
-                  <label className="flex items-center gap-2 text-sm py-1">
-                    <input type="checkbox" checked={form.onDuty} onChange={e => setForm(f => ({ ...f, onDuty: e.target.checked }))} className="w-4 h-4 accent-brand-600" />
-                    {t("formOnDuty")}
-                  </label>
-                  {!form.onDuty && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs text-stone-500 mb-1 block">{t("formOpenHour")}</label>
-                        <input type="number" min="0" max="24" step="0.5" value={form.open} onChange={e => setForm(f => ({ ...f, open: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                      </div>
-                      <div>
-                        <label className="text-xs text-stone-500 mb-1 block">{t("formCloseHour")}</label>
-                        <input type="number" min="0" max="30" step="0.5" value={form.close} onChange={e => setForm(f => ({ ...f, close: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                      </div>
-                    </div>
-                  )}
-                  <button onClick={captureFormLocation} type="button" className="w-full flex items-center justify-center gap-2 border border-stone-200 dark:border-brand-700 rounded-xl py-2.5 text-sm font-medium">
-                    <Icons.Nav className="w-4 h-4" />
-                    {formLocStatus === "ok" ? t("locationCaptured") : t("useMyLocation")}
-                  </button>
-                  {formLocStatus === "failed" && <p className="text-xs text-rose-500">{t("locationFailed")}</p>}
-
-                  <button
-                    onClick={submitNewPharmacy}
-                    disabled={submitting || (!formLoc && !form.address.trim())}
-                    className="w-full bg-brand-700 disabled:opacity-40 text-brand-50 rounded-xl py-3 text-sm font-semibold mt-1 hover:bg-brand-600 transition"
-                  >
-                    {submitting ? t("submittingPharmacy") : t("submitNewPharmacy")}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Login */}
-          {showLogin && (
-            <div className="fixed inset-0 bg-black/50 z-30 flex items-end" onClick={() => setShowLogin(false)}>
-              <div className="bg-white dark:bg-brand-900 w-full rounded-t-3xl p-5 max-w-lg mx-auto animate-slide-up" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-start">
-                  <h2 className="text-xl font-bold">{t("adminLoginTitle")}</h2>
-                  <button onClick={() => setShowLogin(false)} className="text-stone-400 p-1"><Icons.X className="w-5 h-5" /></button>
-                </div>
-                <div className="mt-4 space-y-3">
-                  <input value={loginEmail} onChange={e => setLoginEmail(e.target.value)} dir="ltr" placeholder="admin@email.com" className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  <input value={loginPassword} onChange={e => setLoginPassword(e.target.value)} type="password" dir="ltr" placeholder="••••••••" onKeyDown={e => e.key === "Enter" && submitLogin()} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  {loginError && <p className="text-xs text-rose-500">{loginError}</p>}
-                  <button onClick={submitLogin} disabled={loginLoading} className="w-full bg-brand-700 disabled:opacity-60 text-brand-50 rounded-xl py-3 text-sm font-semibold">
-                    {loginLoading ? "..." : t("loginBtn")}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Admin Panel */}
-          {adminView && (
-            <div className="fixed inset-0 bg-brand-950 z-40 overflow-y-auto">
-              <div className="max-w-lg mx-auto px-4 py-6">
-                <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => { auth.signOut(); setAdminView(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
-                    <button onClick={() => setAdminView(false)} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
-                  </div>
-                </div>
-                <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
-
-                <div className="flex gap-2 mb-5">
-                  <button onClick={() => setAdminTab("review")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "review" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
-                    {t("reviewBtn", { n: reviewQueue.length })}
-                  </button>
-                  <button onClick={() => setAdminTab("all")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "all" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
-                    {t("allPharmaciesTab", { n: allComputed.length })}
-                  </button>
-                </div>
-
-                {adminTab === "review" && (
-                  <>
-                    <p className="text-sm text-brand-300 mb-4">{t("adminSubtitle", { n: COMPLAINT_THRESHOLD })}</p>
-                    {reviewQueue.length === 0 && <div className="text-center text-brand-600 mt-16 text-sm">{t("adminEmpty")}</div>}
-                    <div className="space-y-3">
-                      {reviewQueue.map(ph => (
-                        <div key={ph.id} className="bg-brand-900 rounded-2xl p-4 border border-brand-800">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-semibold text-brand-50">{ph.name}</h3>
-                              <p className="text-xs text-brand-300 mt-0.5">{ph.area}</p>
-                            </div>
-                            <div className="flex items-center gap-1 bg-rose-950 text-rose-300 text-xs font-semibold px-2.5 py-1 rounded-full">
-                              <Icons.Alert className="w-3 h-3" />{ph.complaintCount}
-                            </div>
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <button onClick={() => dismissComplaints(ph.id, ph.name)} className="flex-1 bg-brand-800 text-brand-300 text-sm font-medium rounded-lg py-2.5">{t("verifyReturn")}</button>
-                            <button onClick={() => removePermanently(ph.id, ph.name)} className="flex-1 bg-rose-950 text-rose-300 text-sm font-medium rounded-lg py-2.5">{t("deleteFinal")}</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {adminTab === "all" && (
-                  <>
-                    <p className="text-sm text-brand-300 mb-4">{t("allPharmaciesSubtitle")}</p>
-                    <div className="space-y-2">
-                      {allComputed.map(ph => (
-                        <div key={ph.id} className="bg-brand-900 rounded-xl p-3 border border-brand-800 flex items-center justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-brand-50 truncate">{ph.name}</p>
-                            <p className="text-xs text-brand-400 truncate">{ph.area}</p>
-                          </div>
-                          <button onClick={() => removePermanently(ph.id, ph.name)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-      );
-    }
+      )}
 
-    // Error Boundary
-    class ErrorBoundary extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-      }
-      static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-      }
-      render() {
-        if (this.state.hasError) {
-          return (
-            <div style={{ padding: 24, fontFamily: "sans-serif", color: "#7f1d1d", background: "#fef2f2", direction: "rtl", textAlign: "right", minHeight: "100vh" }}>
-              <h2 style={{ marginBottom: 12 }}>⚠️ حدث خطأ غير متوقع</h2>
-              <p style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>جرب تحديث الصفحة.</p>
-              <button onClick={() => window.location.reload()} style={{ background: "#059669", color: "white", border: "none", padding: "10px 20px", borderRadius: 8, cursor: "pointer" }}>
-                🔄 تحديث الصفحة
-              </button>
+      {showLogin && (
+        <div className="fixed inset-0 bg-black/60 flex items-end z-30" onClick={() => setShowLogin(false)}>
+          <div className="bg-white w-full rounded-t-3xl p-6 max-w-md mx-auto sheet-anim" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start"><h2 className="text-xl font-bold">{t("adminLoginTitle")}</h2><button onClick={() => setShowLogin(false)} className="text-stone-500 p-1"><X className="w-5 h-5" /></button></div>
+            <div className="mt-4 space-y-3">
+              <input value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} dir="ltr" placeholder="admin@email.com" className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+              <input value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} type="password" dir="ltr" placeholder="••••••••" onKeyDown={(e) => e.key === "Enter" && submitLogin()} className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+              {loginError && <p className="text-xs text-rose-500">{loginError}</p>}
+              <button onClick={submitLogin} disabled={loginLoading} className="w-full bg-emerald-700 disabled:opacity-60 text-emerald-50 rounded-xl py-3 text-sm font-semibold">{loginLoading ? "..." : t("loginBtn")}</button>
             </div>
-          );
-        }
-        return this.props.children;
-      }
-    }
+          </div>
+        </div>
+      )}
 
-    ReactDOM.createRoot(document.getElementById("root")).render(
-      <ErrorBoundary>
-        <PharisApp />
-      </ErrorBoundary>
-    );
-  </script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./service-worker.js").catch(function () {});
-      });
-    }
-    window.__pharisInstallPrompt = null;
-    window.addEventListener("beforeinstallprompt", function (e) {
-      e.preventDefault();
-      window.__pharisInstallPrompt = e;
-      window.dispatchEvent(new Event("pharis-installable"));
+      {adminView && (
+        <div className="fixed inset-0 bg-emerald-950 z-40 overflow-y-auto">
+          <div className="max-w-md mx-auto px-5 py-6">
+            <div className="flex items-center justify-between mb-1"><h2 className="text-xl font-bold text-emerald-50">{t("adminTitle")}</h2><div className="flex items-center gap-2"><button onClick={logoutAdmin} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button><button onClick={() => setAdminView(false)} className="text-emerald-400 p-1"><X className="w-5 h-5" /></button></div></div>
+            <p className="text-xs text-emerald-500 mb-4 mono" dir="ltr">{adminUser && adminUser.email}</p>
+            <div className="flex gap-2 mb-5">
+              <button onClick={() => setAdminTab("review")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "review" ? "bg-emerald-500 text-emerald-950" : "bg-emerald-900 text-emerald-300"}`}>{t("reviewBtn", { n: reviewQueue.length })}</button>
+              <button onClick={() => setAdminTab("all")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "all" ? "bg-emerald-500 text-emerald-950" : "bg-emerald-900 text-emerald-300"}`}>{t("allPharmaciesTab", { n: allComputed.length })}</button>
+            </div>
+            {adminTab === "review" && (
+              <>
+                <p className="text-sm text-emerald-300 mb-4">{t("adminSubtitle", { n: COMPLAINT_THRESHOLD })}</p>
+                {reviewQueue.length === 0 && <div className="text-center text-emerald-600 mt-16 text-sm">{t("adminEmpty")}</div>}
+                <div className="space-y-3">
+                  {reviewQueue.map((ph) => (
+                    <div key={ph.id} className="bg-emerald-950 rounded-2xl p-4 border border-emerald-800">
+                      <div className="flex items-start justify-between"><div><h3 className="font-semibold text-emerald-50">{ph.name}</h3><p className="text-xs text-emerald-300 mt-0.5">{ph.area} · {ph.address}</p>{ph.phone && <p className="text-xs text-emerald-300 mt-0.5 mono" dir="ltr">{ph.phone}</p>}</div><div className="flex items-center gap-1 bg-rose-950 text-rose-300 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"><AlertTriangle className="w-3 h-3" />{ph.complaintCount}</div></div>
+                      <div className="flex gap-2 mt-4"><button onClick={() => dismissComplaints(ph.id, ph.name)} className="flex-1 bg-emerald-900 text-emerald-400 text-sm font-medium rounded-lg py-2.5">{t("verifyReturn")}</button><button onClick={() => removePermanently(ph.id, ph.name)} className="flex-1 bg-rose-950 text-rose-300 text-sm font-medium rounded-lg py-2.5">{t("deleteFinal")}</button></div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {adminTab === "all" && (
+              <>
+                <p className="text-sm text-emerald-300 mb-4">{t("allPharmaciesSubtitle")}</p>
+                <div className="space-y-2">
+                  {allComputed.map((ph) => (
+                    <div key={ph.id} className="bg-emerald-950 rounded-xl p-3 border border-emerald-800 flex items-center justify-between gap-2">
+                      <div className="min-w-0"><p className="text-sm font-medium text-emerald-50 truncate flex items-center gap-1.5">{ph.name}{ph.verified === false && <span className="text-[9px] bg-amber-900 text-amber-300 rounded-full px-1.5 py-0.5 flex-shrink-0">{t("unverifiedBadge")}</span>}</p><p className="text-xs text-emerald-400 truncate">{ph.area}</p></div>
+                      <button onClick={() => removePermanently(ph.id, ph.name)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<PharmacyFinder />);
+document.getElementById("root").dataset.mounted = "true";
+</script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js").catch(() => {});
     });
-  </script>
+  }
+</script>
 </body>
 </html>
