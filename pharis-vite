@@ -1,6 +1,0 @@
-git init
-git add .
-git commit -m "Pharis v2 - Vite app with Actions"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/Pharise.git
-git push -u origin main
