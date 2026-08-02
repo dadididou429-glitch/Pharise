@@ -1,0 +1,2172 @@
+[
+  {
+    "id": 1,
+    "name": "صيدلية بوعشة فريد",
+    "area": "شارع 08 نوفمبر",
+    "address": "Rue 08 Novembre, Sidi Bel Abbès",
+    "phone": null,
+    "lat": 35.1994115,
+    "lng": -0.6453492,
+    "hours": {
+      "open": 8,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 2,
+    "name": "صيدلية أنس بن الأزهر",
+    "area": "سيدي جيلالي",
+    "address": "Agence Foncière, Sidi Djilali",
+    "phone": "040 73 11 11",
+    "lat": 35.2100923,
+    "lng": -0.6308727,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 3,
+    "name": "صيدلية منصور وفاء",
+    "area": "سيدي جيلالي",
+    "address": "250 Segar Abdelaziz, Secteur 1, Sidi Djilali",
+    "phone": null,
+    "lat": 35.2156413,
+    "lng": -0.6350891,
+    "hours": {
+      "open": 8.5,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 4,
+    "name": "صيدلية بن حمودة",
+    "area": "سيدي بلعباس",
+    "address": "Unnamed Rd, Sidi Bel Abbès 22000",
+    "phone": "0557 48 64 80",
+    "lat": 35.2194202,
+    "lng": -0.6259365,
+    "hours": {
+      "open": 8,
+      "close": 25
+    },
+    "onDuty": false
+  },
+  {
+    "id": 5,
+    "name": "صيدلية د. عربي",
+    "area": "روڨاب عكاشة",
+    "address": "Telmouni N°23 Lot 36, Rouggab Okkacha",
+    "phone": "0542 61 77 50",
+    "lat": 35.1736176,
+    "lng": -0.5448622,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 6,
+    "name": "صيدلية بن عز الدين عبد الصمد",
+    "area": "بوليفار بنديدة",
+    "address": "56 Bd Bendida Mohamed, 22002",
+    "phone": "0770 80 52 35",
+    "lat": 35.1950042,
+    "lng": -0.61941,
+    "hours": {
+      "open": 8,
+      "close": 26.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 7,
+    "name": "صيدلية رقبال محل",
+    "area": "سيدي بلعباس",
+    "address": "17 Rue Laziz Ghalem",
+    "phone": "0542 69 78 07",
+    "lat": 35.1976143,
+    "lng": -0.6484907,
+    "hours": {
+      "open": 8,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 8,
+    "name": "صيدلية د. عراد بن علي",
+    "area": "حي 100 مسكن",
+    "address": "Cité 100 Logements Aile A N°1",
+    "phone": "048 76 77 85",
+    "lat": 35.1966647,
+    "lng": -0.6176962,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 9,
+    "name": "صيدلية بلعربي الحسين",
+    "area": "AADL",
+    "address": "AADL, Sidi Bel Abbès 22000",
+    "phone": "0549 67 98 94",
+    "lat": 35.2185763,
+    "lng": -0.6275044,
+    "hours": {
+      "open": 8,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 10,
+    "name": "صيدلية معاشو محمد",
+    "area": "حي 237 مسكن",
+    "address": "Cité 237 Logts",
+    "phone": "0561 06 28 18",
+    "lat": 35.2125875,
+    "lng": -0.6232656,
+    "hours": {
+      "open": 8,
+      "close": 27
+    },
+    "onDuty": false
+  },
+  {
+    "id": 11,
+    "name": "صيدلية المؤسسة",
+    "area": "حي الجزائرة",
+    "address": "Site 2 DGSN, Haï El Djazeera",
+    "phone": "0668 73 38 31",
+    "lat": 35.1785633,
+    "lng": -0.6117378,
+    "hours": {
+      "open": 8.25,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 12,
+    "name": "صيدلية نبال",
+    "area": "بوليفار عبان رمضان",
+    "address": "Bd Abane Ramdane, 22002",
+    "phone": "0542 31 47 07",
+    "lat": 35.1923259,
+    "lng": -0.6186891,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 13,
+    "name": "صيدلية سي أحمد نذير",
+    "area": "سيدي بلعباس",
+    "address": "Sidi Bel Abbès 22000",
+    "phone": "0664 40 64 46",
+    "lat": 35.2122881,
+    "lng": -0.6251282,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 14,
+    "name": "صيدلية عصاد",
+    "area": "بوليفار محمد الخميستي",
+    "address": "04 Bd Mohamed Khemisti",
+    "phone": null,
+    "lat": 35.1866666,
+    "lng": -0.632567,
+    "hours": {
+      "open": 8.5,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 15,
+    "name": "صيدلية سيد أحمد",
+    "area": "شارع الراسي مهاجي",
+    "address": "Rue Rassi M'Hadji",
+    "phone": null,
+    "lat": 35.2056856,
+    "lng": -0.6299211,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 16,
+    "name": "صيدلية شارع حواورية عبد القادر",
+    "area": "سيدي بلعباس",
+    "address": "Rue Houaoria Abdelkader",
+    "phone": "048 72 40 31",
+    "lat": 35.1870193,
+    "lng": -0.6470397,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 17,
+    "name": "صيدلية حاجب إبراهيم",
+    "area": "بوليفار عيساط إيدير",
+    "address": "Unnamed Rd",
+    "phone": "048 72 09 53",
+    "lat": 35.2164652,
+    "lng": -0.6206502,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 18,
+    "name": "صيدلية فرتوت",
+    "area": "سيدي بلعباس",
+    "address": "Unnamed Rd, 22002",
+    "phone": "048 75 82 31",
+    "lat": 35.1893368,
+    "lng": -0.6123998,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 19,
+    "name": "صيدلية بوزيدي يحيى",
+    "area": "سيدي بلعباس",
+    "address": "Unnamed Rd",
+    "phone": "048 77 50 35",
+    "lat": 35.1753948,
+    "lng": -0.6215078,
+    "hours": {
+      "open": 9,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 20,
+    "name": "صيدلية شرشالي",
+    "area": "شارع أحمد زبانة",
+    "address": "Rue Ahmed Zabana",
+    "phone": null,
+    "lat": 35.1876422,
+    "lng": -0.6225517,
+    "hours": {
+      "open": 8.5,
+      "close": 22.17
+    },
+    "onDuty": false
+  },
+  {
+    "id": 21,
+    "name": "صيدلية بن حدو",
+    "area": "سيدي بلعباس",
+    "address": "Sidi Bel Abbès",
+    "phone": null,
+    "lat": 35.214565,
+    "lng": -0.620614,
+    "hours": {
+      "open": 8.5,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 22,
+    "name": "صيدلية حماد جيلالي",
+    "area": "بوليفار عيساط إيدير",
+    "address": "Bd Aissat Idir",
+    "phone": "0559 56 87 22",
+    "lat": 35.1945066,
+    "lng": -0.6248018,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 23,
+    "name": "صيدلية هديبي",
+    "area": "سيدي بلعباس",
+    "address": "Sidi Bel Abbès",
+    "phone": null,
+    "lat": 35.2121015,
+    "lng": -0.6290114,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 24,
+    "name": "صيدلية طلحة",
+    "area": "سيدي بلعباس",
+    "address": "Sidi Bel Abbès",
+    "phone": "0779 23 47 38",
+    "lat": 35.2116249,
+    "lng": -0.6214044,
+    "hours": {
+      "open": 8.5,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 25,
+    "name": "صيدلية بلحاج عمر بلقاسم",
+    "area": "نهج بوشارب زيتوني",
+    "address": "22002",
+    "phone": null,
+    "lat": 35.1883583,
+    "lng": -0.6158417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 26,
+    "name": "صيدلية الشيخ أمين",
+    "area": "سيدي بلعباس",
+    "address": "Sidi Bel Abbès",
+    "phone": null,
+    "lat": 35.182191,
+    "lng": -0.6311097,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 27,
+    "name": "صيدلية الوفاء",
+    "area": "سيدي بلعباس",
+    "address": "Sidi Bel Abbès",
+    "phone": null,
+    "lat": 35.2092497,
+    "lng": -0.6506582,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 28,
+    "name": "صيدلية شارع مدغشقر",
+    "area": "شارع مدغشقر",
+    "address": "25 Rue Madagascar",
+    "phone": null,
+    "lat": 35.1839758,
+    "lng": -0.6442548,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 29,
+    "name": "صيدلية سيدي بلعباس الجديدة",
+    "area": "حي 500 مسكن",
+    "address": "Cité 500 Logements",
+    "phone": "0540 11 22 33",
+    "lat": 35.205,
+    "lng": -0.615,
+    "hours": {
+      "open": 8,
+      "close": 24
+    },
+    "onDuty": false
+  },
+  {
+    "id": 30,
+    "name": "صيدلية النجاح",
+    "area": "حي البدر",
+    "address": "Cité El Badr",
+    "phone": "0660 44 55 66",
+    "lat": 35.195,
+    "lng": -0.635,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 31,
+    "name": "صيدلية الرائد",
+    "area": "حي الأمير",
+    "address": "Cité El Amir",
+    "phone": null,
+    "lat": 35.21,
+    "lng": -0.64,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 32,
+    "name": "صيدلية سفيزف المركزية",
+    "area": "نهج الاستقلال",
+    "address": "Rue de l'Indépendance, Sfisef",
+    "phone": "048 70 12 34",
+    "lat": 35.2333,
+    "lng": -0.25,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 33,
+    "name": "صيدلية الشفاء سفيزف",
+    "area": "شارع أول نوفمبر",
+    "address": "Bd 1er Novembre, Sfisef",
+    "phone": "0550 77 88 99",
+    "lat": 35.235,
+    "lng": -0.248,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 34,
+    "name": "صيدلية النور سفيزف",
+    "area": "حي الزيتون",
+    "address": "Cité Ezzitoune, Sfisef",
+    "phone": null,
+    "lat": 35.23,
+    "lng": -0.255,
+    "hours": {
+      "open": 8.5,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 35,
+    "name": "صيدلية ابن باديس المركزية",
+    "area": "ساحة الشهداء",
+    "address": "Place des Martyrs, Ben Badis",
+    "phone": "048 77 12 34",
+    "lat": 35.2667,
+    "lng": -0.5667,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 36,
+    "name": "صيدلية الأمل بن باديس",
+    "area": "نهج الأمير عبد القادر",
+    "address": "Rue Emir Abdelkader, Ben Badis",
+    "phone": "0665 33 44 55",
+    "lat": 35.268,
+    "lng": -0.564,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 37,
+    "name": "صيدلية الحياة بن باديس",
+    "area": "الطريق الوطني 7",
+    "address": "RN7, Ben Badis",
+    "phone": null,
+    "lat": 35.27,
+    "lng": -0.56,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 38,
+    "name": "صيدلية تلاغ الكبرى",
+    "area": "وسط المدينة",
+    "address": "Centre-ville, Telagh",
+    "phone": "048 75 55 66",
+    "lat": 34.7833,
+    "lng": -0.5833,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 39,
+    "name": "صيدلية السلام تلاغ",
+    "area": "حي السلام",
+    "address": "Cité Essalam, Telagh",
+    "phone": null,
+    "lat": 34.785,
+    "lng": -0.58,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 40,
+    "name": "صيدلية مناوبة تلاغ",
+    "area": "طريق سيدي بلعباس",
+    "address": "Route de SBA, Telagh",
+    "phone": "0770 55 44 33",
+    "lat": 34.78,
+    "lng": -0.59,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 41,
+    "name": "صيدلية رأس الماء",
+    "area": "حي الأمير",
+    "address": "Cité El Amir, Ras El Ma",
+    "phone": "048 73 22 11",
+    "lat": 34.5,
+    "lng": -0.8167,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 42,
+    "name": "صيدلية الرجاء رأس الماء",
+    "area": "نهج الشهداء",
+    "address": "Rue des Martyrs, Ras El Ma",
+    "phone": null,
+    "lat": 34.502,
+    "lng": -0.814,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 43,
+    "name": "صيدلية عين البرد 24",
+    "area": "شارع الأمير عبد القادر",
+    "address": "Bd Emir Abdelkader, Aïn El Berd",
+    "phone": "0550 11 22 33",
+    "lat": 35.3667,
+    "lng": -0.5167,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 44,
+    "name": "صيدلية عين البرد الجديدة",
+    "area": "حي 5 جويلية",
+    "address": "Cité 5 Juillet, Aïn El Berd",
+    "phone": "0660 22 33 44",
+    "lat": 35.368,
+    "lng": -0.514,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 45,
+    "name": "صيدلية النصر عين البرد",
+    "area": "الطريق الولائي",
+    "address": "CW, Aïn El Berd",
+    "phone": null,
+    "lat": 35.37,
+    "lng": -0.52,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 46,
+    "name": "صيدلية تسالة",
+    "area": "الحي الإداري",
+    "address": "Quartier Administratif, Tessala",
+    "phone": "048 74 55 77",
+    "lat": 35.25,
+    "lng": -0.7667,
+    "hours": {
+      "open": 8.5,
+      "close": 19.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 47,
+    "name": "صيدلية المنار تسالة",
+    "area": "نهج فلسطين",
+    "address": "Rue Palestine, Tessala",
+    "phone": null,
+    "lat": 35.248,
+    "lng": -0.77,
+    "hours": {
+      "open": 8,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 48,
+    "name": "صيدلية مرين",
+    "area": "الطريق الولائي",
+    "address": "Route de Wilaya, Merine",
+    "phone": "0545 66 77 88",
+    "lat": 34.7833,
+    "lng": -0.4667,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 49,
+    "name": "صيدلية مرين الشرقية",
+    "area": "حي النخيل",
+    "address": "Cité Ennakhil, Merine",
+    "phone": null,
+    "lat": 34.785,
+    "lng": -0.464,
+    "hours": {
+      "open": 8,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 50,
+    "name": "صيدلية مصطفى بن ابراهيم",
+    "area": "نهج الشهداء",
+    "address": "Rue des Martyrs, M. Ben Brahim",
+    "phone": "0540 33 44 55",
+    "lat": 35.2,
+    "lng": -0.3667,
+    "hours": {
+      "open": 8,
+      "close": 22.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 51,
+    "name": "صيدلية الأقصى",
+    "area": "حي القدس",
+    "address": "Cité El Qods, M. Ben Brahim",
+    "phone": null,
+    "lat": 35.198,
+    "lng": -0.37,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 52,
+    "name": "صيدلية تنيرة",
+    "area": "المركز",
+    "address": "Centre, Tenira",
+    "phone": "0790 55 66 77",
+    "lat": 35.0167,
+    "lng": -0.5333,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 53,
+    "name": "صيدلية تنيرة 24",
+    "area": "طريق وهران",
+    "address": "Route d'Oran, Tenira",
+    "phone": null,
+    "lat": 35.018,
+    "lng": -0.53,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 54,
+    "name": "صيدلية الحصايبة",
+    "area": "وسط البلدية",
+    "address": "Centre, El Hacaiba",
+    "phone": "0660 99 88 77",
+    "lat": 34.7,
+    "lng": -0.75,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 55,
+    "name": "صيدلية الهدى الحصايبة",
+    "area": "الطريق الوطني",
+    "address": "RN, El Hacaiba",
+    "phone": null,
+    "lat": 34.698,
+    "lng": -0.755,
+    "hours": {
+      "open": 8.5,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 56,
+    "name": "صيدلية مولاي سليسن",
+    "area": "حي النصر",
+    "address": "Cité Ennasr, Moulay Slissen",
+    "phone": "0770 55 66 77",
+    "lat": 34.8167,
+    "lng": -0.7667,
+    "hours": {
+      "open": 8,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 57,
+    "name": "صيدلية الرشيد مولاي سليسن",
+    "area": "نهج الأمير",
+    "address": "Rue Emir, Moulay Slissen",
+    "phone": null,
+    "lat": 34.818,
+    "lng": -0.77,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 58,
+    "name": "صيدلية بئر الحمام",
+    "area": "نهج الجمهورية",
+    "address": "Rue de la République, Bir El Hammam",
+    "phone": "0548 77 66 55",
+    "lat": 34.75,
+    "lng": -0.65,
+    "hours": {
+      "open": 9,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 59,
+    "name": "صيدلية وادي السبع",
+    "area": "شارع أول نوفمبر",
+    "address": "Bd 1er Novembre, Oued Seba",
+    "phone": "0560 88 99 00",
+    "lat": 34.95,
+    "lng": -0.55,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 60,
+    "name": "صيدلية وادي السبع 24",
+    "area": "الطريق الرئيسي",
+    "address": "Route Principale, Oued Seba",
+    "phone": null,
+    "lat": 34.952,
+    "lng": -0.548,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 61,
+    "name": "صيدلية بوجبهة البرج",
+    "area": "حي 5 جويلية",
+    "address": "Cité 5 Juillet, Boujebha El Bordj",
+    "phone": "0790 11 22 33",
+    "lat": 35.3167,
+    "lng": -0.3167,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 62,
+    "name": "صيدلية السلام بوجبهة",
+    "area": "نهج الاستقلال",
+    "address": "Rue Indépendance, Boujebha",
+    "phone": null,
+    "lat": 35.318,
+    "lng": -0.314,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 63,
+    "name": "صيدلية سيدي لحسن",
+    "area": "الطريق الرئيسي",
+    "address": "Route Nationale, Sidi Lahssen",
+    "phone": "0668 44 55 66",
+    "lat": 35.15,
+    "lng": -0.7,
+    "hours": {
+      "open": 8,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 64,
+    "name": "صيدلية مناوبة سيدي لحسن",
+    "area": "وسط",
+    "address": "Centre, Sidi Lahssen",
+    "phone": null,
+    "lat": 35.152,
+    "lng": -0.698,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 65,
+    "name": "صيدلية حاسي زهانة",
+    "area": "طريق وهران",
+    "address": "Route d'Oran, Hassi Zahana",
+    "phone": "0555 99 88 77",
+    "lat": 35.0333,
+    "lng": -0.7333,
+    "hours": {
+      "open": 8.5,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 66,
+    "name": "صيدلية زروالة",
+    "area": "وسط البلد",
+    "address": "Centre-ville, Zerouala",
+    "phone": "0699 33 22 11",
+    "lat": 35.0833,
+    "lng": -0.5167,
+    "hours": {
+      "open": 8,
+      "close": 19
+    },
+    "onDuty": false
+  },
+  {
+    "id": 67,
+    "name": "صيدلية سيدي دحو",
+    "area": "الطريق الوطني",
+    "address": "RN, Sidi Dahou",
+    "phone": "0699 12 34 56",
+    "lat": 35.1,
+    "lng": -0.6833,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 68,
+    "name": "صيدلية عين تندامين",
+    "area": "حي السلام",
+    "address": "Cité Essalam, Aïn Tindamine",
+    "phone": "0775 44 33 22",
+    "lat": 34.6833,
+    "lng": -0.7167,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 69,
+    "name": "صيدلية وادي تاوريرة",
+    "area": "المركز البلدي",
+    "address": "APC, Oued Taourira",
+    "phone": "0555 44 33 22",
+    "lat": 34.8833,
+    "lng": -0.5667,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 70,
+    "name": "صيدلية الطابية",
+    "area": "نهج العربي بن مهيدي",
+    "address": "Rue Larbi Ben M'hidi, Tabia",
+    "phone": "0544 33 22 11",
+    "lat": 34.7333,
+    "lng": -0.65,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 71,
+    "name": "صيدلية تامزوغة",
+    "area": "الحي الجديد",
+    "address": "Nouveau Quartier, Tamzoura",
+    "phone": "0666 77 88 99",
+    "lat": 35.15,
+    "lng": -0.5667,
+    "hours": {
+      "open": 8,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 72,
+    "name": "صيدلية الضاية",
+    "area": "دوار الضاية",
+    "address": "Douar Edhaya, Dhaya",
+    "phone": null,
+    "lat": 34.6833,
+    "lng": -0.6167,
+    "hours": {
+      "open": 8.5,
+      "close": 19
+    },
+    "onDuty": false
+  },
+  {
+    "id": 73,
+    "name": "صيدلية سيدي علي بن يوب",
+    "area": "دوار سيدي علي",
+    "address": "Douar Sidi Ali Benyoub",
+    "phone": "0558 77 66 55",
+    "lat": 34.9333,
+    "lng": -0.6667,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 74,
+    "name": "صيدلية حاسي دحو",
+    "area": "المحطة",
+    "address": "La Gare, Hassi Dahou",
+    "phone": "0799 66 55 44",
+    "lat": 35.0667,
+    "lng": -0.5167,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 75,
+    "name": "صيدلية مسالم",
+    "area": "نهج العقيد",
+    "address": "Rue Colonel, Messalm",
+    "phone": "0665 44 33 22",
+    "lat": 34.85,
+    "lng": -0.5833,
+    "hours": {
+      "open": 8,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 76,
+    "name": "صيدلية الخميس",
+    "area": "نهج المدرسة",
+    "address": "Rue de l'École, El Khemis",
+    "phone": null,
+    "lat": 34.7167,
+    "lng": -0.5333,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 77,
+    "name": "صيدلية الورود",
+    "area": "حي الورود",
+    "address": "Cité El Wouroud",
+    "phone": "0795 33 22 11",
+    "lat": 34.95,
+    "lng": -0.5667,
+    "hours": {
+      "open": 8,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 78,
+    "name": "صيدلية عين الثريد",
+    "area": "الطريق الوطني 7",
+    "address": "RN7, Aïn Thrid",
+    "phone": "0543 22 11 00",
+    "lat": 35.2667,
+    "lng": -0.6333,
+    "hours": {
+      "open": 8.5,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 79,
+    "name": "صيدلية سيدي يعقوب",
+    "area": "نهج الاستقلال",
+    "address": "Rue de l'Indépendance, Sidi Yacoub",
+    "phone": "0549 88 77 66",
+    "lat": 35.05,
+    "lng": -0.6833,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 80,
+    "name": "صيدلية بلعربي",
+    "area": "شارع الشهيد",
+    "address": "Rue Chahid, Belarbi",
+    "phone": "0771 55 44 33",
+    "lat": 34.9,
+    "lng": -0.65,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 81,
+    "name": "صيدلية العمارنة",
+    "area": "نهج فلسطين",
+    "address": "Rue Palestine, El Amarna",
+    "phone": "0545 66 77 88",
+    "lat": 34.8,
+    "lng": -0.6,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 82,
+    "name": "صيدلية السهالة",
+    "area": "الطريق الولائي 12",
+    "address": "CW12, Sahala",
+    "phone": "0662 33 44 55",
+    "lat": 35.05,
+    "lng": -0.6167,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 83,
+    "name": "صيدلية أولاد خالد",
+    "area": "دوار أولاد خالد",
+    "address": "Douar Ouled Khaled",
+    "phone": "0777 88 99 00",
+    "lat": 34.95,
+    "lng": -0.35,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 84,
+    "name": "صيدلية أولاد علي",
+    "area": "دوار أولاد علي",
+    "address": "Douar Ouled Ali",
+    "phone": null,
+    "lat": 34.9333,
+    "lng": -0.4667,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 85,
+    "name": "صيدلية سيدي خالد",
+    "area": "الطريق الوطني",
+    "address": "RN, Sidi Khaled",
+    "phone": "0559 77 66 55",
+    "lat": 34.9833,
+    "lng": -0.6833,
+    "hours": {
+      "open": 8.5,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 86,
+    "name": "صيدلية عين قادة",
+    "area": "وسط البلدية",
+    "address": "Centre, Aïn Kada",
+    "phone": null,
+    "lat": 35.1333,
+    "lng": -0.5833,
+    "hours": {
+      "open": 8,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 87,
+    "name": "صيدلية سيدي ابراهيم",
+    "area": "نهج الشهيد",
+    "address": "Rue Chahid, Sidi Brahim",
+    "phone": "0667 88 99 00",
+    "lat": 35.1167,
+    "lng": -0.6333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 88,
+    "name": "صيدلية بويزرو",
+    "area": "وسط البلدية",
+    "address": "Centre, Bouizrou",
+    "phone": null,
+    "lat": 34.7333,
+    "lng": -0.5333,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 89,
+    "name": "صيدلية المقطع",
+    "area": "الحي البلدي",
+    "address": "Quartier Communal, El Mactaâ",
+    "phone": "0793 44 55 66",
+    "lat": 35.0833,
+    "lng": -0.6,
+    "hours": {
+      "open": 8,
+      "close": 19.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 90,
+    "name": "صيدلية رجوم دموش",
+    "area": "المركز",
+    "address": "Centre, Redjem Demouche",
+    "phone": null,
+    "lat": 34.4333,
+    "lng": -0.8,
+    "hours": {
+      "open": 8.5,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 91,
+    "name": "صيدلية تغاليمت",
+    "area": "دوار تغاليمت",
+    "address": "Douar Teghalimet",
+    "phone": "0546 77 88 99",
+    "lat": 34.85,
+    "lng": -0.6833,
+    "hours": {
+      "open": 8,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 92,
+    "name": "صيدلية بن عشيبة شلية",
+    "area": "الطريق الولائي",
+    "address": "CW, Benachiba Chelia",
+    "phone": null,
+    "lat": 35.0167,
+    "lng": -0.45,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 93,
+    "name": "صيدلية الشعيبة",
+    "area": "وسط",
+    "address": "Centre, Chaiba",
+    "phone": "0772 33 44 55",
+    "lat": 34.8167,
+    "lng": -0.5333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 94,
+    "name": "صيدلية المكدرة",
+    "area": "نهج أول نوفمبر",
+    "address": "Rue 1er Novembre, Makedra",
+    "phone": null,
+    "lat": 35.1167,
+    "lng": -0.6667,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 95,
+    "name": "صيدلية سيدي عمار",
+    "area": "الطريق الوطني 13",
+    "address": "RN13, Sidi Amar",
+    "phone": "0561 22 33 44",
+    "lat": 34.9833,
+    "lng": -0.5333,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 96,
+    "name": "صيدلية ضرية",
+    "area": "المركز البلدي",
+    "address": "APC, Dharia",
+    "phone": null,
+    "lat": 34.7667,
+    "lng": -0.55,
+    "hours": {
+      "open": 8,
+      "close": 19
+    },
+    "onDuty": false
+  },
+  {
+    "id": 97,
+    "name": "صيدلية شعيب",
+    "area": "نهج الجمهورية",
+    "address": "Rue République, Chouaib",
+    "phone": "0669 55 66 77",
+    "lat": 34.7333,
+    "lng": -0.5833,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 98,
+    "name": "صيدلية مولاي النبي",
+    "area": "حي الرجاء",
+    "address": "Cité Erraja, Moulay Ennabi",
+    "phone": null,
+    "lat": 35.0333,
+    "lng": -0.6,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 99,
+    "name": "صيدلية تافسور",
+    "area": "نهج الأمير",
+    "address": "Rue Emir, Tafessour",
+    "phone": "0680 55 44 33",
+    "lat": 34.8,
+    "lng": -0.6333,
+    "hours": {
+      "open": 8,
+      "close": 19.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 100,
+    "name": "صيدلية سيدي دحو الزاير",
+    "area": "حي النصر",
+    "address": "Cité Ennasr, Sidi Dahou Ezzair",
+    "phone": null,
+    "lat": 34.9833,
+    "lng": -0.7167,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 301,
+    "name": "صيدلية تلاغ الجديدة",
+    "area": "حي 20 أوت",
+    "address": "Cité 20 Août, Telagh",
+    "phone": "0660 12 34 56",
+    "lat": 34.786,
+    "lng": -0.585,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 302,
+    "name": "صيدلية الرائد تلاغ",
+    "area": "نهج الأمير عبد القادر",
+    "address": "Rue Emir AEK, Telagh",
+    "phone": null,
+    "lat": 34.782,
+    "lng": -0.587,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 303,
+    "name": "صيدلية سفيزف الشرقية",
+    "area": "حي النصر",
+    "address": "Cité Ennasr, Sfisef",
+    "phone": "0555 77 88 99",
+    "lat": 35.232,
+    "lng": -0.245,
+    "hours": {
+      "open": 8.5,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 304,
+    "name": "صيدلية الأمل سفيزف",
+    "area": "طريق سيدي بلعباس",
+    "address": "Route de SBA, Sfisef",
+    "phone": null,
+    "lat": 35.231,
+    "lng": -0.252,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 305,
+    "name": "صيدلية رأس الماء 24",
+    "area": "وسط المدينة",
+    "address": "Centre-ville, Ras El Ma",
+    "phone": "0790 11 22 33",
+    "lat": 34.501,
+    "lng": -0.818,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 306,
+    "name": "صيدلية بن باديس الجديدة",
+    "area": "حي المجاهد",
+    "address": "Cité Moudjahid, Ben Badis",
+    "phone": "0666 44 55 66",
+    "lat": 35.267,
+    "lng": -0.568,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 307,
+    "name": "صيدلية مرين 24",
+    "area": "الطريق الوطني",
+    "address": "RN, Merine",
+    "phone": "0550 99 88 77",
+    "lat": 34.784,
+    "lng": -0.468,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 308,
+    "name": "صيدلية تنيرة الجديدة",
+    "area": "حي الشمس",
+    "address": "Cité Soleil, Tenira",
+    "phone": null,
+    "lat": 35.017,
+    "lng": -0.535,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 309,
+    "name": "صيدلية عين البرد الغربية",
+    "area": "حي الرائد",
+    "address": "Cité Erraïd, Aïn El Berd",
+    "phone": "0770 55 44 33",
+    "lat": 35.365,
+    "lng": -0.518,
+    "hours": {
+      "open": 8,
+      "close": 22.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 310,
+    "name": "صيدلية تسالة 24",
+    "area": "وسط البلدية",
+    "address": "Centre, Tessala",
+    "phone": "0698 77 66 55",
+    "lat": 35.247,
+    "lng": -0.768,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 311,
+    "name": "صيدلية المكدرة الجديدة",
+    "area": "حي المستقبل",
+    "address": "Cité El Moustakbel, Makedra",
+    "phone": null,
+    "lat": 35.115,
+    "lng": -0.668,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 312,
+    "name": "صيدلية الحصايبة 24",
+    "area": "نهج الاستقلال",
+    "address": "Rue Indépendance, El Hacaiba",
+    "phone": "0545 88 99 00",
+    "lat": 34.699,
+    "lng": -0.752,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 313,
+    "name": "صيدلية مولاي سليسن الجديدة",
+    "area": "حي 8 ماي",
+    "address": "Cité 8 Mai, Moulay Slissen",
+    "phone": null,
+    "lat": 34.817,
+    "lng": -0.768,
+    "hours": {
+      "open": 8.5,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 314,
+    "name": "صيدلية زروالة 24",
+    "area": "الطريق الولائي",
+    "address": "CW, Zerouala",
+    "phone": "0560 33 44 55",
+    "lat": 35.082,
+    "lng": -0.518,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 315,
+    "name": "صيدلية سيدي دحو الجديدة",
+    "area": "حي الوفاء",
+    "address": "Cité El Wafa, Sidi Dahou",
+    "phone": null,
+    "lat": 35.099,
+    "lng": -0.685,
+    "hours": {
+      "open": 8,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 316,
+    "name": "صيدلية عين تندامين 24",
+    "area": "وسط",
+    "address": "Centre, Aïn Tindamine",
+    "phone": "0666 11 22 33",
+    "lat": 34.682,
+    "lng": -0.718,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 317,
+    "name": "صيدلية وادي تاوريرة الجديدة",
+    "area": "حي الشهيد",
+    "address": "Cité Chahid, Oued Taourira",
+    "phone": null,
+    "lat": 34.882,
+    "lng": -0.568,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 318,
+    "name": "صيدلية طابية 24",
+    "area": "طريق سفيزف",
+    "address": "Route de Sfisef, Tabia",
+    "phone": "0555 66 77 88",
+    "lat": 34.732,
+    "lng": -0.652,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 319,
+    "name": "صيدلية تامزوغة الجديدة",
+    "area": "حي النخيل",
+    "address": "Cité Nakhil, Tamzoura",
+    "phone": null,
+    "lat": 35.149,
+    "lng": -0.568,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 320,
+    "name": "صيدلية الضاية 24",
+    "area": "وسط البلدية",
+    "address": "Centre, Dhaya",
+    "phone": "0790 44 55 66",
+    "lat": 34.682,
+    "lng": -0.618,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 321,
+    "name": "صيدلية بئر الحمام الجديدة",
+    "area": "حي النور",
+    "address": "Cité Ennour, Bir El Hammam",
+    "phone": null,
+    "lat": 34.749,
+    "lng": -0.652,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 322,
+    "name": "صيدلية وادي السبع الجديدة",
+    "area": "حي الفتح",
+    "address": "Cité El Feth, Oued Seba",
+    "phone": "0565 88 77 66",
+    "lat": 34.951,
+    "lng": -0.552,
+    "hours": {
+      "open": 8,
+      "close": 22.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 323,
+    "name": "صيدلية بوجبهة البرج 2",
+    "area": "طريق سيدي بلعباس",
+    "address": "Route de SBA, Boujebha",
+    "phone": null,
+    "lat": 35.317,
+    "lng": -0.318,
+    "hours": {
+      "open": 8,
+      "close": 23
+    },
+    "onDuty": false
+  },
+  {
+    "id": 324,
+    "name": "صيدلية سيدي لحسن 24",
+    "area": "نهج الشهداء",
+    "address": "Rue des Martyrs, Sidi Lahssen",
+    "phone": "0770 33 44 55",
+    "lat": 35.151,
+    "lng": -0.702,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 325,
+    "name": "صيدلية حاسي زهانة الجديدة",
+    "area": "حي 1 نوفمبر",
+    "address": "Cité 1er Nov, Hassi Zahana",
+    "phone": null,
+    "lat": 35.032,
+    "lng": -0.735,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 326,
+    "name": "صيدلية سيدي علي بن يوب 24",
+    "area": "وسط البلدية",
+    "address": "Centre, Sidi Ali Benyoub",
+    "phone": "0698 55 66 77",
+    "lat": 34.932,
+    "lng": -0.668,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 327,
+    "name": "صيدلية حاسي دحو الجديدة",
+    "area": "حي الرجاء",
+    "address": "Cité Erraja, Hassi Dahou",
+    "phone": null,
+    "lat": 35.065,
+    "lng": -0.518,
+    "hours": {
+      "open": 8,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 328,
+    "name": "صيدلية مسالم 24",
+    "area": "الطريق الوطني",
+    "address": "RN, Messalm",
+    "phone": "0550 77 88 99",
+    "lat": 34.849,
+    "lng": -0.585,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 329,
+    "name": "صيدلية الخميس الجديدة",
+    "area": "حي الأمل",
+    "address": "Cité El Amel, El Khemis",
+    "phone": null,
+    "lat": 34.715,
+    "lng": -0.535,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 330,
+    "name": "صيدلية الورود 24",
+    "area": "وسط",
+    "address": "Centre, El Wouroud",
+    "phone": "0660 44 33 22",
+    "lat": 34.949,
+    "lng": -0.568,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 331,
+    "name": "صيدلية عين الثريد الجديدة",
+    "area": "حي السلام",
+    "address": "Cité Essalam, Aïn Thrid",
+    "phone": null,
+    "lat": 35.265,
+    "lng": -0.635,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 332,
+    "name": "صيدلية سيدي يعقوب 24",
+    "area": "طريق تلمسان",
+    "address": "Route de Tlemcen, Sidi Yacoub",
+    "phone": "0775 66 55 44",
+    "lat": 35.049,
+    "lng": -0.685,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 333,
+    "name": "صيدلية بلعربي الجديدة",
+    "area": "حي 5 جويلية",
+    "address": "Cité 5 Juillet, Belarbi",
+    "phone": null,
+    "lat": 34.899,
+    "lng": -0.652,
+    "hours": {
+      "open": 8,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 334,
+    "name": "صيدلية العمارنة 24",
+    "area": "وسط البلدية",
+    "address": "Centre, El Amarna",
+    "phone": "0565 33 44 55",
+    "lat": 34.799,
+    "lng": -0.602,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 335,
+    "name": "صيدلية السهالة الجديدة",
+    "area": "حي النجاح",
+    "address": "Cité Ennajah, Sahala",
+    "phone": null,
+    "lat": 35.049,
+    "lng": -0.618,
+    "hours": {
+      "open": 8.5,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 336,
+    "name": "صيدلية أولاد خالد 24",
+    "area": "الطريق الولائي",
+    "address": "CW, Ouled Khaled",
+    "phone": "0795 88 77 66",
+    "lat": 34.949,
+    "lng": -0.352,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 337,
+    "name": "صيدلية أولاد علي الجديدة",
+    "area": "حي القدس",
+    "address": "Cité El Qods, Ouled Ali",
+    "phone": null,
+    "lat": 34.932,
+    "lng": -0.468,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 338,
+    "name": "صيدلية سيدي خالد 24",
+    "area": "وسط",
+    "address": "Centre, Sidi Khaled",
+    "phone": "0666 77 88 99",
+    "lat": 34.982,
+    "lng": -0.685,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 339,
+    "name": "صيدلية عين قادة الجديدة",
+    "area": "حي الفلاح",
+    "address": "Cité El Fellah, Aïn Kada",
+    "phone": null,
+    "lat": 35.132,
+    "lng": -0.585,
+    "hours": {
+      "open": 8,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 340,
+    "name": "صيدلية سيدي ابراهيم 24",
+    "area": "طريق سيدي بلعباس",
+    "address": "Route de SBA, Sidi Brahim",
+    "phone": "0555 22 33 44",
+    "lat": 35.115,
+    "lng": -0.635,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 341,
+    "name": "صيدلية بويزرو الجديدة",
+    "area": "حي الأمير",
+    "address": "Cité El Amir, Bouizrou",
+    "phone": null,
+    "lat": 34.732,
+    "lng": -0.535,
+    "hours": {
+      "open": 8.5,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 342,
+    "name": "صيدلية المقطع 24",
+    "area": "وسط",
+    "address": "Centre, El Mactaâ",
+    "phone": "0690 55 66 77",
+    "lat": 35.082,
+    "lng": -0.602,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 343,
+    "name": "صيدلية رجوم دموش الجديدة",
+    "area": "حي النور",
+    "address": "Cité Ennour, Redjem Demouche",
+    "phone": null,
+    "lat": 34.432,
+    "lng": -0.802,
+    "hours": {
+      "open": 8,
+      "close": 20
+    },
+    "onDuty": false
+  },
+  {
+    "id": 344,
+    "name": "صيدلية تغاليمت 24",
+    "area": "الطريق الوطني",
+    "address": "RN, Teghalimet",
+    "phone": "0560 88 77 66",
+    "lat": 34.849,
+    "lng": -0.685,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 345,
+    "name": "صيدلية بن عشيبة شلية الجديدة",
+    "area": "حي الشهيد",
+    "address": "Cité Chahid, Benachiba Chelia",
+    "phone": null,
+    "lat": 35.015,
+    "lng": -0.452,
+    "hours": {
+      "open": 8.5,
+      "close": 22
+    },
+    "onDuty": false
+  },
+  {
+    "id": 346,
+    "name": "صيدلية الشعيبة 24",
+    "area": "وسط البلدية",
+    "address": "Centre, Chaiba",
+    "phone": "0770 11 22 33",
+    "lat": 34.815,
+    "lng": -0.535,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 347,
+    "name": "صيدلية سيدي عمار الجديدة",
+    "area": "حي الزيتون",
+    "address": "Cité Zitoune, Sidi Amar",
+    "phone": null,
+    "lat": 34.982,
+    "lng": -0.535,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false
+  },
+  {
+    "id": 348,
+    "name": "صيدلية ضرية 24",
+    "area": "وسط",
+    "address": "Centre, Dharia",
+    "phone": "0795 44 33 22",
+    "lat": 34.765,
+    "lng": -0.552,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 349,
+    "name": "صيدلية شعيب الجديدة",
+    "area": "حي الأمل",
+    "address": "Cité El Amel, Chouaib",
+    "phone": null,
+    "lat": 34.732,
+    "lng": -0.585,
+    "hours": {
+      "open": 8,
+      "close": 21.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 350,
+    "name": "صيدلية مولاي النبي 24",
+    "area": "طريق وهران",
+    "address": "Route d'Oran, Moulay Ennabi",
+    "phone": "0666 33 22 11",
+    "lat": 35.032,
+    "lng": -0.602,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 351,
+    "name": "صيدلية تافسور الجديدة",
+    "area": "حي النصر",
+    "address": "Cité Ennasr, Tafessour",
+    "phone": null,
+    "lat": 34.799,
+    "lng": -0.635,
+    "hours": {
+      "open": 8.5,
+      "close": 20.5
+    },
+    "onDuty": false
+  },
+  {
+    "id": 352,
+    "name": "صيدلية سيدي دحو الزاير 24",
+    "area": "وسط",
+    "address": "Centre, Sidi Dahou Ezzair",
+    "phone": "0550 55 44 33",
+    "lat": 34.982,
+    "lng": -0.718,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 353,
+    "name": "صيدلية مصطفى بن ابراهيم 24",
+    "area": "حي الفتح",
+    "address": "Cité El Feth, M. Ben Brahim",
+    "phone": null,
+    "lat": 35.197,
+    "lng": -0.368,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 354,
+    "name": "صيدلية بئر الحمام 24",
+    "area": "طريق تلمسان",
+    "address": "Route de Tlemcen, Bir El Hammam",
+    "phone": "0698 44 55 66",
+    "lat": 34.748,
+    "lng": -0.648,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  },
+  {
+    "id": 355,
+    "name": "صيدلية بن عشيبة 24",
+    "area": "الطريق الوطني 7",
+    "address": "RN7, Benachiba",
+    "phone": null,
+    "lat": 35.014,
+    "lng": -0.448,
+    "hours": {
+      "open": 0,
+      "close": 24
+    },
+    "onDuty": true
+  }
+]
