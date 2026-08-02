@@ -1,87 +1,64 @@
-const CACHE_NAME = "pharis-v4";
-const SHELL = ["./", "./index.html", "./manifest.json"];
-
-// أصول خارجية مهمة لتحسين العمل بدون إنترنت
-const EXTERNAL = [
-  "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
-  "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js",
-  "https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js",
-  "https://cdn.tailwindcss.com",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+const CACHE_NAME = 'pharis-v1';
+const STATIC_ASSETS = [
+  './',
+  './index.html',
+  './privacy.html',
+  './terms.html',
+  './manifest.json',
+  'https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js',
+  'https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js',
+  'https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js',
+  'https://cdn.tailwindcss.com',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js'
 ];
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      // لا نستخدم addAll حتى لا يفشل الكل بسبب ملف واحد
-      await Promise.allSettled(
-        [...SHELL, ...EXTERNAL].map((url) =>
-          cache.add(url).catch((err) => console.warn("[SW] skip", url, err))
-        )
-      );
-      await self.skipWaiting();
-    })()
+// Install: cache static shell
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
+  self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      );
-      await self.clients.claim();
-    })()
+// Activate: clean old caches
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    )
   );
+  self.clients.claim();
 });
 
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+// Fetch: stale-while-revalidate for static, network-first for data
+self.addEventListener('fetch', (e) => {
+  const { request } = e;
+  const url = new URL(request.url);
 
-  const url = new URL(event.request.url);
-
-  // طلبات API وخرائط → شبكة أولاً، بدون تخزين دائم
-  const isAPI =
-    url.hostname.includes("overpass") ||
-    url.hostname.includes("nominatim") ||
-    url.hostname.includes("firebase") ||
-    url.hostname.includes("googleapis") ||
-    url.hostname.includes("gstatic") ||
-    url.hostname.includes("openstreetmap") ||
-    url.hostname.includes("tile");
-
-  if (isAPI) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
+  // API calls (Nominatim, Overpass, Firebase) → network only with timeout
+  if (url.hostname.includes('openstreetmap') || url.hostname.includes('overpass') || url.hostname.includes('firestore')) {
+    e.respondWith(fetch(request).catch(() => caches.match(request)));
     return;
   }
 
-  // باقي الطلبات: كاش أولاً، ثم شبكة مع تحديث الكاش
-  event.respondWith(
-    (async () => {
-      const cached = await caches.match(event.request);
-      const fetchPromise = fetch(event.request)
-        .then(async (res) => {
-          if (res && res.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            if (
-              url.origin === self.location.origin ||
-              EXTERNAL.some((e) =>
-                event.request.url.startsWith(e.split("?")[0])
-              )
-            ) {
-              cache.put(event.request, res.clone());
-            }
+  // Static assets → cache first, then network
+  e.respondWith(
+    caches.match(request).then((cached) => {
+      const fetchPromise = fetch(request)
+        .then((networkRes) => {
+          if (networkRes && networkRes.ok) {
+            const clone = networkRes.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(request, clone));
           }
-          return res;
+          return networkRes;
         })
         .catch(() => cached);
-
       return cached || fetchPromise;
-    })()
+    })
   );
 });
