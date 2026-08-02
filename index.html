@@ -1372,6 +1372,7 @@ out center tags;`;
       const [loadingOSM, setLoadingOSM] = useState(false);
       const [submitted, setSubmitted] = useState([]);
       const [removedIds, setRemovedIds] = useState(new Set());
+      const [featuredMap, setFeaturedMap] = useState({}); // id -> true من Firestore
       const [complaints, setComplaints] = useState({});
       const [reportedByMe, setReportedByMe] = useState(new Set());
       const [favorites, setFavorites] = useState(() => {
@@ -1488,7 +1489,7 @@ out center tags;`;
         return unsub;
       }, []);
 
-      // Load submitted + removed
+      // Load submitted + removed + featured (مدفوع)
       useEffect(() => {
         if (!db) return;
         const place = WILAYAS.find(w => w.id === wilayaId)?.name;
@@ -1499,6 +1500,21 @@ out center tags;`;
         }
         db.collection("removed_pharmacies").get()
           .then(snap => setRemovedIds(new Set(snap.docs.map(d => isNaN(d.id) ? d.id : Number(d.id)))))
+          .catch(() => {});
+        // صيدليات مميزة / موثّقة من لوحة Firebase
+        db.collection("pharmacy_features").get()
+          .then(snap => {
+            const map = {};
+            snap.docs.forEach(d => {
+              const data = d.data() || {};
+              if (data.featured === true) {
+                map[d.id] = true;
+                map[String(d.id)] = true;
+                if (!isNaN(d.id)) map[Number(d.id)] = true;
+              }
+            });
+            setFeaturedMap(map);
+          })
           .catch(() => {});
       }, [wilayaId]);
 
@@ -1531,24 +1547,26 @@ out center tags;`;
 
       const allComputed = useMemo(() => {
         return baseList
-          .filter(ph => !removedIds.has(ph.id))
+          .filter(ph => !removedIds.has(ph.id) && !removedIds.has(String(ph.id)))
           .map(ph => {
             const status = computeStatus(ph, now);
             const distance = haversine(userLoc.lat, userLoc.lng, ph.lat, ph.lng);
-            const complaintCount = complaints[ph.id] || 0;
-            const r = ratings[ph.id] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
+            const complaintCount = complaints[ph.id] || complaints[String(ph.id)] || 0;
+            const r = ratings[ph.id] || ratings[String(ph.id)] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
+            const isFeatured = !!(ph.featured || featuredMap[ph.id] || featuredMap[String(ph.id)]);
             return {
               ...ph,
+              featured: isFeatured,
               status,
               distance,
               complaintCount,
               underReview: complaintCount >= COMPLAINT_THRESHOLD,
               avgRating: r.count > 0 ? r.sum / r.count : null,
               ratingCount: r.count,
-              isFavorite: favorites.has(ph.id)
+              isFavorite: favorites.has(ph.id) || favorites.has(String(ph.id))
             };
           });
-      }, [baseList, now, complaints, removedIds, ratings, favorites, userLoc]);
+      }, [baseList, now, complaints, removedIds, ratings, favorites, userLoc, featuredMap]);
 
       const list = useMemo(() => {
         return allComputed
