@@ -210,6 +210,10 @@
         worldwide: "أضف صيدليتك من أي مكان في العالم",
         reviewBtn: "قيد المراجعة ({n})",
         openLate: "مفتوحة ليلاً",
+        featuredBadge: "مميزة",
+        privacy: "الخصوصية",
+        terms: "الشروط",
+        aboutMoney: "للصيدليات: اظهر أولاً مع شارة موثّقة",
       },
       fr: {
         tagline: "Pharmacies de {place}, en direct",
@@ -301,6 +305,10 @@
         worldwide: "Ajoutez votre pharmacie de n'importe où",
         reviewBtn: "En revue ({n})",
         openLate: "Ouvert tard",
+        featuredBadge: "Mise en avant",
+        privacy: "Confidentialité",
+        terms: "Conditions",
+        aboutMoney: "Pharmacies : apparaissez en premier avec un badge vérifié",
       },
       en: {
         tagline: "{place} pharmacies, live",
@@ -392,6 +400,10 @@
         worldwide: "Add your pharmacy from anywhere in the world",
         reviewBtn: "Under review ({n})",
         openLate: "Open late",
+        featuredBadge: "Featured",
+        privacy: "Privacy",
+        terms: "Terms",
+        aboutMoney: "Pharmacies: rank higher with a verified badge",
       }
     };
 
@@ -1190,6 +1202,9 @@ out center tags;`;
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-semibold text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
                     {ph.name}
+                    {ph.featured && (
+                      <span className="text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded-full px-1.5 py-0.5 flex-shrink-0">{t("featuredBadge")}</span>
+                    )}
                   </h3>
                   <span className="font-mono text-xs text-stone-400 flex-shrink-0">
                     {ph.distance.toFixed(1)} {t("kmAway")}
@@ -1542,7 +1557,13 @@ out center tags;`;
           .filter(ph => filter === "urgent" ? ph.onDuty : true)
           .filter(ph => filter === "favorites" ? ph.isFavorite : true)
           .filter(ph => filter === "late" ? (ph.status.open && (ph.hours?.close > 22 || ph.onDuty)) : true)
-          .sort((a, b) => a.distance - b.distance);
+          .sort((a, b) => {
+            // الصيدليات المميزة أولاً (مصدر دخل)، ثم الأقرب
+            const fa = a.featured ? 1 : 0;
+            const fb = b.featured ? 1 : 0;
+            if (fa !== fb) return fb - fa;
+            return a.distance - b.distance;
+          });
       }, [allComputed, query, filter]);
 
       const openCount = list.filter(p => p.status.open).length;
@@ -1552,7 +1573,8 @@ out center tags;`;
         return allComputed
           .filter(ph => ph.status.open)
           .sort((a, b) => {
-            // 24h first, then by distance
+            // featured → 24h → distance
+            if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
             if (a.onDuty !== b.onDuty) return a.onDuty ? -1 : 1;
             return a.distance - b.distance;
           })
@@ -2244,6 +2266,17 @@ out center tags;`;
               </>
             )}
           </main>
+
+          {/* Footer — قانوني + عرض تجاري للصيدليات */}
+          <footer className="max-w-lg mx-auto px-4 pb-8 pt-2 text-center space-y-2">
+            <p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>
+            <div className="flex items-center justify-center gap-3 text-[11px]">
+              <a href="./privacy.html" className="text-brand-700 dark:text-brand-300 underline underline-offset-2">{t("privacy")}</a>
+              <span className="text-stone-300 dark:text-brand-700">·</span>
+              <a href="./terms.html" className="text-brand-700 dark:text-brand-300 underline underline-offset-2">{t("terms")}</a>
+            </div>
+            <p className="text-[10px] text-stone-400 dark:text-brand-600" dir="ltr">© {new Date().getFullYear()} Pharis</p>
+          </footer>
 
           {/* Detail Sheet */}
           {selectedLive && (
