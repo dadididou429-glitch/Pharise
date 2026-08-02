@@ -1230,44 +1230,89 @@ out center tags;`;
     function MapView({ pharmacies, userLoc, lang, onSelect }) {
       const mapRef = useRef(null);
       const mapInstance = useRef(null);
+      const markersLayer = useRef(null);
+      const userMarker = useRef(null);
 
+      // إنشاء الخريطة مرة واحدة
       useEffect(() => {
         if (!mapRef.current || mapInstance.current) return;
-        const map = L.map(mapRef.current, { zoomControl: false }).setView([userLoc.lat, userLoc.lng], 13);
+        const map = L.map(mapRef.current, { zoomControl: false }).setView(
+          [userLoc.lat, userLoc.lng],
+          13
+        );
         L.control.zoom({ position: "bottomright" }).addTo(map);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "© OpenStreetMap"
+          attribution: "© OpenStreetMap",
         }).addTo(map);
-
-        L.circleMarker([userLoc.lat, userLoc.lng], {
-          radius: 9, fillColor: "#3b82f6", color: "#fff", weight: 2.5, fillOpacity: 0.95
-        }).addTo(map).bindPopup(lang === "ar" ? "📍 أنت هنا" : lang === "fr" ? "📍 Vous êtes ici" : "📍 You are here");
-
-        const markers = [];
-        pharmacies.forEach(ph => {
-          const color = ph.status.open ? "#059669" : "#dc2626";
-          const m = L.circleMarker([ph.lat, ph.lng], {
-            radius: 11, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
-          }).addTo(map);
-          m.bindPopup(`<div style="font-family:sans-serif;text-align:${lang==="ar"?"right":"left"};direction:${lang==="ar"?"rtl":"ltr"};min-width:180px;padding:2px">
-            <b style="color:#064e3b">${ph.name}</b><br/>
-            <span style="font-size:12px;color:#666">${ph.area}</span><br/>
-            <span style="font-size:12px;font-weight:600;color:${ph.status.open?"#059669":"#dc2626"}">${ph.status.open ? "🟢 Open" : "🔴 Closed"}</span>
-          </div>`);
-          m.on("click", () => onSelect && onSelect(ph));
-          markers.push(m);
-        });
-
-        if (markers.length) {
-          const group = L.featureGroup(markers);
-          map.fitBounds(group.getBounds().pad(0.12));
-        }
+        markersLayer.current = L.layerGroup().addTo(map);
         mapInstance.current = map;
         return () => {
           map.remove();
           mapInstance.current = null;
+          markersLayer.current = null;
+          userMarker.current = null;
         };
       }, []);
+
+      // تحديث العلامات والموقع عند التغيير
+      useEffect(() => {
+        const map = mapInstance.current;
+        if (!map || !markersLayer.current) return;
+
+        markersLayer.current.clearLayers();
+        if (userMarker.current) {
+          map.removeLayer(userMarker.current);
+        }
+
+        const youAreHere =
+          lang === "ar" ? "📍 أنت هنا" : lang === "fr" ? "📍 Vous êtes ici" : "📍 You are here";
+        const openLabel =
+          lang === "ar" ? "🟢 مفتوحة" : lang === "fr" ? "🟢 Ouverte" : "🟢 Open";
+        const closedLabel =
+          lang === "ar" ? "🔴 مغلقة" : lang === "fr" ? "🔴 Fermée" : "🔴 Closed";
+
+        userMarker.current = L.circleMarker([userLoc.lat, userLoc.lng], {
+          radius: 9,
+          fillColor: "#3b82f6",
+          color: "#fff",
+          weight: 2.5,
+          fillOpacity: 0.95,
+        })
+          .addTo(map)
+          .bindPopup(youAreHere);
+
+        const markers = [];
+        pharmacies.forEach((ph) => {
+          if (!ph.lat || !ph.lng) return;
+          const color = ph.status.open ? "#059669" : "#dc2626";
+          const m = L.circleMarker([ph.lat, ph.lng], {
+            radius: 11,
+            fillColor: color,
+            color: "#fff",
+            weight: 2,
+            fillOpacity: 0.9,
+          });
+          m.bindPopup(`<div style="font-family:sans-serif;text-align:${
+            lang === "ar" ? "right" : "left"
+          };direction:${lang === "ar" ? "rtl" : "ltr"};min-width:180px;padding:2px">
+            <b style="color:#064e3b">${ph.name}</b><br/>
+            <span style="font-size:12px;color:#666">${ph.area || ""}</span><br/>
+            <span style="font-size:12px;font-weight:600;color:${
+              ph.status.open ? "#059669" : "#dc2626"
+            }">${ph.status.open ? openLabel : closedLabel}</span>
+          </div>`);
+          m.on("click", () => onSelect && onSelect(ph));
+          markersLayer.current.addLayer(m);
+          markers.push(m);
+        });
+
+        if (markers.length > 0) {
+          const group = L.featureGroup(markers);
+          map.fitBounds(group.getBounds().pad(0.12));
+        } else {
+          map.setView([userLoc.lat, userLoc.lng], 13);
+        }
+      }, [pharmacies, userLoc, lang, onSelect]);
 
       return <div ref={mapRef} className="w-full h-full min-h-[50vh] rounded-2xl" />;
     }
