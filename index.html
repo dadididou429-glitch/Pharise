@@ -477,7 +477,9 @@
       const cached = await getFromDB('pharmacies', wilayaName, 7 * 24 * 3600 * 1000);
       if (cached) return cached;
       try {
-        const res = await fetch(file);
+        const base = window.location.pathname.replace(/\/[^\/]*$/, '/');
+        const res = await fetch(base + file);
+        if (!res.ok) throw new Error('Failed to load');
         const data = await res.json();
         await cacheInDB('pharmacies', wilayaName, data);
         return data;
@@ -510,7 +512,7 @@
     // ═══════════════════════════════════════════════════════════
     // DATA — placeholder (loaded lazily)
     // ═══════════════════════════════════════════════════════════
-    let LOCAL_PHARMACIES = [];
+    // Local data loaded via useState
 
 
 
@@ -1335,6 +1337,20 @@ out center tags;`;
       }, [selected?.id]);
 
       // Computed list
+      const [localData, setLocalData] = useState([]);
+
+      // Lazy load local data when wilaya changes
+      useEffect(() => {
+        async function load() {
+          if (wilayaId === 999) { setLocalData([]); return; }
+          const w = WILAYAS.find(x => x.id === wilayaId);
+          if (!w) return;
+          const data = await loadLocalData(w.name);
+          setLocalData(data.map(p => ({ ...p, wilaya: w.name, commune: p.area, verified: true })));
+        }
+        load();
+      }, [wilayaId]);
+
       const baseList = useMemo(() => {
         const submittedMapped = submitted.map(p => ({
           ...p,
@@ -1344,25 +1360,8 @@ out center tags;`;
           ratingSum: 0,
           ratingCount: 0
         }));
-        return [...LOCAL_PHARMACIES, ...submittedMapped, ...osmPharmacies];
-      }, [submitted, osmPharmacies]);
-
-      // Lazy load local data when wilaya changes
-      useEffect(() => {
-        async function load() {
-          if (wilayaId === 999) {
-            LOCAL_PHARMACIES = [];
-            return;
-          }
-          const w = WILAYAS.find(x => x.id === wilayaId);
-          if (!w) return;
-          const data = await loadLocalData(w.name);
-          LOCAL_PHARMACIES = data.map(p => ({ ...p, wilaya: w.name, commune: p.area, verified: true }));
-          // Force re-render
-          setToast(null);
-        }
-        load();
-      }, [wilayaId]);
+        return [...localData, ...submittedMapped, ...osmPharmacies];
+      }, [localData, submitted, osmPharmacies]);
 
       const allComputed = useMemo(() => {
         return baseList
