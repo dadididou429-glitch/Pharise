@@ -2404,7 +2404,20 @@ out center tags;`;
               <a href="./terms.html" className="text-brand-700 dark:text-brand-300 underline underline-offset-2">{t("terms")}</a>
             </div>
             <p className="text-[10px] text-stone-400 dark:text-brand-600" dir="ltr">© {new Date().getFullYear()} Pharis</p>
-          </footer>
+          
+            {/* Share App Section */}
+            <div class="mt-4 mb-3 bg-brand-800 rounded-2xl p-4 border border-brand-700">
+              <p class="text-sm font-bold text-brand-100 mb-2">📲 حمّل التطبيق مباشرة</p>
+              <p class="text-[11px] text-brand-300 mb-3">شارك رابط التحميل مع الأصدقاء والعائلة</p>
+              <button onclick="shareApp()" class="w-full flex items-center justify-center gap-2 bg-brand-400 text-brand-950 rounded-xl py-2.5 text-sm font-bold hover:bg-brand-300 transition">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                مشاركة رابط التحميل
+              </button>
+            </div>
+</footer>
 
           {/* Detail Sheet */}
           {selectedLive && (
@@ -2874,5 +2887,28 @@ out center tags;`;
       window.dispatchEvent(new Event("pharis-installable"));
     });
   </script>
+
+  <script>
+    function shareApp() {
+      const apkUrl = "https://github.com/dadididou429-glitch/Pharise/releases/download/V1.0/Pharise.apk";
+      const shareText = "🚀 حمّل تطبيق Pharis واعثر على أقرب صيدلية مفتوحة!\n\n📲 رابط التحميل المباشر:";
+
+      if (navigator.share) {
+        navigator.share({
+          title: "Pharis - صيدليات مفتوحة",
+          text: shareText,
+          url: apkUrl
+        }).catch(() => {});
+      } else {
+        const fullText = shareText + "\n" + apkUrl;
+        navigator.clipboard.writeText(fullText).then(() => {
+          alert("✅ تم نسخ رابط التحميل! الصقه في واتساب أو أي تطبيق");
+        }).catch(() => {
+          window.open(apkUrl, "_blank");
+        });
+      }
+    }
+  </script>
+
 </body>
 </html>
