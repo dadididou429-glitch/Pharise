@@ -1084,7 +1084,7 @@
       for (const endpoint of OVERPASS_ENDPOINTS) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 22000);
+          const timer = setTimeout(() => controller.abort(), 14000);
           const res = await fetch(endpoint, {
             method: "POST",
             body: "data=" + encodeURIComponent(query),
@@ -1103,20 +1103,18 @@
       throw lastErr || new Error("All Overpass endpoints failed");
     }
 
-    // Core: fetch real pharmacies around a point (nodes + ways)
-    async function fetchOSMPharmacies(lat, lng, radius = 15000) {
+    // Core: fetch real pharmacies around a point — أسرع
+    async function fetchOSMPharmacies(lat, lng, radius = 12000) {
       const cacheKey = `near_${lat.toFixed(3)}_${lng.toFixed(3)}_${radius}`;
       const cached = getOSMCache(cacheKey);
       if (cached && cached.length > 0) return cached;
 
-      // Query both nodes and ways, with center for buildings
-      const query = `[out:json][timeout:20];
+      const query = `[out:json][timeout:12];
 (
   node["amenity"="pharmacy"](around:${radius},${lat},${lng});
   way["amenity"="pharmacy"](around:${radius},${lat},${lng});
   node["healthcare"="pharmacy"](around:${radius},${lat},${lng});
   way["healthcare"="pharmacy"](around:${radius},${lat},${lng});
-  node["shop"="pharmacy"](around:${radius},${lat},${lng});
 );
 out center tags;`;
 
@@ -1441,50 +1439,107 @@ out center tags;`;
         document.documentElement.classList.toggle("dark", dark);
       }, [dark]);
 
-      // Geolocation
+      // Geolocation — تحديد الموقع تلقائياً + جلب محلي + OSM دفعة واحدة وبسرعة
       useEffect(() => {
         if (!navigator.geolocation) {
           setLocating(false);
           setGeoError("unsupported");
           return;
         }
+
+        const WILAYA_ALIASES = {
+          16: ["الجزائر", "alger", "algiers", "alger centre", "باب الوادي"],
+          31: ["وهران", "oran", "wahran"],
+          22: ["سيدي بلعباس", "sidi bel abbes", "sidi bel abbès", "sidi-bel-abbes", "bel abbes"],
+        };
+
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             setUserLoc({ lat, lng });
+            setLoadingOSM(true);
+
+            // جلب الاسم + الصيدليات من الخريطة بالتوازي (أسرع)
+            const reverseP = fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ar,en,fr`,
+              { headers: { "Accept-Language": "ar,en,fr" } }
+            )
+              .then((r) => r.json())
+              .catch(() => null);
+
+            const osmP = fetchOSMPharmacies(lat, lng, 12000).catch(() => []);
+
             try {
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${lang}`);
-              const data = await res.json();
-              const addr = data.address || {};
-              const state = addr.state || addr.city || "";
-              const match = WILAYAS.find(w => w.enabled && w.id !== 999 && (state.includes(w.name) || w.name.includes(state)));
-              if (match) {
-                setWilayaId(match.id);
-                setCurrentPlace(match.name);
-              } else {
-                // Outside local data cities → load real OSM pharmacies near user
-                const place = addr.city || addr.town || addr.village || addr.state || "";
-                if (place) setCurrentPlace(place);
-                try {
-                  setLoadingOSM(true);
-                  const data = await fetchOSMPharmacies(lat, lng, 15000);
-                  if (data.length > 0) {
-                    setOsmPharmacies(data);
-                    setWilayaId(999);
-                    setCurrentPlace(place || (lang === "ar" ? "قريب منك" : "Near you"));
-                  }
-                } catch (e) {
-                  console.error(e);
-                } finally {
-                  setLoadingOSM(false);
+              const [geoData, osmData] = await Promise.all([reverseP, osmP]);
+
+              // دائماً ندمج نتائج الخريطة مع المحلية
+              if (Array.isArray(osmData) && osmData.length > 0) {
+                setOsmPharmacies(osmData);
+              }
+
+              const addr = (geoData && geoData.address) || {};
+              const cc = (addr.country_code || "").toUpperCase();
+              if (cc && COUNTRIES.some((c) => c.id === cc)) {
+                setCountryId(cc);
+              } else if (cc) {
+                setCountryId("OTHER");
+              }
+
+              const placeName =
+                addr.city || addr.town || addr.village || addr.municipality || addr.state || addr.county || "";
+              const hay = (
+                placeName +
+                " " +
+                (addr.state || "") +
+                " " +
+                (addr.county || "") +
+                " " +
+                (addr.suburb || "")
+              )
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+              let matched = null;
+              for (const w of WILAYAS) {
+                if (!w.enabled || w.id === 999) continue;
+                const aliases = WILAYA_ALIASES[w.id] || [w.name];
+                if (aliases.some((a) => hay.includes(String(a).toLowerCase()))) {
+                  matched = w;
+                  break;
                 }
               }
-            } catch {}
+
+              if (matched) {
+                // مدينة محلية: بيانات ثابتة + OSM معاً
+                setWilayaId(matched.id);
+                setCurrentPlace(matched.name);
+              } else {
+                // أي مكان آخر في العالم: OSM فقط حول المستخدم
+                setWilayaId(999);
+                setCurrentPlace(
+                  placeName ||
+                    (lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you")
+                );
+              }
+            } catch (e) {
+              console.error(e);
+            } finally {
+              setLoadingOSM(false);
+              setLocating(false);
+            }
+          },
+          () => {
+            setGeoError("denied");
             setLocating(false);
           },
-          () => { setGeoError("denied"); setLocating(false); },
-          { timeout: 12000, enableHighAccuracy: true }
+          {
+            // أسرع على الهاتف: لا ننتظر GPS عالي الدقة
+            enableHighAccuracy: false,
+            timeout: 8000,
+            maximumAge: 120000,
+          }
         );
       }, []);
 
