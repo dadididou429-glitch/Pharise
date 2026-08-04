@@ -1,35 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Pharis">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#022c22"/>
-      <stop offset="100%" stop-color="#064e3b"/>
-    </linearGradient>
-    <linearGradient id="cap" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#6ee7b7"/>
-      <stop offset="45%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#059669"/>
-    </linearGradient>
-    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
-      <stop offset="50%" stop-color="#ffffff" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <!-- Rounded square background -->
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <!-- Soft inner glow -->
-  <rect x="24" y="24" width="464" height="464" rx="96" fill="none" stroke="#10b981" stroke-opacity="0.15" stroke-width="4"/>
-  <!-- Capsule body (vertical) -->
-  <g transform="translate(256 256)">
-    <!-- Capsule outline shadow -->
-    <rect x="-70" y="-150" width="140" height="300" rx="70" fill="#000000" opacity="0.2" transform="translate(6 8)"/>
-    <!-- Lower half darker -->
-    <path d="M-70 0 v80 a70 70 0 0 0 140 0 v-80 z" fill="#047857"/>
-    <!-- Upper half bright -->
-    <path d="M-70 0 v-80 a70 70 0 0 1 140 0 v80 z" fill="url(#cap)"/>
-    <!-- Center band -->
-    <rect x="-72" y="-10" width="144" height="20" fill="#022c22" opacity="0.35"/>
-    <!-- Shine -->
-    <rect x="-48" y="-130" width="28" height="120" rx="14" fill="url(#shine)"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0f172a"/>
+  <circle cx="256" cy="256" r="160" fill="#1e293b"/>
+  <circle cx="256" cy="256" r="100" fill="#3b82f6"/>
+  <circle cx="256" cy="256" r="40" fill="#ffffff"/>
+  <path d="M256 120 L280 200 L360 200 L300 250 L320 330 L256 280 L192 330 L212 250 L152 200 L232 200 Z" fill="#60a5fa" opacity="0.9"/>
 </svg>

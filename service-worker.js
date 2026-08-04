@@ -1,7 +1,6 @@
-const CACHE_NAME = "pharis-v7";
+const CACHE_NAME = "pharis-v8";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
-// أصول خارجية مهمة لتحسين العمل بدون إنترنت
 const EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
   "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js",
@@ -15,7 +14,6 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      // لا نستخدم addAll حتى لا يفشل الكل بسبب ملف واحد
       await Promise.allSettled(
         [...SHELL, ...EXTERNAL].map((url) =>
           cache.add(url).catch((err) => console.warn("[SW] skip", url, err))
@@ -38,12 +36,17 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
 
-  // طلبات API وخرائط → شبكة أولاً، بدون تخزين دائم
   const isAPI =
     url.hostname.includes("overpass") ||
     url.hostname.includes("nominatim") ||
@@ -60,19 +63,17 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // باقي الطلبات: كاش أولاً، ثم شبكة مع تحديث الكاش
   event.respondWith(
     (async () => {
       const cached = await caches.match(event.request);
+
       const fetchPromise = fetch(event.request)
         .then(async (res) => {
           if (res && res.ok) {
             const cache = await caches.open(CACHE_NAME);
             if (
               url.origin === self.location.origin ||
-              EXTERNAL.some((e) =>
-                event.request.url.startsWith(e.split("?")[0])
-              )
+              EXTERNAL.some((e) => event.request.url.startsWith(e.split("?")[0]))
             ) {
               cache.put(event.request, res.clone());
             }
