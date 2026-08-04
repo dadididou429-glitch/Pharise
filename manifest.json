@@ -1,21 +1,29 @@
 {
   "name": "Pharis — صيدليات مفتوحة",
   "short_name": "Pharis",
+  "description": "Find open pharmacies near you in real time. Algeria & worldwide.",
+  "id": "./index.html",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#022c22",
   "theme_color": "#022c22",
-  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23022c22'/%3E%3Cpath d='M67 48h58v38h38v58h-38v38H67v-38H29V86h38V48z' fill='%2334d399'/%3E%3C/svg%3E",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%23022c22'/%3E%3Cpath d='M179 128h154v102h102v154h-102v102H179v-102H77V230h102V128z' fill='%2334d399'/%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "categories": ["health", "medical", "utilities"]
 }

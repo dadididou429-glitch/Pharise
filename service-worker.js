@@ -1,5 +1,5 @@
-const CACHE_NAME = "pharis-v6";
-const SHELL = ["./", "./index.html", "./manifest.json"];
+const CACHE_NAME = "pharis-v7";
+const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 // أصول خارجية مهمة لتحسين العمل بدون إنترنت
 const EXTERNAL = [
