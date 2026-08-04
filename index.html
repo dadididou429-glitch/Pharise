@@ -1709,6 +1709,32 @@ out center tags;`;
         window.__pharisInstallPrompt = null;
       };
 
+      const shareApp = () => {
+        const apkUrl = "https://github.com/dadididou429-glitch/Pharise/releases/download/V1.0/Pharise.apk";
+        const shareText = lang === "ar" 
+          ? "🚀 حمّل تطبيق Pharis واعثر على أقرب صيدلية مفتوحة!"
+          : lang === "fr"
+          ? "🚀 Téléchargez Pharis et trouvez la pharmacie ouverte la plus proche !"
+          : "🚀 Download Pharis and find the nearest open pharmacy!";
+
+        if (navigator.share) {
+          navigator.share({
+            title: "Pharis - Open Pharmacies",
+            text: shareText,
+            url: apkUrl
+          }).catch(() => {});
+        } else {
+          const fullText = shareText + "
+
+" + apkUrl;
+          navigator.clipboard.writeText(fullText).then(() => {
+            showToast(lang === "ar" ? "✅ تم نسخ رابط التحميل!" : lang === "fr" ? "✅ Lien copié!" : "✅ Link copied!");
+          }).catch(() => {
+            window.open(apkUrl, "_blank");
+          });
+        }
+      };
+
       const toggleFavorite = (id, name) => {
         setFavorites(prev => {
           const next = new Set(prev);
@@ -2020,7 +2046,7 @@ out center tags;`;
       return (
         <div dir={dir} className={`min-h-screen ${dark ? "dark bg-brand-950 text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
           {/* Header */}
-          <header className="sticky top-0 z-20 bg-brand-950 text-brand-50 px-4 pt-3 pb-4 rounded-b-2xl shadow-lg">
+          <header className="sticky top-0 z-20 bg-brand-950 text-brand-50 px-4 pt-2 pb-2 rounded-b-2xl shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-brand-800 flex items-center justify-center shadow-md overflow-hidden">
@@ -2032,6 +2058,9 @@ out center tags;`;
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
+                <button onClick={() => shareApp()} className="p-1.5 rounded-lg hover:bg-brand-900 transition text-brand-300" title={lang === "ar" ? "مشاركة التطبيق" : lang === "fr" ? "Partager l'app" : "Share app"}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </button>
                 <button onClick={() => setDark(d => !d)} className="p-1.5 rounded-lg hover:bg-brand-900 transition" title={dark ? t("lightMode") : t("darkMode")}>
                   {dark ? <Icons.Sun className="w-4 h-4 text-brand-300" /> : <Icons.Moon className="w-4 h-4 text-brand-300" />}
                 </button>
@@ -2045,7 +2074,7 @@ out center tags;`;
             {/* Location button */}
             <button
               onClick={() => setShowLocationPicker(s => !s)}
-              className={`mt-3 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
+              className={`mt-2 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
             >
               <span className="flex items-center gap-2 text-sm font-medium">
                 <Icons.MapPin className="w-4 h-4" />
@@ -2057,7 +2086,7 @@ out center tags;`;
             </button>
 
             {/* Language */}
-            <div className="flex gap-1.5 mt-2">
+            <div className="flex gap-1.5 mt-1.5">
               {[{ code: "ar", label: "العربية" }, { code: "fr", label: "Français" }, { code: "en", label: "English" }].map(l => (
                 <button
                   key={l.code}
@@ -2070,12 +2099,12 @@ out center tags;`;
             </div>
 
             {/* Pharmacy Owner CTA */}
-            <a href="./pharmacy-owner.html" className="mt-2 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
+            <a href="./pharmacy-owner.html" className="mt-1.5 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
               🏥 {t("aboutMoney")}
             </a>
             {/* Location picker panel */}
             {showLocationPicker && (
-              <div className="mt-3 bg-brand-950 rounded-2xl p-3 max-h-[60vh] overflow-y-auto border border-brand-800 space-y-3 scrollbar-thin animate-fade-in">
+              <div className="mt-2 bg-brand-950 rounded-2xl p-2.5 max-h-[50vh] overflow-y-auto border border-brand-800 space-y-3 scrollbar-thin animate-fade-in">
                 {/* 1. Country — immediate change */}
                 <div>
                   <p className="text-xs text-brand-300 px-1 pb-2 font-medium">{t("country")}</p>
@@ -2116,7 +2145,7 @@ out center tags;`;
                         <button
                           key={i}
                           onClick={() => selectCity(city)}
-                          className="w-full text-start text-sm px-3 py-2.5 text-brand-100 hover:bg-brand-700 transition flex items-center justify-between border-b border-brand-800/50 last:border-0"
+                          className="w-full text-start text-sm px-3 py-2 text-brand-100 hover:bg-brand-700 transition flex items-center justify-between border-b border-brand-800/50 last:border-0"
                         >
                           <span className="font-medium">{lang === "en" && city.nameEn ? city.nameEn : city.name}</span>
                           {city.wilayaId && <span className="text-[10px] text-brand-400 bg-brand-800 px-1.5 py-0.5 rounded">محلي</span>}
@@ -2157,13 +2186,13 @@ out center tags;`;
             )}
 
             {/* Stats */}
-            <div className="mt-3 flex items-baseline gap-2">
+            <div className="mt-2 flex items-baseline gap-2">
               <span className="text-3xl font-bold font-mono text-brand-400">{openCount}</span>
               <span className="text-xs text-brand-200">{t("openStat", { total: list.length })}</span>
             </div>
 
             {/* Search */}
-            <div className="mt-3 relative">
+            <div className="mt-2 relative">
               <Icons.Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-brand-500 ${dir === "rtl" ? "right-3" : "left-3"}`} />
               <input
                 value={query}
@@ -2174,7 +2203,7 @@ out center tags;`;
             </div>
 
             {/* Filters */}
-            <div className="flex gap-1.5 mt-2.5 flex-wrap">
+            <div className="flex gap-1.5 mt-2 flex-wrap">
               <button
                 onClick={() => { setEmergencyMode(true); if (analytics) analytics.logEvent("emergency_mode_opened", { city: currentPlace }); setShowMap(false); }}
                 className={`px-2.5 py-1 rounded-full text-xs font-bold transition ${emergencyMode ? "bg-rose-500 text-white shadow-md" : "bg-rose-950/70 text-rose-300"}`}
@@ -2405,18 +2434,7 @@ out center tags;`;
             </div>
             <p className="text-[10px] text-stone-400 dark:text-brand-600" dir="ltr">© {new Date().getFullYear()} Pharis</p>
           
-            {/* Share App Section */}
-            <div class="mt-4 mb-3 bg-brand-800 rounded-2xl p-4 border border-brand-700">
-              <p class="text-sm font-bold text-brand-100 mb-2">📲 حمّل التطبيق مباشرة</p>
-              <p class="text-[11px] text-brand-300 mb-3">شارك رابط التحميل مع الأصدقاء والعائلة</p>
-              <button onclick="shareApp()" class="w-full flex items-center justify-center gap-2 bg-brand-400 text-brand-950 rounded-xl py-2.5 text-sm font-bold hover:bg-brand-300 transition">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
-                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                </svg>
-                مشاركة رابط التحميل
-              </button>
-            </div>
+
 </footer>
 
           {/* Detail Sheet */}
@@ -2886,28 +2904,6 @@ out center tags;`;
       window.__pharisInstallPrompt = e;
       window.dispatchEvent(new Event("pharis-installable"));
     });
-  </script>
-
-  <script>
-    function shareApp() {
-      const apkUrl = "https://github.com/dadididou429-glitch/Pharise/releases/download/V1.0/Pharise.apk";
-      const shareText = "🚀 حمّل تطبيق Pharis واعثر على أقرب صيدلية مفتوحة!\n\n📲 رابط التحميل المباشر:";
-
-      if (navigator.share) {
-        navigator.share({
-          title: "Pharis - صيدليات مفتوحة",
-          text: shareText,
-          url: apkUrl
-        }).catch(() => {});
-      } else {
-        const fullText = shareText + "\n" + apkUrl;
-        navigator.clipboard.writeText(fullText).then(() => {
-          alert("✅ تم نسخ رابط التحميل! الصقه في واتساب أو أي تطبيق");
-        }).catch(() => {
-          window.open(apkUrl, "_blank");
-        });
-      }
-    }
   </script>
 
 </body>
