@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v4</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v5</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -905,9 +905,64 @@
     };
 
     const WILAYAS = [
+      { id: 1,  name: "أدرار", nameFr: "Adrar", nameEn: "Adrar", lat: 27.8742, lng: -0.2939, enabled: true },
+      { id: 2,  name: "الشلف", nameFr: "Chlef", nameEn: "Chlef", lat: 36.1652, lng: 1.3345, enabled: true },
+      { id: 3,  name: "الأغواط", nameFr: "Laghouat", nameEn: "Laghouat", lat: 33.8000, lng: 2.8650, enabled: true },
+      { id: 4,  name: "أم البواقي", nameFr: "Oum El Bouaghi", nameEn: "Oum El Bouaghi", lat: 35.8750, lng: 7.1140, enabled: true },
+      { id: 5,  name: "باتنة", nameFr: "Batna", nameEn: "Batna", lat: 35.5550, lng: 6.1740, enabled: true },
+      { id: 6,  name: "بجاية", nameFr: "Béjaïa", nameEn: "Bejaia", lat: 36.7500, lng: 5.0833, enabled: true },
+      { id: 7,  name: "بسكرة", nameFr: "Biskra", nameEn: "Biskra", lat: 34.8500, lng: 5.7333, enabled: true },
+      { id: 8,  name: "بشار", nameFr: "Béchar", nameEn: "Bechar", lat: 31.6167, lng: -2.2167, enabled: true },
+      { id: 9,  name: "البليدة", nameFr: "Blida", nameEn: "Blida", lat: 36.4700, lng: 2.8300, enabled: true },
+      { id: 10, name: "البويرة", nameFr: "Bouira", nameEn: "Bouira", lat: 36.3800, lng: 3.9000, enabled: true },
+      { id: 11, name: "تمنراست", nameFr: "Tamanrasset", nameEn: "Tamanrasset", lat: 22.7850, lng: 5.5228, enabled: true },
+      { id: 12, name: "تبسة", nameFr: "Tébessa", nameEn: "Tebessa", lat: 35.4000, lng: 8.1167, enabled: true },
+      { id: 13, name: "تلمسان", nameFr: "Tlemcen", nameEn: "Tlemcen", lat: 34.8783, lng: -1.3150, enabled: true },
+      { id: 14, name: "تيارت", nameFr: "Tiaret", nameEn: "Tiaret", lat: 35.3700, lng: 1.3200, enabled: true },
+      { id: 15, name: "تيزي وزو", nameFr: "Tizi Ouzou", nameEn: "Tizi Ouzou", lat: 36.7167, lng: 4.0500, enabled: true },
       { id: 16, name: "الجزائر", nameFr: "Alger", nameEn: "Algiers", lat: 36.7538, lng: 3.0588, enabled: true },
-      { id: 31, name: "وهران", nameFr: "Oran", nameEn: "Oran", lat: 35.6971, lng: -0.6308, enabled: true },
+      { id: 17, name: "الجلفة", nameFr: "Djelfa", nameEn: "Djelfa", lat: 34.6700, lng: 3.2500, enabled: true },
+      { id: 18, name: "جيجل", nameFr: "Jijel", nameEn: "Jijel", lat: 36.8200, lng: 5.7700, enabled: true },
+      { id: 19, name: "سطيف", nameFr: "Sétif", nameEn: "Setif", lat: 36.1900, lng: 5.4100, enabled: true },
+      { id: 20, name: "سعيدة", nameFr: "Saïda", nameEn: "Saida", lat: 34.8300, lng: 0.1500, enabled: true },
+      { id: 21, name: "سكيكدة", nameFr: "Skikda", nameEn: "Skikda", lat: 36.8667, lng: 6.9000, enabled: true },
       { id: 22, name: "سيدي بلعباس", nameFr: "Sidi Bel Abbès", nameEn: "Sidi Bel Abbès", lat: 35.1917, lng: -0.6355, enabled: true },
+      { id: 23, name: "عنابة", nameFr: "Annaba", nameEn: "Annaba", lat: 36.9000, lng: 7.7667, enabled: true },
+      { id: 24, name: "قالمة", nameFr: "Guelma", nameEn: "Guelma", lat: 36.4620, lng: 7.4260, enabled: true },
+      { id: 25, name: "قسنطينة", nameFr: "Constantine", nameEn: "Constantine", lat: 36.3650, lng: 6.6147, enabled: true },
+      { id: 26, name: "المدية", nameFr: "Médéa", nameEn: "Medea", lat: 36.2675, lng: 2.7500, enabled: true },
+      { id: 27, name: "مستغانم", nameFr: "Mostaganem", nameEn: "Mostaganem", lat: 35.9333, lng: 0.0900, enabled: true },
+      { id: 28, name: "المسيلة", nameFr: "M'Sila", nameEn: "MSila", lat: 35.7058, lng: 4.5419, enabled: true },
+      { id: 29, name: "معسكر", nameFr: "Mascara", nameEn: "Mascara", lat: 35.4000, lng: 0.1400, enabled: true },
+      { id: 30, name: "ورقلة", nameFr: "Ouargla", nameEn: "Ouargla", lat: 31.9500, lng: 5.3300, enabled: true },
+      { id: 31, name: "وهران", nameFr: "Oran", nameEn: "Oran", lat: 35.6971, lng: -0.6308, enabled: true },
+      { id: 32, name: "البيض", nameFr: "El Bayadh", nameEn: "El Bayadh", lat: 33.6831, lng: 1.0200, enabled: true },
+      { id: 33, name: "إليزي", nameFr: "Illizi", nameEn: "Illizi", lat: 26.4833, lng: 8.4667, enabled: true },
+      { id: 34, name: "برج بوعريريج", nameFr: "Bordj Bou Arreridj", nameEn: "Bordj Bou Arreridj", lat: 36.0730, lng: 4.7610, enabled: true },
+      { id: 35, name: "بومرداس", nameFr: "Boumerdès", nameEn: "Boumerdes", lat: 36.7667, lng: 3.4772, enabled: true },
+      { id: 36, name: "الطارف", nameFr: "El Tarf", nameEn: "El Tarf", lat: 36.7670, lng: 8.3140, enabled: true },
+      { id: 37, name: "تندوف", nameFr: "Tindouf", nameEn: "Tindouf", lat: 27.6711, lng: -8.1478, enabled: true },
+      { id: 38, name: "تيسمسيلت", nameFr: "Tissemsilt", nameEn: "Tissemsilt", lat: 35.6072, lng: 1.8111, enabled: true },
+      { id: 39, name: "الوادي", nameFr: "El Oued", nameEn: "El Oued", lat: 33.3683, lng: 6.8672, enabled: true },
+      { id: 40, name: "خنشلة", nameFr: "Khenchela", nameEn: "Khenchela", lat: 35.4358, lng: 7.1433, enabled: true },
+      { id: 41, name: "سوق أهراس", nameFr: "Souk Ahras", nameEn: "Souk Ahras", lat: 36.2864, lng: 7.9511, enabled: true },
+      { id: 42, name: "تيبازة", nameFr: "Tipaza", nameEn: "Tipaza", lat: 36.5897, lng: 2.4475, enabled: true },
+      { id: 43, name: "ميلة", nameFr: "Mila", nameEn: "Mila", lat: 36.4503, lng: 6.2644, enabled: true },
+      { id: 44, name: "عين الدفلى", nameFr: "Aïn Defla", nameEn: "Ain Defla", lat: 36.2650, lng: 1.9680, enabled: true },
+      { id: 45, name: "النعامة", nameFr: "Naâma", nameEn: "Naama", lat: 33.2667, lng: -0.3167, enabled: true },
+      { id: 46, name: "عين تموشنت", nameFr: "Aïn Témouchent", nameEn: "Ain Temouchent", lat: 35.3000, lng: -1.1400, enabled: true },
+      { id: 47, name: "غرداية", nameFr: "Ghardaïa", nameEn: "Ghardaia", lat: 32.4900, lng: 3.6700, enabled: true },
+      { id: 48, name: "غليزان", nameFr: "Relizane", nameEn: "Relizane", lat: 35.7370, lng: 0.5560, enabled: true },
+      { id: 49, name: "تيميمون", nameFr: "Timimoun", nameEn: "Timimoun", lat: 29.2639, lng: 0.2306, enabled: true },
+      { id: 50, name: "برج باجي مختار", nameFr: "Bordj Badji Mokhtar", nameEn: "Bordj Badji Mokhtar", lat: 21.3289, lng: 0.9542, enabled: true },
+      { id: 51, name: "أولاد جلال", nameFr: "Ouled Djellal", nameEn: "Ouled Djellal", lat: 34.4250, lng: 5.0667, enabled: true },
+      { id: 52, name: "بني عباس", nameFr: "Béni Abbès", nameEn: "Beni Abbes", lat: 30.1300, lng: -2.1700, enabled: true },
+      { id: 53, name: "عين صالح", nameFr: "In Salah", nameEn: "In Salah", lat: 27.1950, lng: 2.4850, enabled: true },
+      { id: 54, name: "عين قزام", nameFr: "In Guezzam", nameEn: "In Guezzam", lat: 19.5720, lng: 5.7690, enabled: true },
+      { id: 55, name: "تقرت", nameFr: "Touggourt", nameEn: "Touggourt", lat: 33.1000, lng: 6.0667, enabled: true },
+      { id: 56, name: "جانت", nameFr: "Djanet", nameEn: "Djanet", lat: 24.5540, lng: 9.4820, enabled: true },
+      { id: 57, name: "المغير", nameFr: "El M'Ghair", nameEn: "El MGhair", lat: 33.9500, lng: 5.9200, enabled: true },
+      { id: 58, name: "المنيعة", nameFr: "El Meniaa", nameEn: "El Meniaa", lat: 30.5833, lng: 2.8833, enabled: true },
       { id: 999, name: "🌍 OpenStreetMap", nameFr: "🌍 OpenStreetMap", nameEn: "🌍 OpenStreetMap", lat: null, lng: null, enabled: true },
     ];
 
@@ -1391,6 +1446,7 @@ out center tags;`;
       const [locating, setLocating] = useState(true);
       const [geoError, setGeoError] = useState(null);
       const [showLocationPicker, setShowLocationPicker] = useState(false);
+      const [wilayaSearch, setWilayaSearch] = useState("");
       const [osmPharmacies, setOsmPharmacies] = useState([]);
       const [loadingOSM, setLoadingOSM] = useState(false);
       const [submitted, setSubmitted] = useState([]);
@@ -1467,6 +1523,18 @@ out center tags;`;
           16: ["الجزائر", "alger", "algiers", "alger centre", "باب الوادي"],
           31: ["وهران", "oran", "wahran"],
           22: ["سيدي بلعباس", "sidi bel abbes", "sidi bel abbès", "sidi-bel-abbes", "bel abbes"],
+          13: ["تلمسان", "tlemcen"],
+          25: ["قسنطينة", "constantine"],
+          19: ["سطيف", "setif", "sétif"],
+          23: ["عنابة", "annaba", "bone"],
+          9: ["البليدة", "blida"],
+          6: ["بجاية", "bejaia", "béjaïa"],
+          15: ["تيزي وزو", "tizi ouzou"],
+          5: ["باتنة", "batna"],
+          27: ["مستغانم", "mostaganem"],
+          29: ["معسكر", "mascara"],
+          46: ["عين تموشنت", "ain temouchent", "aïn témouchent"],
+          20: ["سعيدة", "saida", "saïda"],
         };
 
         const processPosition = async (pos) => {
@@ -2048,26 +2116,42 @@ out center tags;`;
             {showLocationPicker && (
               <div className="mt-2 bg-brand-950 rounded-2xl p-3 border border-brand-800 space-y-2 animate-fade-in">
                 <p className="text-xs text-brand-300 px-1 font-medium">
-                  {lang === "ar" ? "اختر الولاية / المدينة" : lang === "fr" ? "Choisir la wilaya / ville" : "Choose wilaya / city"}
+                  {lang === "ar" ? "اختر الولاية (58 ولاية)" : lang === "fr" ? "Choisir la wilaya (58)" : "Choose wilaya (58)"}
                 </p>
-                <div className="grid grid-cols-1 gap-1">
-                  {WILAYAS.filter(w => w.enabled).map(w => (
+                <input
+                  value={wilayaSearch}
+                  onChange={e => setWilayaSearch(e.target.value)}
+                  placeholder={lang === "ar" ? "ابحث عن ولاية..." : lang === "fr" ? "Rechercher une wilaya..." : "Search a wilaya..."}
+                  className="w-full bg-brand-900 placeholder-brand-600 text-brand-50 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                />
+                <div className="grid grid-cols-1 gap-0.5 max-h-56 overflow-y-auto scrollbar-thin rounded-xl border border-brand-800">
+                  {WILAYAS.filter(w => w.enabled).filter(w => {
+                    if (!wilayaSearch.trim()) return true;
+                    const q = wilayaSearch.toLowerCase();
+                    return (w.name || "").includes(wilayaSearch) ||
+                      (w.nameFr || "").toLowerCase().includes(q) ||
+                      (w.nameEn || "").toLowerCase().includes(q) ||
+                      String(w.id).includes(q);
+                  }).map(w => (
                     <button
                       key={w.id}
-                      onClick={() => selectWilaya(w)}
-                      className={`text-start text-sm px-3 py-2.5 rounded-xl transition flex items-center justify-between ${wilayaId === w.id ? "bg-brand-500 text-brand-950 font-semibold" : "text-brand-100 hover:bg-brand-900"}`}
+                      onClick={() => { selectWilaya(w); setWilayaSearch(""); }}
+                      className={`text-start text-sm px-3 py-2 transition flex items-center justify-between border-b border-brand-800/40 last:border-0 ${wilayaId === w.id ? "bg-brand-500 text-brand-950 font-semibold" : "text-brand-100 hover:bg-brand-900"}`}
                     >
-                      <span>{lang === "ar" ? w.name : lang === "fr" ? (w.nameFr || w.name) : (w.nameEn || w.name)}</span>
+                      <span className="flex items-center gap-2">
+                        {w.id !== 999 && <span className="text-[10px] text-brand-500 font-mono w-5">{String(w.id).padStart(2, "0")}</span>}
+                        <span>{lang === "ar" ? w.name : lang === "fr" ? (w.nameFr || w.name) : (w.nameEn || w.name)}</span>
+                      </span>
                       {wilayaId === w.id && <span className="text-[10px]">✓</span>}
                     </button>
                   ))}
                 </div>
                 <p className="text-[10px] text-brand-500 px-1 pt-1">
                   {lang === "ar"
-                    ? "التحديد التلقائي يعمل عند فتح التطبيق. يمكنك تغيير الولاية يدويًا في أي وقت."
+                    ? "التحديد التلقائي عند الفتح · يمكنك اختيار أي ولاية لجلب صيدلياتها"
                     : lang === "fr"
-                    ? "La détection auto s'active à l'ouverture. Vous pouvez changer de wilaya manuellement."
-                    : "Auto-detect runs on open. You can change wilaya manually anytime."}
+                    ? "Détection auto à l'ouverture · choisissez une wilaya pour charger ses pharmacies"
+                    : "Auto-detect on open · pick any wilaya to load its pharmacies"}
                 </p>
               </div>
             )}

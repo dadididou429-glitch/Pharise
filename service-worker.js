@@ -1,6 +1,6 @@
 // Pharis Service Worker — v9 (fast update)
 // غيّر رقم الإصدار عند كل تحديث ليفرض التحديث فورًا
-const CACHE_NAME = "pharis-v11";
+const CACHE_NAME = "pharis-v12";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 const EXTERNAL = [
