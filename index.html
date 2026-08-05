@@ -1718,29 +1718,19 @@ out center tags;`;
           : "🚀 Download Pharis and find the nearest open pharmacy!";
 
         if (navigator.share) {
-          navigator.share({
-            title: "Pharis - Open Pharmacies",
-            text: shareText,
-            url: apkUrl
-          }).catch(() => {});
+          navigator.share({ title: "Pharis - Open Pharmacies", text: shareText, url: apkUrl }).catch(() => {});
         } else {
-          const fullText = shareText + "
-
-" + apkUrl;
+          const fullText = shareText + "\n\n" + apkUrl;
           navigator.clipboard.writeText(fullText).then(() => {
             showToast(lang === "ar" ? "✅ تم نسخ رابط التحميل!" : lang === "fr" ? "✅ Lien copié!" : "✅ Link copied!");
-          }).catch(() => {
-            window.open(apkUrl, "_blank");
-          });
+          }).catch(() => { window.open(apkUrl, "_blank"); });
         }
       };
 
       const copyDownloaderCode = () => {
         navigator.clipboard.writeText("5040717").then(() => {
           showToast(lang === "ar" ? "✅ تم نسخ الكود 5040717!" : lang === "fr" ? "✅ Code 5040717 copié!" : "✅ Code 5040717 copied!");
-        }).catch(() => {
-          showToast("5040717");
-        });
+        }).catch(() => { showToast("5040717"); });
       };
 
       const toggleFavorite = (id, name) => {
@@ -2434,40 +2424,38 @@ out center tags;`;
 
           {/* Footer — قانوني + عرض تجاري للصيدليات */}
           <footer className="max-w-lg mx-auto px-4 pb-8 pt-2 text-center space-y-2">
-            <p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>
+                        {/* Downloader Section */}
+            <div className="mt-4 mb-3 bg-gradient-to-r from-orange-900/40 to-amber-900/40 rounded-2xl p-4 border border-orange-700/50">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center text-white font-bold text-sm">D</div>
+                <p className="text-sm font-bold text-orange-200">تحميل عبر تطبيق Downloader</p>
+              </div>
+              <p className="text-[11px] text-orange-300/80 mb-3 leading-relaxed">
+                1. حمّل تطبيق <b>Downloader</b> من متجر Google Play أو Amazon Appstore<br/>
+                2. افتح التطبيق وادخل الكود أدناه<br/>
+                3. اضغط <b>Go</b> وابدأ التحميل
+              </p>
+              <div className="bg-black/30 rounded-xl p-3 text-center border border-orange-600/30">
+                <p className="text-[10px] text-orange-400 mb-1">الكود / Code</p>
+                <p className="text-3xl font-mono font-bold text-white tracking-widest" dir="ltr">5040717</p>
+                <button onClick={() => copyDownloaderCode()} className="mt-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-lg transition">
+                  📋 نسخ الكود
+                </button>
+              </div>
+              <div className="mt-2 text-center">
+                <p className="text-[10px] text-orange-400/70 mb-1">أو ادخل الرابط المباشر</p>
+                <p className="text-xs font-mono text-orange-200 bg-black/20 rounded-lg px-2 py-1" dir="ltr">aftv.news/5040717</p>
+              </div>
+            </div>
+
+<p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>
             <div className="flex items-center justify-center gap-3 text-[11px]">
               <a href="./privacy.html" className="text-brand-700 dark:text-brand-300 underline underline-offset-2">{t("privacy")}</a>
               <span className="text-stone-300 dark:text-brand-700">·</span>
               <a href="./terms.html" className="text-brand-700 dark:text-brand-300 underline underline-offset-2">{t("terms")}</a>
             </div>
             <p className="text-[10px] text-stone-400 dark:text-brand-600" dir="ltr">© {new Date().getFullYear()} Pharis</p>
-          
-
-
-            {/* Downloader Section */}
-            <div class="mt-4 mb-3 bg-gradient-to-r from-orange-900/40 to-amber-900/40 rounded-2xl p-4 border border-orange-700/50">
-              <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center text-white font-bold text-sm">D</div>
-                <p class="text-sm font-bold text-orange-200">تحميل عبر تطبيق Downloader</p>
-              </div>
-              <p class="text-[11px] text-orange-300/80 mb-3 leading-relaxed">
-                1. حمّل تطبيق <b>Downloader</b> من متجر Google Play أو Amazon Appstore<br/>
-                2. افتح التطبيق وادخل الكود أدناه<br/>
-                3. اضغط <b>Go</b> وابدأ التحميل
-              </p>
-              <div class="bg-black/30 rounded-xl p-3 text-center border border-orange-600/30">
-                <p class="text-[10px] text-orange-400 mb-1">الكود / Code</p>
-                <p class="text-3xl font-mono font-bold text-white tracking-widest" dir="ltr">5040717</p>
-                <button onclick="copyDownloaderCode()" class="mt-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-lg transition">
-                  📋 نسخ الكود
-                </button>
-              </div>
-              <div class="mt-2 text-center">
-                <p class="text-[10px] text-orange-400/70 mb-1">أو ادخل الرابط المباشر</p>
-                <p class="text-xs font-mono text-orange-200 bg-black/20 rounded-lg px-2 py-1" dir="ltr">aftv.news/5040717</p>
-              </div>
-            </div>
-</footer>
+          </footer>
 
           {/* Detail Sheet */}
           {selectedLive && (
@@ -2937,6 +2925,5 @@ out center tags;`;
       window.dispatchEvent(new Event("pharis-installable"));
     });
   </script>
-
 </body>
 </html>
