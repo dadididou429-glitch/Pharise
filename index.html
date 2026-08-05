@@ -1175,7 +1175,7 @@ out center tags;`;
         return () => clearTimeout(t);
       }, [onClose]);
       return (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-brand-950 text-brand-50 text-sm px-5 py-2.5 rounded-full shadow-xl max-w-[90%] text-center animate-fade-in">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-black text-brand-50 text-sm px-5 py-2.5 rounded-full shadow-xl max-w-[90%] text-center animate-fade-in">
           {message}
         </div>
       );
@@ -1372,7 +1372,7 @@ out center tags;`;
         const h = new Date().getHours();
         return h >= 20 || h < 8; // night → emergency by default
       });
-      const [showLocationPicker, setShowLocationPicker] = useState(false);
+      
       const [statusConfirms, setStatusConfirms] = useState(() => {
         try { return JSON.parse(localStorage.getItem("pharis_confirms") || "{}"); } catch { return {}; }
       });
@@ -1384,8 +1384,7 @@ out center tags;`;
       const [adminTab, setAdminTab] = useState("review");
 
       // Location & data
-      const [countryId, setCountryId] = useState("DZ");
-      const [wilayaId, setWilayaId] = useState(22);
+      const [wilayaId, setWilayaId] = useState(999);
       const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
       const [locating, setLocating] = useState(true);
       const [geoError, setGeoError] = useState(null);
@@ -1412,11 +1411,7 @@ out center tags;`;
       const [draftText, setDraftText] = useState("");
 
       // City search
-      const [citySearch, setCitySearch] = useState("");
-      const [cityResults, setCityResults] = useState([]);
-      const [loadingCities, setLoadingCities] = useState(false);
-      const [showCityList, setShowCityList] = useState(false);
-      const [currentPlace, setCurrentPlace] = useState("سيدي بلعباس");
+      const [currentPlace, setCurrentPlace] = useState("جارٍ تحديد موقعك...");
 
       // Admin
       const [adminUser, setAdminUser] = useState(null);
@@ -1616,11 +1611,7 @@ out center tags;`;
 
       // Computed list
       const baseList = useMemo(() => {
-        const local = RAW.filter(p => {
-          if (wilayaId === 999) return false;
-          const w = WILAYAS.find(x => x.id === wilayaId);
-          return w && p.wilaya === w.name;
-        });
+        // Show ALL local pharmacies + submitted + OSM, no wilaya filtering
         const submittedMapped = submitted.map(p => ({
           ...p,
           verified: false,
@@ -1629,8 +1620,8 @@ out center tags;`;
           ratingSum: 0,
           ratingCount: 0
         }));
-        return [...local, ...submittedMapped, ...osmPharmacies];
-      }, [wilayaId, submitted, osmPharmacies]);
+        return [...RAW, ...submittedMapped, ...osmPharmacies];
+      }, [submitted, osmPharmacies]);
 
       const allComputed = useMemo(() => {
         return baseList
@@ -1798,132 +1789,17 @@ out center tags;`;
         showToast(t("reviewSubmitted"));
       };
 
-      const loadOSMNearMe = async () => {
-        setLoadingOSM(true);
-        showToast(lang === "ar" ? "⏳ جاري البحث عن صيدليات قريبة..." : lang === "fr" ? "⏳ Recherche de pharmacies proches..." : "⏳ Searching nearby pharmacies...");
-        try {
-          let data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng, 15000);
-          if (data.length < 3) {
-            data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng, 30000);
-          }
-          setOsmPharmacies(data);
-          setWilayaId(999);
-          setCurrentPlace(lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you");
-          if (data.length === 0) {
-            showToast(lang === "ar" ? "⚠️ لا توجد صيدليات قريبة في بيانات الخريطة" : lang === "fr" ? "⚠️ Aucune pharmacie proche" : "⚠️ No nearby pharmacies");
-          } else {
-            showToast(t("pharmaciesFound", { n: data.length, name: lang === "ar" ? "قربك" : "nearby" }));
-          }
-        } catch (err) {
-          console.error("OSM near error:", err);
-          showToast(t("loadFailed"));
-        } finally {
-          setLoadingOSM(false);
-        }
-      };
+      
 
-      const selectCountry = (c) => {
-        setCountryId(c.id);
-        setCitySearch("");
-        setCityResults([]);
-        setShowCityList(true);
-        // For Algeria, don't clear pharmacies yet — wait for city/wilaya
-        if (c.id !== "DZ") {
-          setOsmPharmacies([]);
-          setWilayaId(999);
-        }
-      };
+      
 
-      const searchCityAndLoad = async () => {
-        if (!citySearch.trim()) return;
-        setLoadingCities(true);
-        try {
-          const results = await searchCities(citySearch, countryId);
-          setCityResults(results);
-          setShowCityList(true);
-        } catch {
-          setCityResults([]);
-        } finally {
-          setLoadingCities(false);
-        }
-      };
+      
 
-      const selectCity = async (city) => {
-        setCityResults([]);
-        setShowCityList(false);
-        setCitySearch(city.name);
-        setUserLoc({ lat: city.lat, lng: city.lng });
-        setCurrentPlace(city.name);
+      
 
-        // الجزائر ببيانات محلية + جلب OSM تلقائي حول المدينة
-        if (countryId === "DZ" && city.wilayaId) {
-          setWilayaId(city.wilayaId);
-          setShowLocationPicker(false);
-          setLoadingOSM(true);
-          fetchOSMPharmacies(city.lat, city.lng, 12000)
-            .then((data) => {
-              if (data.length > 0) setOsmPharmacies(data);
-              const localCount = RAW.filter((p) => p.wilaya === city.name).length;
-              showToast(t("pharmaciesFound", { n: localCount + data.length, name: city.name }));
-            })
-            .catch(() => {
-              const localCount = RAW.filter((p) => p.wilaya === city.name).length;
-              showToast(t("pharmaciesFound", { n: localCount, name: city.name }));
-            })
-            .finally(() => setLoadingOSM(false));
-          return;
-        }
+      
 
-        // Real pharmacies from OpenStreetMap
-        setLoadingOSM(true);
-        showToast(lang === "ar" ? `⏳ جاري جلب صيدليات ${city.name}...` : lang === "fr" ? `⏳ Chargement des pharmacies de ${city.name}...` : `⏳ Loading pharmacies in ${city.name}...`);
-        try {
-          const countryName = COUNTRIES.find(c => c.id === countryId);
-          const q = city.nameEn
-            ? `${city.nameEn}, ${countryName?.nameEn || countryId}`
-            : `${city.name}${countryName ? ", " + (countryName.nameEn || countryName.name) : ""}`;
-          const data = await fetchOSMByCity(q, city.lat, city.lng);
-          setOsmPharmacies(data);
-          setWilayaId(999);
-          if (data.length === 0) {
-            showToast(lang === "ar" ? `⚠️ لم نجد صيدليات في ${city.name} على الخريطة` : lang === "fr" ? `⚠️ Aucune pharmacie trouvée à ${city.name}` : `⚠️ No pharmacies found in ${city.name}`);
-          } else {
-            showToast(t("pharmaciesFound", { n: data.length, name: city.name }));
-          }
-        } catch (err) {
-          console.error("OSM fetch error:", err);
-          showToast(t("loadFailed"));
-        } finally {
-          setLoadingOSM(false);
-          setShowLocationPicker(false);
-        }
-      };
-
-      const selectWilaya = (w) => {
-        if (!w.enabled) return;
-        setWilayaId(w.id);
-        setCurrentPlace(w.name);
-        setShowLocationPicker(false);
-        // لا نمسح OSM إن وُجد — نكمّل بالقريب من موقع المستخدم
-        if (w.id !== 999 && userLoc) {
-          setLoadingOSM(true);
-          fetchOSMPharmacies(userLoc.lat, userLoc.lng, 12000)
-            .then((data) => {
-              if (data.length > 0) setOsmPharmacies(data);
-            })
-            .catch(() => {})
-            .finally(() => setLoadingOSM(false));
-        }
-      };
-
-      // Filtered city suggestions for the selected country
-      const countryCities = CITIES_BY_COUNTRY[countryId] || [];
-      const filteredCities = citySearch.trim()
-        ? countryCities.filter(c =>
-            c.name.toLowerCase().includes(citySearch.toLowerCase()) ||
-            (c.nameEn && c.nameEn.toLowerCase().includes(citySearch.toLowerCase()))
-          )
-        : countryCities;
+      
 
       // Add pharmacy
       const captureFormLocation = () => {
@@ -2042,9 +1918,9 @@ out center tags;`;
       // RENDER
       // ═══════════════════════════════════════════════════════════
       return (
-        <div dir={dir} className={`min-h-screen ${dark ? "dark bg-brand-950 text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
+        <div dir={dir} className={`min-h-screen ${dark ? "dark bg-black text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
           {/* Header */}
-          <header className="sticky top-0 z-20 bg-brand-950 text-brand-50 px-3 pt-1.5 pb-1.5 rounded-b-xl shadow-lg">
+          <header className="sticky top-0 z-20 bg-black text-brand-50 px-3 pt-1.5 pb-1.5 rounded-b-xl shadow-lg border-b border-brand-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-800 flex items-center justify-center shadow-lg overflow-hidden border border-brand-700">
@@ -2070,118 +1946,7 @@ out center tags;`;
             </div>
 
             {/* Location button */}
-            <button
-              onClick={() => setShowLocationPicker(s => !s)}
-              className={`mt-1.5 w-full flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
-            >
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <Icons.MapPin className="w-4 h-4" />
-                {t("tagline", { place: currentPlace })}
-              </span>
-              <span className={`text-xs font-semibold underline ${showLocationPicker ? "text-brand-950" : "text-brand-300"}`}>
-                {t("changeLocation")}
-              </span>
-            </button>
-
-            {/* Language */}
-            <div className="flex gap-1 mt-1">
-              {[{ code: "ar", label: "العربية" }, { code: "fr", label: "Français" }, { code: "en", label: "English" }].map(l => (
-                <button
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition ${lang === l.code ? "bg-brand-400 text-brand-950" : "bg-brand-900 text-brand-300"}`}
-                >
-                  {l.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Pharmacy Owner CTA */}
-            <a href="./pharmacy-owner.html" className="mt-1 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
-              🏥 {t("aboutMoney")}
-            </a>
-            {/* Location picker panel */}
-            {showLocationPicker && (
-              <div className="mt-1.5 bg-brand-950 rounded-xl p-2 max-h-[45vh] overflow-y-auto border border-brand-800 space-y-3 scrollbar-thin animate-fade-in">
-                {/* 1. Country — immediate change */}
-                <div>
-                  <p className="text-xs text-brand-300 px-1 pb-2 font-medium">{t("country")}</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {COUNTRIES.map(c => (
-                      <button
-                        key={c.id}
-                        onClick={() => selectCountry(c)}
-                        className={`text-start text-xs px-2.5 py-1.5 rounded-lg transition truncate ${c.id === countryId ? "bg-brand-500 text-brand-950 font-semibold shadow-sm" : "text-brand-200 hover:bg-brand-900"}`}
-                      >
-                        {lang === "ar" ? c.name : lang === "fr" ? c.nameFr : c.nameEn}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2. City — dropdown list for selected country */}
-                <div className="pt-2 border-t border-brand-800">
-                  <p className="text-xs text-brand-300 px-1 pb-2 font-medium">{t("city")}</p>
-
-                  {/* Search / filter input */}
-                  <div className="relative mb-2">
-                    <input
-                      value={citySearch}
-                      onChange={e => { setCitySearch(e.target.value); setShowCityList(true); }}
-                      onFocus={() => setShowCityList(true)}
-                      onKeyDown={e => e.key === "Enter" && searchCityAndLoad()}
-                      placeholder={lang === "ar" ? "ابحث أو اختر مدينة..." : lang === "fr" ? "Rechercher ou choisir une ville..." : "Search or choose a city..."}
-                      className="w-full bg-brand-900 placeholder-brand-600 text-brand-50 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
-                    />
-                    {loadingCities && <span className="absolute top-1/2 -translate-y-1/2 end-3 text-xs text-brand-400">…</span>}
-                  </div>
-
-                  {/* Predefined cities of the selected country */}
-                  {showCityList && filteredCities.length > 0 && (
-                    <div className="space-y-0.5 max-h-48 overflow-y-auto rounded-xl border border-brand-800 bg-brand-900/50 mb-2">
-                      {filteredCities.map((city, i) => (
-                        <button
-                          key={i}
-                          onClick={() => selectCity(city)}
-                          className="w-full text-start text-sm px-3 py-1.5 text-brand-100 hover:bg-brand-700 transition flex items-center justify-between border-b border-brand-800/50 last:border-0"
-                        >
-                          <span className="font-medium">{lang === "en" && city.nameEn ? city.nameEn : city.name}</span>
-                          {city.wilayaId && <span className="text-[10px] text-brand-400 bg-brand-800 px-1.5 py-0.5 rounded">محلي</span>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Nominatim search results (extra cities) */}
-                  {cityResults.length > 0 && (
-                    <div className="space-y-0.5 max-h-36 overflow-y-auto rounded-xl border border-brand-700 bg-brand-900/80">
-                      <p className="text-[10px] text-brand-500 px-3 pt-2 pb-1">{lang === "ar" ? "نتائج البحث" : lang === "fr" ? "Résultats" : "Search results"}</p>
-                      {cityResults.map((city, i) => (
-                        <button
-                          key={i}
-                          onClick={() => selectCity(city)}
-                          className="w-full text-start text-xs px-3 py-2 text-brand-200 hover:bg-brand-800 transition flex items-center justify-between"
-                        >
-                          <span className="truncate">{city.name}</span>
-                          <span className="text-[9px] text-brand-500 flex-shrink-0 ms-2">{city.country}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Search button for free text */}
-                  {citySearch.trim() && filteredCities.length === 0 && (
-                    <button
-                      onClick={searchCityAndLoad}
-                      disabled={loadingCities}
-                      className="w-full mt-1 py-2 rounded-xl text-xs font-semibold bg-brand-700 text-brand-50 disabled:opacity-50"
-                    >
-                      {loadingCities ? "…" : (lang === "ar" ? `🔍 بحث عن "${citySearch}"` : lang === "fr" ? `🔍 Chercher "${citySearch}"` : `🔍 Search "${citySearch}"`)}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+            }
 
             {/* Stats */}
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -2241,44 +2006,10 @@ out center tags;`;
               </button>
             </div>
 
-            {/* OSM load */}
-            <div className="mt-2 flex gap-2 items-center flex-wrap">
-              <button
-                onClick={loadOSMNearMe}
-                disabled={loadingOSM}
-                className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-900/80 text-blue-200 disabled:opacity-50 flex items-center gap-1.5 transition hover:bg-blue-800"
-              >
-                {loadingOSM ? (
-                  <>
-                    <span className="inline-block w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
-                    {lang === "ar" ? "جاري الجلب..." : lang === "fr" ? "Chargement..." : "Loading..."}
-                  </>
-                ) : (
-                  <>
-                    <Icons.Globe className="w-3.5 h-3.5" />
-                    {lang === "ar" ? "صيدليات قريبة (خريطة)" : lang === "fr" ? "Pharmacies proches" : "Nearby pharmacies"}
-                  </>
-                )}
-              </button>
-              {loadingOSM && (
-                <span className="text-[10px] text-brand-400">
-                  {lang === "ar" ? "قد يستغرق ثوانٍ..." : lang === "fr" ? "Quelques secondes..." : "A few seconds..."}
-                </span>
-              )}
-            </div>
 
-            {locating && (
-              <div className="mt-2 flex items-center gap-2 text-xs text-brand-300">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
-                </span>
-                {t("detecting")}
-              </div>
-            )}
-            {geoError && !locating && (
-              <div className="mt-2 text-xs text-rose-300 bg-rose-950/40 rounded-lg px-2.5 py-1.5">{t("geoError")}</div>
-            )}
+
+            
+            
           </header>
 
           {toast && <Toast message={toast} onClose={() => setToast(null)} />}
@@ -2290,20 +2021,7 @@ out center tags;`;
             </div>
           )}
 
-          {canInstall && !offline && (
-            <div className="fixed bottom-4 inset-x-4 z-40 max-w-lg mx-auto">
-              <div className="bg-brand-950 text-brand-50 rounded-2xl p-3 shadow-xl border border-brand-700 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{lang === "ar" ? "ثبّت Pharis على جهازك" : lang === "fr" ? "Installer Pharis" : "Install Pharis"}</p>
-                  <p className="text-[11px] text-brand-300">{lang === "ar" ? "وصول أسرع · يعمل بدون إنترنت جزئياً" : lang === "fr" ? "Accès rapide · hors ligne partiel" : "Faster access · partial offline"}</p>
-                </div>
-                <button onClick={handleInstall} className="bg-brand-400 text-brand-950 text-xs font-bold px-3 py-2 rounded-xl flex-shrink-0">
-                  {lang === "ar" ? "تثبيت" : lang === "fr" ? "Installer" : "Install"}
-                </button>
-                <button onClick={() => setCanInstall(false)} className="text-brand-400 p-1 flex-shrink-0"><Icons.X className="w-4 h-4" /></button>
-              </div>
-            </div>
-          )}
+          {}
 
           {/* Main */}
           <main className="px-4 py-4 space-y-3 max-w-lg mx-auto safe-bottom">
@@ -2374,7 +2092,7 @@ out center tags;`;
                             href={`https://www.google.com/maps/dir/?api=1&destination=${ph.lat},${ph.lng}`} onClick={() => { if (analytics) analytics.logEvent("directions_tapped", { pharmacy_id: ph.id }); }}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 bg-brand-950 dark:bg-brand-700 text-white text-center text-sm font-semibold rounded-xl py-2.5 hover:opacity-90 transition"
+                            className="flex-1 bg-black dark:bg-brand-700 text-white text-center text-sm font-semibold rounded-xl py-2.5 hover:opacity-90 transition"
                           >
                             🧭 {t("goNow")}
                           </a>
@@ -2567,7 +2285,7 @@ out center tags;`;
                     onChange={e => setDraftText(e.target.value)}
                     placeholder={t("reviewPlaceholder")}
                     rows={2}
-                    className="w-full mt-2 text-sm bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                    className="w-full mt-2 text-sm bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                   />
                   <button onClick={() => submitRating(selectedLive.id)} className="mt-2 w-full bg-brand-700 text-brand-50 rounded-xl py-2.5 text-sm font-medium hover:bg-brand-600 transition">
                     {t("submitReview")}
@@ -2580,7 +2298,7 @@ out center tags;`;
                     href={`https://www.google.com/maps/dir/?api=1&destination=${selectedLive.lat},${selectedLive.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 bg-brand-950 dark:bg-brand-700 text-brand-50 rounded-xl py-3 font-medium text-center text-sm"
+                    className="flex-1 bg-black dark:bg-brand-700 text-brand-50 rounded-xl py-3 font-medium text-center text-sm"
                   >
                     {t("directions")}
                   </a>
@@ -2625,7 +2343,7 @@ out center tags;`;
                     <select
                       value={form.country}
                       onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
-                      className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
                     >
                       {COUNTRIES.map(c => (
                         <option key={c.id} value={c.id}>{lang === "ar" ? c.name : lang === "fr" ? c.nameFr : c.nameEn}</option>
@@ -2634,23 +2352,23 @@ out center tags;`;
                   </div>
                   <div>
                     <label className="text-xs text-stone-500 mb-1 block">{t("formName")}</label>
-                    <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                    <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                   </div>
                   <div>
                     <label className="text-xs text-stone-500 mb-1 block">{t("city")}</label>
-                    <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="Paris, Dubai..." className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                    <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="Paris, Dubai..." className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                   </div>
                   <div>
                     <label className="text-xs text-stone-500 mb-1 block">{t("formArea")}</label>
-                    <input value={form.area} onChange={e => setForm(f => ({ ...f, area: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                    <input value={form.area} onChange={e => setForm(f => ({ ...f, area: e.target.value }))} className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                   </div>
                   <div>
                     <label className="text-xs text-stone-500 mb-1 block">{t("formAddress")}</label>
-                    <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                    <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                   </div>
                   <div>
                     <label className="text-xs text-stone-500 mb-1 block">{t("formPhone")}</label>
-                    <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} dir="ltr" placeholder="+213..." className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                    <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} dir="ltr" placeholder="+213..." className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                   </div>
                   <label className="flex items-center gap-2 text-sm py-1">
                     <input type="checkbox" checked={form.onDuty} onChange={e => setForm(f => ({ ...f, onDuty: e.target.checked }))} className="w-4 h-4 accent-brand-600" />
@@ -2660,11 +2378,11 @@ out center tags;`;
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs text-stone-500 mb-1 block">{t("formOpenHour")}</label>
-                        <input type="number" min="0" max="24" step="0.5" value={form.open} onChange={e => setForm(f => ({ ...f, open: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                        <input type="number" min="0" max="24" step="0.5" value={form.open} onChange={e => setForm(f => ({ ...f, open: e.target.value }))} className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                       </div>
                       <div>
                         <label className="text-xs text-stone-500 mb-1 block">{t("formCloseHour")}</label>
-                        <input type="number" min="0" max="30" step="0.5" value={form.close} onChange={e => setForm(f => ({ ...f, close: e.target.value }))} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                        <input type="number" min="0" max="30" step="0.5" value={form.close} onChange={e => setForm(f => ({ ...f, close: e.target.value }))} className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                       </div>
                     </div>
                   )}
@@ -2695,8 +2413,8 @@ out center tags;`;
                   <button onClick={() => setShowLogin(false)} className="text-stone-400 p-1"><Icons.X className="w-5 h-5" /></button>
                 </div>
                 <div className="mt-4 space-y-3">
-                  <input value={loginEmail} onChange={e => setLoginEmail(e.target.value)} dir="ltr" placeholder="admin@email.com" className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
-                  <input value={loginPassword} onChange={e => setLoginPassword(e.target.value)} type="password" dir="ltr" placeholder="••••••••" onKeyDown={e => e.key === "Enter" && submitLogin()} className="w-full bg-stone-50 dark:bg-brand-950 border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  <input value={loginEmail} onChange={e => setLoginEmail(e.target.value)} dir="ltr" placeholder="admin@email.com" className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
+                  <input value={loginPassword} onChange={e => setLoginPassword(e.target.value)} type="password" dir="ltr" placeholder="••••••••" onKeyDown={e => e.key === "Enter" && submitLogin()} className="w-full bg-stone-50 dark:bg-black border border-stone-200 dark:border-brand-800 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500" />
                   {loginError && <p className="text-xs text-rose-500">{loginError}</p>}
                   <button onClick={submitLogin} disabled={loginLoading} className="w-full bg-brand-700 disabled:opacity-60 text-brand-50 rounded-xl py-3 text-sm font-semibold">
                     {loginLoading ? "..." : t("loginBtn")}
@@ -2708,7 +2426,7 @@ out center tags;`;
 
           {/* Admin Panel */}
           {adminView && (
-            <div className="fixed inset-0 bg-brand-950 z-40 overflow-y-auto">
+            <div className="fixed inset-0 bg-black z-40 overflow-y-auto">
               <div className="max-w-lg mx-auto px-4 py-6">
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
