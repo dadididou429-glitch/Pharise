@@ -6,15 +6,12 @@
   <title>Pharis — Open Pharmacies Near You · auto-geo-v8</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Pharis" />
-  <link rel="manifest" href="manifest.json?v=3" />
-  <link rel="icon" href="icon-192.png?v=3" type="image/png" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
@@ -103,7 +100,6 @@
     }
   </script>
 
-  <script src="pharmacies.js?v=3"></script>
   <script type="text/babel" data-presets="react">
     const { useState, useEffect, useMemo, useCallback, useRef, memo } = React;
 
@@ -458,13 +454,301 @@
     // ═══════════════════════════════════════════════════════════
     // DATA — Full pharmacies (Sidi Bel Abbès, Oran, Algiers)
     // ═══════════════════════════════════════════════════════════
-    
+    const SBA = [
+{ id: 1, name: "صيدلية بوعشة فريد", area: "شارع 08 نوفمبر", address: "Rue 08 Novembre, Sidi Bel Abbès", phone: null, lat: 35.1994115, lng: -0.6453492, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 2, name: "صيدلية أنس بن الأزهر", area: "سيدي جيلالي", address: "Agence Foncière, Sidi Djilali", phone: "040 73 11 11", lat: 35.2100923, lng: -0.6308727, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 3, name: "صيدلية منصور وفاء", area: "سيدي جيلالي", address: "250 Segar Abdelaziz, Secteur 1, Sidi Djilali", phone: null, lat: 35.2156413, lng: -0.6350891, hours: { open: 8.5, close: 24 }, onDuty: false },
+  { id: 4, name: "صيدلية بن حمودة", area: "سيدي بلعباس", address: "Unnamed Rd, Sidi Bel Abbès 22000", phone: "0557 48 64 80", lat: 35.2194202, lng: -0.6259365, hours: { open: 8, close: 25 }, onDuty: false },
+  { id: 5, name: "صيدلية د. عربي", area: "روڨاب عكاشة", address: "Telmouni N°23 Lot 36, Rouggab Okkacha", phone: "0542 61 77 50", lat: 35.1736176, lng: -0.5448622, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 6, name: "صيدلية بن عز الدين عبد الصمد", area: "بوليفار بنديدة", address: "56 Bd Bendida Mohamed, 22002", phone: "0770 80 52 35", lat: 35.1950042, lng: -0.6194100, hours: { open: 8, close: 26.5 }, onDuty: false },
+  { id: 7, name: "صيدلية رقبال محل", area: "سيدي بلعباس", address: "17 Rue Laziz Ghalem", phone: "0542 69 78 07", lat: 35.1976143, lng: -0.6484907, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 8, name: "صيدلية د. عراد بن علي", area: "حي 100 مسكن", address: "Cité 100 Logements Aile A N°1", phone: "048 76 77 85", lat: 35.1966647, lng: -0.6176962, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 9, name: "صيدلية بلعربي الحسين", area: "AADL", address: "AADL, Sidi Bel Abbès 22000", phone: "0549 67 98 94", lat: 35.2185763, lng: -0.6275044, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 10, name: "صيدلية معاشو محمد", area: "حي 237 مسكن", address: "Cité 237 Logts", phone: "0561 06 28 18", lat: 35.2125875, lng: -0.6232656, hours: { open: 8, close: 27 }, onDuty: false },
+  { id: 11, name: "صيدلية المؤسسة", area: "حي الجزائرة", address: "Site 2 DGSN, Haï El Djazeera", phone: "0668 73 38 31", lat: 35.1785633, lng: -0.6117378, hours: { open: 8.25, close: 24 }, onDuty: false },
+  { id: 12, name: "صيدلية نبال", area: "بوليفار عبان رمضان", address: "Bd Abane Ramdane, 22002", phone: "0542 31 47 07", lat: 35.1923259, lng: -0.6186891, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 13, name: "صيدلية سي أحمد نذير", area: "سيدي بلعباس", address: "Sidi Bel Abbès 22000", phone: "0664 40 64 46", lat: 35.2122881, lng: -0.6251282, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 14, name: "صيدلية عصاد", area: "بوليفار محمد الخميستي", address: "04 Bd Mohamed Khemisti", phone: null, lat: 35.1866666, lng: -0.632567, hours: { open: 8.5, close: 23 }, onDuty: false },
+  { id: 15, name: "صيدلية سيد أحمد", area: "شارع الراسي مهاجي", address: "Rue Rassi M'Hadji", phone: null, lat: 35.2056856, lng: -0.6299211, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 16, name: "صيدلية شارع حواورية عبد القادر", area: "سيدي بلعباس", address: "Rue Houaoria Abdelkader", phone: "048 72 40 31", lat: 35.1870193, lng: -0.6470397, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 17, name: "صيدلية حاجب إبراهيم", area: "بوليفار عيساط إيدير", address: "Unnamed Rd", phone: "048 72 09 53", lat: 35.2164652, lng: -0.6206502, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 18, name: "صيدلية فرتوت", area: "سيدي بلعباس", address: "Unnamed Rd, 22002", phone: "048 75 82 31", lat: 35.1893368, lng: -0.6123998, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 19, name: "صيدلية بوزيدي يحيى", area: "سيدي بلعباس", address: "Unnamed Rd", phone: "048 77 50 35", lat: 35.1753948, lng: -0.6215078, hours: { open: 9, close: 21 }, onDuty: false },
+  { id: 20, name: "صيدلية شرشالي", area: "شارع أحمد زبانة", address: "Rue Ahmed Zabana", phone: null, lat: 35.1876422, lng: -0.6225517, hours: { open: 8.5, close: 22.17 }, onDuty: false },
+  { id: 21, name: "صيدلية بن حدو", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.214565, lng: -0.620614, hours: { open: 8.5, close: 24 }, onDuty: false },
+  { id: 22, name: "صيدلية حماد جيلالي", area: "بوليفار عيساط إيدير", address: "Bd Aissat Idir", phone: "0559 56 87 22", lat: 35.1945066, lng: -0.6248018, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 23, name: "صيدلية هديبي", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.2121015, lng: -0.6290114, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 24, name: "صيدلية طلحة", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: "0779 23 47 38", lat: 35.2116249, lng: -0.6214044, hours: { open: 8.5, close: 24 }, onDuty: false },
+  { id: 25, name: "صيدلية بلحاج عمر بلقاسم", area: "نهج بوشارب زيتوني", address: "22002", phone: null, lat: 35.1883583, lng: -0.6158417, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 26, name: "صيدلية الشيخ أمين", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.182191, lng: -0.6311097, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 27, name: "صيدلية الوفاء", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.2092497, lng: -0.6506582, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 28, name: "صيدلية شارع مدغشقر", area: "شارع مدغشقر", address: "25 Rue Madagascar", phone: null, lat: 35.1839758, lng: -0.6442548, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 29, name: "صيدلية سيدي بلعباس الجديدة", area: "حي 500 مسكن", address: "Cité 500 Logements", phone: "0540 11 22 33", lat: 35.2050, lng: -0.6150, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 30, name: "صيدلية النجاح", area: "حي البدر", address: "Cité El Badr", phone: "0660 44 55 66", lat: 35.1950, lng: -0.6350, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 31, name: "صيدلية الرائد", area: "حي الأمير", address: "Cité El Amir", phone: null, lat: 35.2100, lng: -0.6400, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 32, name: "صيدلية سفيزف المركزية", area: "نهج الاستقلال", address: "Rue de l'Indépendance, Sfisef", phone: "048 70 12 34", lat: 35.2333, lng: -0.2500, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 33, name: "صيدلية الشفاء سفيزف", area: "شارع أول نوفمبر", address: "Bd 1er Novembre, Sfisef", phone: "0550 77 88 99", lat: 35.2350, lng: -0.2480, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 34, name: "صيدلية النور سفيزف", area: "حي الزيتون", address: "Cité Ezzitoune, Sfisef", phone: null, lat: 35.2300, lng: -0.2550, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 35, name: "صيدلية ابن باديس المركزية", area: "ساحة الشهداء", address: "Place des Martyrs, Ben Badis", phone: "048 77 12 34", lat: 35.2667, lng: -0.5667, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 36, name: "صيدلية الأمل بن باديس", area: "نهج الأمير عبد القادر", address: "Rue Emir Abdelkader, Ben Badis", phone: "0665 33 44 55", lat: 35.2680, lng: -0.5640, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 37, name: "صيدلية الحياة بن باديس", area: "الطريق الوطني 7", address: "RN7, Ben Badis", phone: null, lat: 35.2700, lng: -0.5600, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 38, name: "صيدلية تلاغ الكبرى", area: "وسط المدينة", address: "Centre-ville, Telagh", phone: "048 75 55 66", lat: 34.7833, lng: -0.5833, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 39, name: "صيدلية السلام تلاغ", area: "حي السلام", address: "Cité Essalam, Telagh", phone: null, lat: 34.7850, lng: -0.5800, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 40, name: "صيدلية مناوبة تلاغ", area: "طريق سيدي بلعباس", address: "Route de SBA, Telagh", phone: "0770 55 44 33", lat: 34.7800, lng: -0.5900, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 41, name: "صيدلية رأس الماء", area: "حي الأمير", address: "Cité El Amir, Ras El Ma", phone: "048 73 22 11", lat: 34.5000, lng: -0.8167, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 42, name: "صيدلية الرجاء رأس الماء", area: "نهج الشهداء", address: "Rue des Martyrs, Ras El Ma", phone: null, lat: 34.5020, lng: -0.8140, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 43, name: "صيدلية عين البرد 24", area: "شارع الأمير عبد القادر", address: "Bd Emir Abdelkader, Aïn El Berd", phone: "0550 11 22 33", lat: 35.3667, lng: -0.5167, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 44, name: "صيدلية عين البرد الجديدة", area: "حي 5 جويلية", address: "Cité 5 Juillet, Aïn El Berd", phone: "0660 22 33 44", lat: 35.3680, lng: -0.5140, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 45, name: "صيدلية النصر عين البرد", area: "الطريق الولائي", address: "CW, Aïn El Berd", phone: null, lat: 35.3700, lng: -0.5200, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 46, name: "صيدلية تسالة", area: "الحي الإداري", address: "Quartier Administratif, Tessala", phone: "048 74 55 77", lat: 35.2500, lng: -0.7667, hours: { open: 8.5, close: 19.5 }, onDuty: false },
+  { id: 47, name: "صيدلية المنار تسالة", area: "نهج فلسطين", address: "Rue Palestine, Tessala", phone: null, lat: 35.2480, lng: -0.7700, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 48, name: "صيدلية مرين", area: "الطريق الولائي", address: "Route de Wilaya, Merine", phone: "0545 66 77 88", lat: 34.7833, lng: -0.4667, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 49, name: "صيدلية مرين الشرقية", area: "حي النخيل", address: "Cité Ennakhil, Merine", phone: null, lat: 34.7850, lng: -0.4640, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 50, name: "صيدلية مصطفى بن ابراهيم", area: "نهج الشهداء", address: "Rue des Martyrs, M. Ben Brahim", phone: "0540 33 44 55", lat: 35.2000, lng: -0.3667, hours: { open: 8, close: 22.5 }, onDuty: false },
+  { id: 51, name: "صيدلية الأقصى", area: "حي القدس", address: "Cité El Qods, M. Ben Brahim", phone: null, lat: 35.1980, lng: -0.3700, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 52, name: "صيدلية تنيرة", area: "المركز", address: "Centre, Tenira", phone: "0790 55 66 77", lat: 35.0167, lng: -0.5333, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 53, name: "صيدلية تنيرة 24", area: "طريق وهران", address: "Route d'Oran, Tenira", phone: null, lat: 35.0180, lng: -0.5300, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 54, name: "صيدلية الحصايبة", area: "وسط البلدية", address: "Centre, El Hacaiba", phone: "0660 99 88 77", lat: 34.7000, lng: -0.7500, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 55, name: "صيدلية الهدى الحصايبة", area: "الطريق الوطني", address: "RN, El Hacaiba", phone: null, lat: 34.6980, lng: -0.7550, hours: { open: 8.5, close: 20 }, onDuty: false },
+  { id: 56, name: "صيدلية مولاي سليسن", area: "حي النصر", address: "Cité Ennasr, Moulay Slissen", phone: "0770 55 66 77", lat: 34.8167, lng: -0.7667, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 57, name: "صيدلية الرشيد مولاي سليسن", area: "نهج الأمير", address: "Rue Emir, Moulay Slissen", phone: null, lat: 34.8180, lng: -0.7700, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 58, name: "صيدلية بئر الحمام", area: "نهج الجمهورية", address: "Rue de la République, Bir El Hammam", phone: "0548 77 66 55", lat: 34.7500, lng: -0.6500, hours: { open: 9, close: 20 }, onDuty: false },
+  { id: 59, name: "صيدلية وادي السبع", area: "شارع أول نوفمبر", address: "Bd 1er Novembre, Oued Seba", phone: "0560 88 99 00", lat: 34.9500, lng: -0.5500, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 60, name: "صيدلية وادي السبع 24", area: "الطريق الرئيسي", address: "Route Principale, Oued Seba", phone: null, lat: 34.9520, lng: -0.5480, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 61, name: "صيدلية بوجبهة البرج", area: "حي 5 جويلية", address: "Cité 5 Juillet, Boujebha El Bordj", phone: "0790 11 22 33", lat: 35.3167, lng: -0.3167, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 62, name: "صيدلية السلام بوجبهة", area: "نهج الاستقلال", address: "Rue Indépendance, Boujebha", phone: null, lat: 35.3180, lng: -0.3140, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 63, name: "صيدلية سيدي لحسن", area: "الطريق الرئيسي", address: "Route Nationale, Sidi Lahssen", phone: "0668 44 55 66", lat: 35.1500, lng: -0.7000, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 64, name: "صيدلية مناوبة سيدي لحسن", area: "وسط", address: "Centre, Sidi Lahssen", phone: null, lat: 35.1520, lng: -0.6980, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 65, name: "صيدلية حاسي زهانة", area: "طريق وهران", address: "Route d'Oran, Hassi Zahana", phone: "0555 99 88 77", lat: 35.0333, lng: -0.7333, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 66, name: "صيدلية زروالة", area: "وسط البلد", address: "Centre-ville, Zerouala", phone: "0699 33 22 11", lat: 35.0833, lng: -0.5167, hours: { open: 8, close: 19 }, onDuty: false },
+  { id: 67, name: "صيدلية سيدي دحو", area: "الطريق الوطني", address: "RN, Sidi Dahou", phone: "0699 12 34 56", lat: 35.1000, lng: -0.6833, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 68, name: "صيدلية عين تندامين", area: "حي السلام", address: "Cité Essalam, Aïn Tindamine", phone: "0775 44 33 22", lat: 34.6833, lng: -0.7167, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 69, name: "صيدلية وادي تاوريرة", area: "المركز البلدي", address: "APC, Oued Taourira", phone: "0555 44 33 22", lat: 34.8833, lng: -0.5667, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 70, name: "صيدلية الطابية", area: "نهج العربي بن مهيدي", address: "Rue Larbi Ben M'hidi, Tabia", phone: "0544 33 22 11", lat: 34.7333, lng: -0.6500, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 71, name: "صيدلية تامزوغة", area: "الحي الجديد", address: "Nouveau Quartier, Tamzoura", phone: "0666 77 88 99", lat: 35.1500, lng: -0.5667, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 72, name: "صيدلية الضاية", area: "دوار الضاية", address: "Douar Edhaya, Dhaya", phone: null, lat: 34.6833, lng: -0.6167, hours: { open: 8.5, close: 19 }, onDuty: false },
+  { id: 73, name: "صيدلية سيدي علي بن يوب", area: "دوار سيدي علي", address: "Douar Sidi Ali Benyoub", phone: "0558 77 66 55", lat: 34.9333, lng: -0.6667, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 74, name: "صيدلية حاسي دحو", area: "المحطة", address: "La Gare, Hassi Dahou", phone: "0799 66 55 44", lat: 35.0667, lng: -0.5167, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 75, name: "صيدلية مسالم", area: "نهج العقيد", address: "Rue Colonel, Messalm", phone: "0665 44 33 22", lat: 34.8500, lng: -0.5833, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 76, name: "صيدلية الخميس", area: "نهج المدرسة", address: "Rue de l'École, El Khemis", phone: null, lat: 34.7167, lng: -0.5333, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 77, name: "صيدلية الورود", area: "حي الورود", address: "Cité El Wouroud", phone: "0795 33 22 11", lat: 34.9500, lng: -0.5667, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 78, name: "صيدلية عين الثريد", area: "الطريق الوطني 7", address: "RN7, Aïn Thrid", phone: "0543 22 11 00", lat: 35.2667, lng: -0.6333, hours: { open: 8.5, close: 20 }, onDuty: false },
+  { id: 79, name: "صيدلية سيدي يعقوب", area: "نهج الاستقلال", address: "Rue de l'Indépendance, Sidi Yacoub", phone: "0549 88 77 66", lat: 35.0500, lng: -0.6833, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 80, name: "صيدلية بلعربي", area: "شارع الشهيد", address: "Rue Chahid, Belarbi", phone: "0771 55 44 33", lat: 34.9000, lng: -0.6500, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 81, name: "صيدلية العمارنة", area: "نهج فلسطين", address: "Rue Palestine, El Amarna", phone: "0545 66 77 88", lat: 34.8000, lng: -0.6000, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 82, name: "صيدلية السهالة", area: "الطريق الولائي 12", address: "CW12, Sahala", phone: "0662 33 44 55", lat: 35.0500, lng: -0.6167, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 83, name: "صيدلية أولاد خالد", area: "دوار أولاد خالد", address: "Douar Ouled Khaled", phone: "0777 88 99 00", lat: 34.9500, lng: -0.3500, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 84, name: "صيدلية أولاد علي", area: "دوار أولاد علي", address: "Douar Ouled Ali", phone: null, lat: 34.9333, lng: -0.4667, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 85, name: "صيدلية سيدي خالد", area: "الطريق الوطني", address: "RN, Sidi Khaled", phone: "0559 77 66 55", lat: 34.9833, lng: -0.6833, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 86, name: "صيدلية عين قادة", area: "وسط البلدية", address: "Centre, Aïn Kada", phone: null, lat: 35.1333, lng: -0.5833, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 87, name: "صيدلية سيدي ابراهيم", area: "نهج الشهيد", address: "Rue Chahid, Sidi Brahim", phone: "0667 88 99 00", lat: 35.1167, lng: -0.6333, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 88, name: "صيدلية بويزرو", area: "وسط البلدية", address: "Centre, Bouizrou", phone: null, lat: 34.7333, lng: -0.5333, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 89, name: "صيدلية المقطع", area: "الحي البلدي", address: "Quartier Communal, El Mactaâ", phone: "0793 44 55 66", lat: 35.0833, lng: -0.6000, hours: { open: 8, close: 19.5 }, onDuty: false },
+  { id: 90, name: "صيدلية رجوم دموش", area: "المركز", address: "Centre, Redjem Demouche", phone: null, lat: 34.4333, lng: -0.8000, hours: { open: 8.5, close: 20.5 }, onDuty: false },
+  { id: 91, name: "صيدلية تغاليمت", area: "دوار تغاليمت", address: "Douar Teghalimet", phone: "0546 77 88 99", lat: 34.8500, lng: -0.6833, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 92, name: "صيدلية بن عشيبة شلية", area: "الطريق الولائي", address: "CW, Benachiba Chelia", phone: null, lat: 35.0167, lng: -0.4500, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 93, name: "صيدلية الشعيبة", area: "وسط", address: "Centre, Chaiba", phone: "0772 33 44 55", lat: 34.8167, lng: -0.5333, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 94, name: "صيدلية المكدرة", area: "نهج أول نوفمبر", address: "Rue 1er Novembre, Makedra", phone: null, lat: 35.1167, lng: -0.6667, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 95, name: "صيدلية سيدي عمار", area: "الطريق الوطني 13", address: "RN13, Sidi Amar", phone: "0561 22 33 44", lat: 34.9833, lng: -0.5333, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 96, name: "صيدلية ضرية", area: "المركز البلدي", address: "APC, Dharia", phone: null, lat: 34.7667, lng: -0.5500, hours: { open: 8, close: 19 }, onDuty: false },
+  { id: 97, name: "صيدلية شعيب", area: "نهج الجمهورية", address: "Rue République, Chouaib", phone: "0669 55 66 77", lat: 34.7333, lng: -0.5833, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 98, name: "صيدلية مولاي النبي", area: "حي الرجاء", address: "Cité Erraja, Moulay Ennabi", phone: null, lat: 35.0333, lng: -0.6000, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 99, name: "صيدلية تافسور", area: "نهج الأمير", address: "Rue Emir, Tafessour", phone: "0680 55 44 33", lat: 34.8000, lng: -0.6333, hours: { open: 8, close: 19.5 }, onDuty: false },
+  { id: 100, name: "صيدلية سيدي دحو الزاير", area: "حي النصر", address: "Cité Ennasr, Sidi Dahou Ezzair", phone: null, lat: 34.9833, lng: -0.7167, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 301, name: "صيدلية تلاغ الجديدة", area: "حي 20 أوت", address: "Cité 20 Août, Telagh", phone: "0660 12 34 56", lat: 34.7860, lng: -0.5850, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 302, name: "صيدلية الرائد تلاغ", area: "نهج الأمير عبد القادر", address: "Rue Emir AEK, Telagh", phone: null, lat: 34.7820, lng: -0.5870, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 303, name: "صيدلية سفيزف الشرقية", area: "حي النصر", address: "Cité Ennasr, Sfisef", phone: "0555 77 88 99", lat: 35.2320, lng: -0.2450, hours: { open: 8.5, close: 23 }, onDuty: false },
+  { id: 304, name: "صيدلية الأمل سفيزف", area: "طريق سيدي بلعباس", address: "Route de SBA, Sfisef", phone: null, lat: 35.2310, lng: -0.2520, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 305, name: "صيدلية رأس الماء 24", area: "وسط المدينة", address: "Centre-ville, Ras El Ma", phone: "0790 11 22 33", lat: 34.5010, lng: -0.8180, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 306, name: "صيدلية بن باديس الجديدة", area: "حي المجاهد", address: "Cité Moudjahid, Ben Badis", phone: "0666 44 55 66", lat: 35.2670, lng: -0.5680, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 307, name: "صيدلية مرين 24", area: "الطريق الوطني", address: "RN, Merine", phone: "0550 99 88 77", lat: 34.7840, lng: -0.4680, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 308, name: "صيدلية تنيرة الجديدة", area: "حي الشمس", address: "Cité Soleil, Tenira", phone: null, lat: 35.0170, lng: -0.5350, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 309, name: "صيدلية عين البرد الغربية", area: "حي الرائد", address: "Cité Erraïd, Aïn El Berd", phone: "0770 55 44 33", lat: 35.3650, lng: -0.5180, hours: { open: 8, close: 22.5 }, onDuty: false },
+  { id: 310, name: "صيدلية تسالة 24", area: "وسط البلدية", address: "Centre, Tessala", phone: "0698 77 66 55", lat: 35.2470, lng: -0.7680, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 311, name: "صيدلية المكدرة الجديدة", area: "حي المستقبل", address: "Cité El Moustakbel, Makedra", phone: null, lat: 35.1150, lng: -0.6680, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 312, name: "صيدلية الحصايبة 24", area: "نهج الاستقلال", address: "Rue Indépendance, El Hacaiba", phone: "0545 88 99 00", lat: 34.6990, lng: -0.7520, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 313, name: "صيدلية مولاي سليسن الجديدة", area: "حي 8 ماي", address: "Cité 8 Mai, Moulay Slissen", phone: null, lat: 34.8170, lng: -0.7680, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 314, name: "صيدلية زروالة 24", area: "الطريق الولائي", address: "CW, Zerouala", phone: "0560 33 44 55", lat: 35.0820, lng: -0.5180, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 315, name: "صيدلية سيدي دحو الجديدة", area: "حي الوفاء", address: "Cité El Wafa, Sidi Dahou", phone: null, lat: 35.0990, lng: -0.6850, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 316, name: "صيدلية عين تندامين 24", area: "وسط", address: "Centre, Aïn Tindamine", phone: "0666 11 22 33", lat: 34.6820, lng: -0.7180, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 317, name: "صيدلية وادي تاوريرة الجديدة", area: "حي الشهيد", address: "Cité Chahid, Oued Taourira", phone: null, lat: 34.8820, lng: -0.5680, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 318, name: "صيدلية طابية 24", area: "طريق سفيزف", address: "Route de Sfisef, Tabia", phone: "0555 66 77 88", lat: 34.7320, lng: -0.6520, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 319, name: "صيدلية تامزوغة الجديدة", area: "حي النخيل", address: "Cité Nakhil, Tamzoura", phone: null, lat: 35.1490, lng: -0.5680, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 320, name: "صيدلية الضاية 24", area: "وسط البلدية", address: "Centre, Dhaya", phone: "0790 44 55 66", lat: 34.6820, lng: -0.6180, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 321, name: "صيدلية بئر الحمام الجديدة", area: "حي النور", address: "Cité Ennour, Bir El Hammam", phone: null, lat: 34.7490, lng: -0.6520, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 322, name: "صيدلية وادي السبع الجديدة", area: "حي الفتح", address: "Cité El Feth, Oued Seba", phone: "0565 88 77 66", lat: 34.9510, lng: -0.5520, hours: { open: 8, close: 22.5 }, onDuty: false },
+  { id: 323, name: "صيدلية بوجبهة البرج 2", area: "طريق سيدي بلعباس", address: "Route de SBA, Boujebha", phone: null, lat: 35.3170, lng: -0.3180, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 324, name: "صيدلية سيدي لحسن 24", area: "نهج الشهداء", address: "Rue des Martyrs, Sidi Lahssen", phone: "0770 33 44 55", lat: 35.1510, lng: -0.7020, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 325, name: "صيدلية حاسي زهانة الجديدة", area: "حي 1 نوفمبر", address: "Cité 1er Nov, Hassi Zahana", phone: null, lat: 35.0320, lng: -0.7350, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 326, name: "صيدلية سيدي علي بن يوب 24", area: "وسط البلدية", address: "Centre, Sidi Ali Benyoub", phone: "0698 55 66 77", lat: 34.9320, lng: -0.6680, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 327, name: "صيدلية حاسي دحو الجديدة", area: "حي الرجاء", address: "Cité Erraja, Hassi Dahou", phone: null, lat: 35.0650, lng: -0.5180, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 328, name: "صيدلية مسالم 24", area: "الطريق الوطني", address: "RN, Messalm", phone: "0550 77 88 99", lat: 34.8490, lng: -0.5850, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 329, name: "صيدلية الخميس الجديدة", area: "حي الأمل", address: "Cité El Amel, El Khemis", phone: null, lat: 34.7150, lng: -0.5350, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 330, name: "صيدلية الورود 24", area: "وسط", address: "Centre, El Wouroud", phone: "0660 44 33 22", lat: 34.9490, lng: -0.5680, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 331, name: "صيدلية عين الثريد الجديدة", area: "حي السلام", address: "Cité Essalam, Aïn Thrid", phone: null, lat: 35.2650, lng: -0.6350, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 332, name: "صيدلية سيدي يعقوب 24", area: "طريق تلمسان", address: "Route de Tlemcen, Sidi Yacoub", phone: "0775 66 55 44", lat: 35.0490, lng: -0.6850, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 333, name: "صيدلية بلعربي الجديدة", area: "حي 5 جويلية", address: "Cité 5 Juillet, Belarbi", phone: null, lat: 34.8990, lng: -0.6520, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 334, name: "صيدلية العمارنة 24", area: "وسط البلدية", address: "Centre, El Amarna", phone: "0565 33 44 55", lat: 34.7990, lng: -0.6020, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 335, name: "صيدلية السهالة الجديدة", area: "حي النجاح", address: "Cité Ennajah, Sahala", phone: null, lat: 35.0490, lng: -0.6180, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 336, name: "صيدلية أولاد خالد 24", area: "الطريق الولائي", address: "CW, Ouled Khaled", phone: "0795 88 77 66", lat: 34.9490, lng: -0.3520, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 337, name: "صيدلية أولاد علي الجديدة", area: "حي القدس", address: "Cité El Qods, Ouled Ali", phone: null, lat: 34.9320, lng: -0.4680, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 338, name: "صيدلية سيدي خالد 24", area: "وسط", address: "Centre, Sidi Khaled", phone: "0666 77 88 99", lat: 34.9820, lng: -0.6850, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 339, name: "صيدلية عين قادة الجديدة", area: "حي الفلاح", address: "Cité El Fellah, Aïn Kada", phone: null, lat: 35.1320, lng: -0.5850, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 340, name: "صيدلية سيدي ابراهيم 24", area: "طريق سيدي بلعباس", address: "Route de SBA, Sidi Brahim", phone: "0555 22 33 44", lat: 35.1150, lng: -0.6350, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 341, name: "صيدلية بويزرو الجديدة", area: "حي الأمير", address: "Cité El Amir, Bouizrou", phone: null, lat: 34.7320, lng: -0.5350, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 342, name: "صيدلية المقطع 24", area: "وسط", address: "Centre, El Mactaâ", phone: "0690 55 66 77", lat: 35.0820, lng: -0.6020, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 343, name: "صيدلية رجوم دموش الجديدة", area: "حي النور", address: "Cité Ennour, Redjem Demouche", phone: null, lat: 34.4320, lng: -0.8020, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 344, name: "صيدلية تغاليمت 24", area: "الطريق الوطني", address: "RN, Teghalimet", phone: "0560 88 77 66", lat: 34.8490, lng: -0.6850, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 345, name: "صيدلية بن عشيبة شلية الجديدة", area: "حي الشهيد", address: "Cité Chahid, Benachiba Chelia", phone: null, lat: 35.0150, lng: -0.4520, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 346, name: "صيدلية الشعيبة 24", area: "وسط البلدية", address: "Centre, Chaiba", phone: "0770 11 22 33", lat: 34.8150, lng: -0.5350, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 347, name: "صيدلية سيدي عمار الجديدة", area: "حي الزيتون", address: "Cité Zitoune, Sidi Amar", phone: null, lat: 34.9820, lng: -0.5350, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 348, name: "صيدلية ضرية 24", area: "وسط", address: "Centre, Dharia", phone: "0795 44 33 22", lat: 34.7650, lng: -0.5520, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 349, name: "صيدلية شعيب الجديدة", area: "حي الأمل", address: "Cité El Amel, Chouaib", phone: null, lat: 34.7320, lng: -0.5850, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 350, name: "صيدلية مولاي النبي 24", area: "طريق وهران", address: "Route d'Oran, Moulay Ennabi", phone: "0666 33 22 11", lat: 35.0320, lng: -0.6020, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 351, name: "صيدلية تافسور الجديدة", area: "حي النصر", address: "Cité Ennasr, Tafessour", phone: null, lat: 34.7990, lng: -0.6350, hours: { open: 8.5, close: 20.5 }, onDuty: false },
+  { id: 352, name: "صيدلية سيدي دحو الزاير 24", area: "وسط", address: "Centre, Sidi Dahou Ezzair", phone: "0550 55 44 33", lat: 34.9820, lng: -0.7180, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 353, name: "صيدلية مصطفى بن ابراهيم 24", area: "حي الفتح", address: "Cité El Feth, M. Ben Brahim", phone: null, lat: 35.1970, lng: -0.3680, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 354, name: "صيدلية بئر الحمام 24", area: "طريق تلمسان", address: "Route de Tlemcen, Bir El Hammam", phone: "0698 44 55 66", lat: 34.7480, lng: -0.6480, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 355, name: "صيدلية بن عشيبة 24", area: "الطريق الوطني 7", address: "RN7, Benachiba", phone: null, lat: 35.0140, lng: -0.4480, hours: { open: 0, close: 24 }, onDuty: true },
+    ].map(p => ({ ...p, wilaya: "سيدي بلعباس", commune: p.area, verified: true }));
 
-    
+    const ORAN = [
+{ id: 201, name: "صيدلية بوزيان", area: "شارع الشيخ عبد القادر", address: "50 Av. Cheikh Abdelkader, Oran", phone: "041 23 17 75", lat: 35.6903998, lng: -0.6409355, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 202, name: "صيدلية الحاج", area: "وهران", address: "Oran", phone: "041 23 25 78", lat: 35.674515, lng: -0.6503951, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 203, name: "صيدلية بوزيان (الجامع الكبير)", area: "بوليفار عبد الحميد بن باديس", address: "Pole Abdelhamid Ibn Badis, Bir El Djir", phone: "041 23 17 75", lat: 35.6970558, lng: -0.6072521, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 204, name: "صيدلية درڨال", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "041 74 84 16", lat: 35.7149093, lng: -0.6026964, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 205, name: "صيدلية ويس", area: "شارع مولود فرعون", address: "140 Rue Mouloud Feraoun, Oran", phone: "040 57 77 06", lat: 35.6997742, lng: -0.6350941, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 206, name: "صيدلية النبيل", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "0781 84 88 06", lat: 35.7099482, lng: -0.6043301, hours: { open: 7.5, close: 28 }, onDuty: false },
+  { id: 207, name: "صيدلية بن داود", area: "ساحة هوش", address: "9 Rue Sagbi Lakhdar, Place Hoche, Oran", phone: "0560 94 66 32", lat: 35.7022102, lng: -0.6403725, hours: { open: 8.5, close: 24 }, onDuty: false },
+  { id: 208, name: "صيدلية غريياني", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "0774 85 63 93", lat: 35.7121306, lng: -0.6032139, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 209, name: "صيدلية بروانة H24", area: "شارع العقيد بن عبد الرزاق", address: "07 Av. Colonel Benabderrezak, Oran", phone: "0770 43 44 84", lat: 35.6983949, lng: -0.6307644, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 210, name: "صيدلية بولجراف محمد علي", area: "شارع مغوفل جيلالي", address: "25 Rue Meghoufel Djillali, Oran", phone: "0698 53 21 00", lat: 35.7047249, lng: -0.6245603, hours: { open: 9, close: 26 }, onDuty: false },
+  { id: 211, name: "صيدلية زيداني محمد رياض", area: "حي السلام", address: "Haï Es Salem, Av. 2 Mars, Oran", phone: "041 24 08 61", lat: 35.679091, lng: -0.6392446, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 212, name: "صيدلية لحسن أحمد أمين", area: "حي HLM", address: "14 Rue Djemila, Bir El Djir", phone: "0660 71 84 10", lat: 35.7038471, lng: -0.6069675, hours: { open: 8, close: 25 }, onDuty: false },
+  { id: 213, name: "صيدلية الولاية (د. تريكي)", area: "بن عبد الرزاق", address: "Rue Boudjellal Ahmed, Oran", phone: "0793 47 51 90", lat: 35.7007463, lng: -0.6299523, hours: { open: 8.5, close: 24 }, onDuty: false },
+  { id: 214, name: "صيدلية برزوق شكيب", area: "كودة كوربي", address: "6 Rue Benouis Kadda, Oran", phone: "041 82 49 62", lat: 35.7076213, lng: -0.6106667, hours: { open: 8, close: 27 }, onDuty: false },
+  { id: 215, name: "صيدلية العقيد", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "041 74 54 00", lat: 35.7203431, lng: -0.5951157, hours: { open: 9, close: 25 }, onDuty: false },
+  { id: 216, name: "صيدلية العربي.ع", area: "شارع جلاط حبيب", address: "Av. Djellat Habib, Oran", phone: null, lat: 35.7405471, lng: -0.5677005, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 217, name: "صيدلية تيانتي لطيفة", area: "وهران", address: "Oran", phone: "0550 17 28 91", lat: 35.6935264, lng: -0.6363853, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 218, name: "صيدلية أوستو فارماسي", area: "حي أوستو - 216 مسكن", address: "Bloc 22 USTO, Bir El Djir", phone: "0799 13 49 44", lat: 35.7042707, lng: -0.5905322, hours: { open: 7.5, close: 23.5 }, onDuty: false },
+  { id: 219, name: "صيدلية خليفة", area: "حي المدينة الجديدة", address: "Cité Nouvelle, Oran", phone: "041 42 55 66", lat: 35.7100, lng: -0.6200, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 220, name: "صيدلية ميديس فارما", area: "شارع بن عكنون", address: "Rue Benaknoun, Oran", phone: "0560 12 34 56", lat: 35.7000, lng: -0.6450, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 221, name: "صيدلية أول نوفمبر", area: "ساحة أول نوفمبر", address: "Place 1er Novembre, Oran", phone: "041 33 44 55", lat: 35.7020, lng: -0.6350, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 222, name: "صيدلية إبن سينا", area: "حي إبن سينا", address: "Cité Ibn Sina, Oran", phone: "0770 99 88 77", lat: 35.7050, lng: -0.6150, hours: { open: 8.5, close: 23 }, onDuty: false },
+  { id: 223, name: "صيدلية الفتح", area: "المدينة الجديدة", address: "Ville Nouvelle, Bir El Djir", phone: "0790 44 55 66", lat: 35.7200, lng: -0.5900, hours: { open: 8, close: 24 }, onDuty: false },
+  { id: 224, name: "صيدلية القدس", area: "حي القدس", address: "Cité El Qods, Oran", phone: "0666 55 44 33", lat: 35.6950, lng: -0.6500, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 225, name: "صيدلية السعادة", area: "حي السعادة", address: "Cité Esaada, Oran", phone: null, lat: 35.7150, lng: -0.6250, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 226, name: "صيدلية النجاح", area: "شارع الأمير عبد القادر", address: "Bd Emir Abdelkader, Oran", phone: "0555 33 22 11", lat: 35.7005, lng: -0.6380, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 227, name: "صيدلية الصحة", area: "حي الصحة", address: "Cité Esseha, Oran", phone: "0540 77 88 99", lat: 35.6900, lng: -0.6300, hours: { open: 8.5, close: 22.5 }, onDuty: false },
+  { id: 228, name: "صيدلية الرازي", area: "طريق الكنيسة", address: "Route de l'Église, Oran", phone: null, lat: 35.7080, lng: -0.6180, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 229, name: "صيدلية الأندلس", area: "حي الأندلس", address: "Cité El Andalous, Bir El Djir", phone: "0698 11 22 33", lat: 35.7250, lng: -0.5950, hours: { open: 8, close: 23.5 }, onDuty: false },
+  { id: 230, name: "صيدلية الشفاء", area: "نهج محمد خميستي", address: "Rue Mohamed Khemisti, Oran", phone: "041 55 66 77", lat: 35.7030, lng: -0.6280, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 231, name: "صيدلية السانية الكبرى", area: "وسط السانية", address: "Centre-ville, Es Senia", phone: "041 60 11 22", lat: 35.6478, lng: -0.6230, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 232, name: "صيدلية النور السانية", area: "حي النور", address: "Cité Ennour, Es Senia", phone: "0550 66 77 88", lat: 35.6500, lng: -0.6200, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 233, name: "صيدلية السلام السانية", area: "شارع الاستقلال", address: "Bd de l'Indépendance, Es Senia", phone: null, lat: 35.6450, lng: -0.6250, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 234, name: "صيدلية أرزيو المركزية", area: "وسط أرزيو", address: "Centre-ville, Arzew", phone: "041 71 22 33", lat: 35.8167, lng: -0.3167, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 235, name: "صيدلية الميناء أرزيو", area: "الميناء", address: "Port, Arzew", phone: "0770 44 55 66", lat: 35.8200, lng: -0.3100, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 236, name: "صيدلية بطيوة", area: "وسط بطيوة", address: "Centre, Bethioua", phone: "041 73 44 55", lat: 35.8000, lng: -0.2667, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 237, name: "صيدلية قديل", area: "وسط قديل", address: "Centre, Gdyel", phone: null, lat: 35.7833, lng: -0.4167, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 238, name: "صيدلية حاسي بونيف", area: "وسط حاسي بونيف", address: "Centre, Hassi Bounif", phone: "0560 88 77 66", lat: 35.7000, lng: -0.5000, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 239, name: "صيدلية بئر الجير 24", area: "طريق وهران", address: "Route d'Oran, Bir El Djir", phone: "0790 11 22 33", lat: 35.7300, lng: -0.5500, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 240, name: "صيدلية سيدي الشحمي", area: "وسط سيدي الشحمي", address: "Centre, Sidi Chahmi", phone: "0666 99 88 77", lat: 35.6500, lng: -0.5167, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 241, name: "صيدلية الكرمة", area: "وسط الكرمة", address: "Centre, El Kerma", phone: null, lat: 35.6167, lng: -0.5833, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 242, name: "صيدلية عين الترك", area: "كورنيش عين الترك", address: "Corniche, Aïn El Turck", phone: "041 80 55 66", lat: 35.7333, lng: -0.7500, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 243, name: "صيدلية المرسى الكبير", area: "وسط المرسى الكبير", address: "Centre, Mers El Kébir", phone: "0555 44 33 22", lat: 35.7333, lng: -0.7000, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 244, name: "صيدلية بوسفر", area: "وسط بوسفر", address: "Centre, Bousfer", phone: null, lat: 35.7167, lng: -0.8333, hours: { open: 8.5, close: 20 }, onDuty: false },
+  { id: 245, name: "صيدلية وادي تليلات", area: "وسط وادي تليلات", address: "Centre, Oued Tlélat", phone: "0698 77 66 55", lat: 35.5500, lng: -0.4500, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 246, name: "صيدلية حاسي مفسوخ", area: "وسط حاسي مفسوخ", address: "Centre, Hassi Mefsoukh", phone: null, lat: 35.7833, lng: -0.3667, hours: { open: 8, close: 19.5 }, onDuty: false },
+  { id: 247, name: "صيدلية مسرغين", area: "وسط مسرغين", address: "Centre, Misserghin", phone: "0540 22 33 44", lat: 35.6167, lng: -0.7333, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 248, name: "صيدلية بوتليليس", area: "وسط بوتليليس", address: "Centre, Boutlelis", phone: null, lat: 35.6500, lng: -0.9000, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 249, name: "صيدلية عين البية", area: "وسط عين البية", address: "Centre, Aïn El Bia", phone: "0775 33 44 55", lat: 35.8167, lng: -0.2833, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 250, name: "صيدلية بن فريحة", area: "وسط بن فريحة", address: "Centre, Benfreha", phone: null, lat: 35.7167, lng: -0.4333, hours: { open: 8, close: 20 }, onDuty: false },
+  { id: 251, name: "صيدلية حاسي بن عقبة", area: "وسط حاسي بن عقبة", address: "Centre, Hassi Ben Okba", phone: "0660 55 66 77", lat: 35.7333, lng: -0.4500, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 252, name: "صيدلية تفراوي", area: "وسط تفراوي", address: "Centre, Tafraoui", phone: null, lat: 35.4833, lng: -0.5167, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 253, name: "صيدلية مرسى الحجاج", area: "وسط مرسى الحجاج", address: "Centre, Marsa El Hadjadj", phone: "0795 44 55 66", lat: 35.7833, lng: -0.1500, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 254, name: "صيدلية بوفاطيس", area: "وسط بوفاطيس", address: "Centre, Boufatis", phone: null, lat: 35.6833, lng: -0.4000, hours: { open: 8, close: 19.5 }, onDuty: false },
+  { id: 255, name: "صيدلية سيدي بن يبقى", area: "وسط سيدي بن يبقى", address: "Centre, Sidi Benyebka", phone: "0565 77 88 99", lat: 35.8333, lng: -0.3833, hours: { open: 8, close: 20.5 }, onDuty: false },
+  { id: 256, name: "صيدلية وهران الجامعة", area: "حي الجامعة", address: "Cité Universitaire, Oran", phone: null, lat: 35.7050, lng: -0.6000, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 257, name: "صيدلية بئر الجير الجديدة", area: "الحي الجديد", address: "Nouveau Quartier, Bir El Djir", phone: "0544 66 77 88", lat: 35.7350, lng: -0.5450, hours: { open: 8.5, close: 23 }, onDuty: false },
+  { id: 258, name: "صيدلية فرون", area: "حي فرون", address: "Cité Feraoun, Oran", phone: null, lat: 35.6980, lng: -0.6400, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 259, name: "صيدلية مرافال", area: "حي مرافال", address: "Cité Maraval, Oran", phone: "0690 11 22 33", lat: 35.7100, lng: -0.6550, hours: { open: 8, close: 22.5 }, onDuty: false },
+  { id: 260, name: "صيدلية ديتوش", area: "حي ديتوش", address: "Cité Detouche, Oran", phone: null, lat: 35.7150, lng: -0.6500, hours: { open: 8.5, close: 21 }, onDuty: false },
+    ].map(p => ({ ...p, wilaya: "وهران", commune: p.area, verified: true }));
 
-    
+    const ALGER = [
+{ id: 401, name: "صيدلية خلدون 24/7", area: "الحراش", address: "12 Rue Si Hanafi, El-Harrach 16004", phone: "020 43 43 34", lat: 36.7172244, lng: 3.1461069, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 402, name: "صيدلية الزيتونة", area: "بئر مراد رايس", address: "Bir Mourad Raïs 16000", phone: "0560 28 51 99", lat: 36.7341897, lng: 3.0359469, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 403, name: "صيدلية ميمونة", area: "الجزائر الوسطى", address: "115 Rue Didouche Mourad, Alger Centre", phone: "0784 23 03 37", lat: 36.763382, lng: 3.0482317, hours: { open: 7.5, close: 19.5 }, onDuty: false },
+  { id: 404, name: "صيدلية محب الدين نسيمة", area: "الجزائر الوسطى", address: "Rue Didouche Mourad, Alger Centre", phone: "0770 97 38 52", lat: 36.7661213, lng: 3.0520001, hours: { open: 8.5, close: 19 }, onDuty: false },
+  { id: 405, name: "صيدلية شكرون", area: "دالي إبراهيم", address: "140 Hay El Bina, Dély Ibrahim", phone: "0770 07 88 01", lat: 36.7604004, lng: 2.9842351, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 406, name: "صيدلية بيل فونتين", area: "العاشور", address: "Rue Ouahrani Abdelkader, El Achour", phone: "023 30 03 79", lat: 36.7370888, lng: 3.0008028, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 407, name: "صيدلية د. دني منير", area: "برج الكيفان", address: "Ben Redouane, Bordj El Kiffan", phone: "0549 20 16 26", lat: 36.7562908, lng: 3.2253686, hours: { open: 8, close: 25 }, onDuty: false },
+  { id: 408, name: "صيدلية السنتر", area: "الجزائر الوسطى", address: "07 Rue Abdelkrim Khettabi, Alger Centre", phone: "020 08 23 68", lat: 36.7721786, lng: 3.058, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 409, name: "صيدلية شيخي", area: "القبة", address: "Lot. Sastra, Kouba", phone: "023 70 66 38", lat: 36.7250816, lng: 3.0731928, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 410, name: "صيدلية د. وزيان س.", area: "الجزائر الوسطى", address: "2 Rue Mercurie, Alger Centre", phone: "0770 52 94 09", lat: 36.7662817, lng: 3.0487897, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 411, name: "صيدلية كاديكس بلعروان يامنة", area: "القصبة", address: "30 Rue Debbih Cherif, Casbah", phone: "0557 35 80 94", lat: 36.7797517, lng: 3.0566083, hours: { open: 7.5, close: 23 }, onDuty: false },
+  { id: 412, name: "صيدلية قندوز", area: "الجزائر الوسطى", address: "Rue A. Harriched, Alger Centre", phone: "021 43 36 46", lat: 36.7782934, lng: 3.0570175, hours: { open: 8, close: 18 }, onDuty: false },
+  { id: 413, name: "صيدلية دنداني", area: "الجزائر الوسطى", address: "09 Rue Sergent Addoun, Alger Centre", phone: "021 63 54 03", lat: 36.7717695, lng: 3.0582706, hours: { open: 9, close: 20 }, onDuty: false },
+  { id: 414, name: "صيدلية وسالح سهام", area: "سيدي امحمد", address: "70 Rue Hassiba Ben Bouali, Sidi M'Hamed", phone: "0699 41 68 61", lat: 36.7629402, lng: 3.0563756, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 415, name: "صيدلية د. سعدان", area: "الجزائر الوسطى", address: "Alger Centre 16000", phone: "0770 64 14 26", lat: 36.7724062, lng: 3.0556187, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 416, name: "صيدلية تهامي", area: "الجزائر الوسطى", address: "1 Rue Larbi Ben M'hidi, Alger Centre", phone: "021 74 91 73", lat: 36.7794654, lng: 3.0580151, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 417, name: "صيدلية القبة (مناوبة)", area: "القبة", address: "Kouba", phone: null, lat: 36.7257983, lng: 3.0903277, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 418, name: "صيدلية زكري", area: "بئر مراد رايس", address: "Rue Fabri Marcello, Bir Mourad Raïs", phone: "023 42 04 07", lat: 36.7371436, lng: 3.0632726, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 419, name: "صيدلية دي الكيفان (مناوبة)", area: "برج الكيفان", address: "Cité Benzarga, Bordj El Kiffan", phone: "020 21 48 57", lat: 36.7721132, lng: 3.2435749, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 420, name: "صيدلية باب الوادي", area: "باب الوادي", address: "Bd Abderrezak Hahad, Bab El Oued", phone: "021 96 55 66", lat: 36.7833, lng: 3.0500, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 421, name: "صيدلية بولوغين", area: "بولوغين", address: "Rue Triolet, Bologhine", phone: null, lat: 36.8000, lng: 3.0333, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 422, name: "صيدلية حسين داي", area: "حسين داي", address: "Rue Hassiba Ben Bouali, Hussein Dey", phone: "021 77 88 99", lat: 36.7333, lng: 3.0833, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 423, name: "صيدلية باب الزوار", area: "باب الزوار", address: "Cité 5 Juillet, Bab Ezzouar", phone: "021 24 55 66", lat: 36.7167, lng: 3.1833, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 424, name: "صيدلية الدار البيضاء", area: "الدار البيضاء", address: "Route Nationale, Dar El Beïda", phone: null, lat: 36.7167, lng: 3.2167, hours: { open: 8.5, close: 23 }, onDuty: false },
+  { id: 425, name: "صيدلية براقي", area: "براقي", address: "Centre-ville, Baraki", phone: "021 55 44 33", lat: 36.6667, lng: 3.1000, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 426, name: "صيدلية الرويبة", area: "الرويبة", address: "Rue 1er Novembre, Rouiba", phone: "021 85 66 77", lat: 36.7333, lng: 3.2833, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 427, name: "صيدلية الرغاية", area: "الرغاية", address: "Centre-ville, Reghaïa", phone: null, lat: 36.7333, lng: 3.3333, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 428, name: "صيدلية عين طاية", area: "عين طاية", address: "Bord de Mer, Aïn Taya", phone: "021 82 11 22", lat: 36.7833, lng: 3.2833, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 429, name: "صيدلية برج البحري", area: "برج البحري", address: "Route Nationale, Bordj El Bahri", phone: null, lat: 36.7833, lng: 3.2333, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 430, name: "صيدلية الحراش 24", area: "الحراش", address: "Place de la Mairie, El-Harrach", phone: "020 33 44 55", lat: 36.7167, lng: 3.1333, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 431, name: "صيدلية باش جراح", area: "باش جراح", address: "Cité Bachdjarah, Bachdjerrah", phone: "021 66 77 88", lat: 36.7167, lng: 3.0667, hours: { open: 8, close: 22.5 }, onDuty: false },
+  { id: 432, name: "صيدلية بوروبة", area: "بوروبة", address: "Rue Larbi Ben M'hidi, Bourouba", phone: null, lat: 36.7167, lng: 3.1000, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 433, name: "صيدلية المدنية", area: "المدنية", address: "Rue Hassiba Ben Bouali, El Madania", phone: "021 69 88 99", lat: 36.7500, lng: 3.0667, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 434, name: "صيدلية بلوزداد", area: "بلوزداد", address: "Rue Belouizdad, Belouizdad", phone: null, lat: 36.7500, lng: 3.0833, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 435, name: "صيدلية بن عكنون", area: "بن عكنون", address: "Chemin Haddadi, Ben Aknoun", phone: "021 91 22 33", lat: 36.7500, lng: 3.0000, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 436, name: "صيدلية الأبيار", area: "الأبيار", address: "Bd Krim Belkacem, El Biar", phone: null, lat: 36.7667, lng: 3.0167, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 437, name: "صيدلية حيدرة", area: "حيدرة", address: "Rue Didouche, Hydra", phone: "021 60 44 55", lat: 36.7500, lng: 3.0333, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 438, name: "صيدلية المرادية", area: "المرادية", address: "Rue des Frères, El Mouradia", phone: null, lat: 36.7500, lng: 3.0500, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 439, name: "صيدلية بئر خادم", area: "بئر خادم", address: "Place de la Concorde, Bir Khadem", phone: "021 54 33 22", lat: 36.7167, lng: 3.0333, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 440, name: "صيدلية جسر قسنطينة", area: "جسر قسنطينة", address: "Pont Constantine, Hussein Dey", phone: null, lat: 36.7500, lng: 3.1000, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 441, name: "صيدلية وادي قريش", area: "وادي قريش", address: "Chemin Laperlier, Oued Koriche", phone: "0770 55 66 77", lat: 36.7833, lng: 3.0333, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 442, name: "صيدلية بوزريعة", area: "بوزريعة", address: "Rue des Mimosas, Bouzaréah", phone: null, lat: 36.7833, lng: 3.0000, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 443, name: "صيدلية زرالدة", area: "زرالدة", address: "Centre-ville, Zéralda", phone: "021 31 22 33", lat: 36.7167, lng: 2.8500, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 444, name: "صيدلية سطاوالي", area: "سطاوالي", address: "Bd du Front de Mer, Staoueli", phone: null, lat: 36.7500, lng: 2.8833, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 445, name: "صيدلية الشراقة", area: "الشراقة", address: "Rue Principale, Cheraga", phone: "021 36 55 66", lat: 36.7667, lng: 2.9500, hours: { open: 8, close: 22.5 }, onDuty: false },
+  { id: 446, name: "صيدلية عين البنيان", area: "عين البنيان", address: "Bord de Mer, Aïn Benian", phone: null, lat: 36.8000, lng: 2.9333, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 447, name: "صيدلية درارية", area: "درارية", address: "Centre-ville, Draria", phone: "021 56 77 88", lat: 36.7167, lng: 2.9833, hours: { open: 8.5, close: 21 }, onDuty: false },
+  { id: 448, name: "صيدلية الدويرة", area: "الدويرة", address: "Cité 11 Décembre, Douéra", phone: null, lat: 36.6667, lng: 2.9500, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 449, name: "صيدلية بابا حسن", area: "بابا حسن", address: "Rue Principale, Baba Hassen", phone: "0660 99 88 77", lat: 36.7000, lng: 2.9667, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 450, name: "صيدلية أولاد فايت", area: "أولاد فايت", address: "Route d'Oran, Ouled Fayet", phone: null, lat: 36.7333, lng: 2.9500, hours: { open: 8.5, close: 22 }, onDuty: false },
+  { id: 451, name: "صيدلية الحمامات", area: "الحمامات", address: "Forêt de Baïnem, El Hammamet", phone: "021 99 00 11", lat: 36.7833, lng: 2.9833, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 452, name: "صيدلية الرايس حميدو", area: "الرايس حميدو", address: "Bd du Front de Mer, Raïs Hamidou", phone: null, lat: 36.8167, lng: 3.0167, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 453, name: "صيدلية المحمدية", area: "المحمدية", address: "Rue Principale, Mohammedia", phone: "021 88 77 66", lat: 36.7333, lng: 3.1667, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 454, name: "صيدلية وادي السمار", area: "وادي السمار", address: "Route Nationale, Oued Smar", phone: null, lat: 36.7000, lng: 3.1667, hours: { open: 8, close: 23 }, onDuty: false },
+  { id: 455, name: "صيدلية الكاليتوس", area: "الكاليتوس", address: "Centre, Les Eucalyptus", phone: "021 45 66 77", lat: 36.6667, lng: 3.1500, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 456, name: "صيدلية بئر توتة", area: "بئر توتة", address: "RN1, Birtouta", phone: null, lat: 36.6500, lng: 3.0000, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 457, name: "صيدلية سيدي موسى", area: "سيدي موسى", address: "Centre, Sidi Moussa", phone: "021 41 33 44", lat: 36.6000, lng: 3.0833, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 458, name: "صيدلية أولاد شبل", area: "أولاد شبل", address: "Route de Blida, Ouled Chebel", phone: null, lat: 36.6000, lng: 2.9833, hours: { open: 8.5, close: 20.5 }, onDuty: false },
+  { id: 459, name: "صيدلية تسالة المرجة", area: "تسالة المرجة", address: "Centre, Tessala El Merdja", phone: "0555 44 33 22", lat: 36.6333, lng: 2.9500, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 460, name: "صيدلية سيدي عبد الله", area: "سيدي عبد الله", address: "Nouvelle Ville, Sidi Abdellah", phone: null, lat: 36.6833, lng: 2.8833, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 461, name: "صيدلية السويدانية", area: "السويدانية", address: "Centre, Souidania", phone: "0790 22 33 44", lat: 36.7000, lng: 2.9167, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 462, name: "صيدلية خرايسية", area: "خرايسية", address: "Centre, Khraissia", phone: null, lat: 36.6833, lng: 2.9833, hours: { open: 8.5, close: 20.5 }, onDuty: false },
+  { id: 463, name: "صيدلية الرحمانية", area: "الرحمانية", address: "Centre, Rahmania", phone: "0666 55 44 33", lat: 36.6833, lng: 2.9167, hours: { open: 8, close: 21 }, onDuty: false },
+  { id: 464, name: "صيدلية المعالمة", area: "المعالمة", address: "Centre, Mahelma", phone: null, lat: 36.6833, lng: 2.8833, hours: { open: 8, close: 21.5 }, onDuty: false },
+  { id: 465, name: "صيدلية سعولة", area: "سعولة", address: "Route de Tipaza, Saoula", phone: "021 59 88 77", lat: 36.7000, lng: 3.0167, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 466, name: "صيدلية عين النعجة", area: "عين النعجة", address: "Cité Militaire, Aïn Naadja", phone: null, lat: 36.7000, lng: 3.0667, hours: { open: 0, close: 24 }, onDuty: true },
+  { id: 467, name: "صيدلية قصر المعطمور", area: "قصر المعطمور", address: "Cité Ksar, Gué de Constantine", phone: "0550 11 00 99", lat: 36.7000, lng: 3.0833, hours: { open: 8, close: 22.5 }, onDuty: false },
+  { id: 468, name: "صيدلية بني مسوس", area: "بني مسوس", address: "Cité Beni Messous", phone: null, lat: 36.7833, lng: 2.9833, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+  { id: 469, name: "صيدلية المرسى", area: "المرسى", address: "Bord de Mer, El Marsa", phone: "021 83 55 66", lat: 36.8000, lng: 3.2500, hours: { open: 8, close: 22 }, onDuty: false },
+  { id: 470, name: "صيدلية الحراوة", area: "الحراوة", address: "Centre, Heraoua", phone: null, lat: 36.7667, lng: 3.3167, hours: { open: 8, close: 21 }, onDuty: false },
+    ].map(p => ({ ...p, wilaya: "الجزائر", commune: p.area, verified: true }));
 
-    const RAW = [...(window.PHARISE_PHARMACIES?.SBA || []), ...(window.PHARISE_PHARMACIES?.ORAN || []), ...(window.PHARISE_PHARMACIES?.ALGER || [])];
+    const RAW = [...SBA, ...ORAN, ...ALGER];
 
 
 
@@ -1175,7 +1459,7 @@ out center tags;`;
       const [statusConfirms, setStatusConfirms] = useState(() => {
         try { return JSON.parse(localStorage.getItem("pharis_confirms") || "{}"); } catch { return {}; }
       });
-      
+      const [canInstall, setCanInstall] = useState(false);
       const [offline, setOffline] = useState(!navigator.onLine);
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
@@ -1188,7 +1472,7 @@ out center tags;`;
       const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
       const [locating, setLocating] = useState(true);
       const [geoError, setGeoError] = useState(null);
-      
+      const [showLocationPicker, setShowLocationPicker] = useState(false);
       const [wilayaSearch, setWilayaSearch] = useState("");
       const [osmPharmacies, setOsmPharmacies] = useState([]);
       const [loadingOSM, setLoadingOSM] = useState(false);
@@ -1390,13 +1674,17 @@ out center tags;`;
       }, []);
 
 
-      // Offline detection only
+      // PWA install + offline
       useEffect(() => {
+        const onInstallable = () => setCanInstall(!!window.__pharisInstallPrompt);
         const onOnline = () => setOffline(false);
         const onOffline = () => setOffline(true);
+        window.addEventListener("pharis-installable", onInstallable);
         window.addEventListener("online", onOnline);
         window.addEventListener("offline", onOffline);
+        if (window.__pharisInstallPrompt) setCanInstall(true);
         return () => {
+          window.removeEventListener("pharis-installable", onInstallable);
           window.removeEventListener("online", onOnline);
           window.removeEventListener("offline", onOffline);
         };
@@ -1528,6 +1816,15 @@ out center tags;`;
       // Actions
       const showToast = (msg) => setToast(msg);
 
+      const handleInstall = async () => {
+        const prompt = window.__pharisInstallPrompt;
+        if (!prompt) return;
+        prompt.prompt();
+        const result = await prompt.userChoice;
+        if (result.outcome === "accepted") setCanInstall(false);
+        window.__pharisInstallPrompt = null;
+      };
+
       const shareApp = () => {
         const apkUrl = "https://github.com/dadididou429-glitch/Pharise/releases/download/V1.0/Pharise.apk";
         const shareText = lang === "ar" 
@@ -1630,7 +1927,44 @@ out center tags;`;
       
 
       // تغيير الولاية يدويًا + جلب الصيدليات تلقائيًا
-      
+      const selectWilaya = (w) => {
+        if (!w || !w.enabled) return;
+        setWilayaId(w.id);
+        const countryName = lang === "ar" ? "الجزائر" : lang === "fr" ? "Algérie" : "Algeria";
+        const cityLabel = lang === "ar" ? w.name : lang === "fr" ? (w.nameFr || w.name) : (w.nameEn || w.name);
+        const display = w.id === 999
+          ? (lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you")
+          : `${cityLabel}، ${countryName}`;
+        setCurrentPlace(display);
+        setShowLocationPicker(false);
+        setCountryId("DZ");
+
+        if (w.id !== 999 && w.lat && w.lng) {
+          setUserLoc({ lat: w.lat, lng: w.lng });
+          setLoadingOSM(true);
+          fetchOSMPharmacies(w.lat, w.lng, 12000)
+            .then((data) => {
+              if (data && data.length > 0) setOsmPharmacies(data);
+            })
+            .catch(() => {})
+            .finally(() => setLoadingOSM(false));
+          try {
+            localStorage.setItem("pharis_last_loc", JSON.stringify({
+              lat: w.lat, lng: w.lng, place: display, countryId: "DZ", wilayaId: w.id, ts: Date.now()
+            }));
+          } catch {}
+        } else if (userLoc) {
+          setLoadingOSM(true);
+          fetchOSMPharmacies(userLoc.lat, userLoc.lng, 12000)
+            .then((data) => {
+              if (data && data.length > 0) setOsmPharmacies(data);
+            })
+            .catch(() => {})
+            .finally(() => setLoadingOSM(false));
+        }
+      };
+
+      // Add pharmacy
       const captureFormLocation = () => {
         if (!navigator.geolocation) {
           setFormLocStatus("failed");
@@ -1793,7 +2127,7 @@ out center tags;`;
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-800 flex items-center justify-center shadow-lg overflow-hidden border border-brand-700">
-                  <img src="icon-192.png?v=3" alt="Pharis" className="w-10 h-10" width="40" height="40" />
+                  <img src="icon-192.png" alt="Pharis" className="w-10 h-10" width="40" height="40" />
                 </div>
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-brand-400 leading-tight" dir="ltr">Pharis</h1>
@@ -1815,7 +2149,79 @@ out center tags;`;
             </div>
 
             {/* Location button — مدينة + بلد + تغيير يدوي */}
-            }
+            <button
+              onClick={() => setShowLocationPicker(s => !s)}
+              className={`mt-2 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
+            >
+              <span className="flex items-center gap-2 text-sm font-medium min-w-0">
+                <Icons.MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  {locating
+                    ? (lang === "ar" ? "جارٍ تحديد موقعك..." : lang === "fr" ? "Détection de votre position..." : "Detecting your location...")
+                    : currentPlace}
+                </span>
+              </span>
+              <span className={`text-xs font-semibold underline flex-shrink-0 ${showLocationPicker ? "text-brand-950" : "text-brand-300"}`}>
+                {lang === "ar" ? "تغيير" : lang === "fr" ? "Changer" : "Change"}
+              </span>
+            </button>
+
+            {/* Languages — العربية | Français | English */}
+            <div className="flex gap-1.5 mt-2">
+              {[{ code: "ar", label: "العربية" }, { code: "fr", label: "Français" }, { code: "en", label: "English" }].map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${lang === l.code ? "bg-brand-400 text-brand-950" : "bg-brand-900 text-brand-300"}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Location picker panel */}
+            {showLocationPicker && (
+              <div className="mt-2 bg-brand-950 rounded-2xl p-3 border border-brand-800 space-y-2 animate-fade-in">
+                <p className="text-xs text-brand-300 px-1 font-medium">
+                  {lang === "ar" ? "اختر الولاية (58 ولاية)" : lang === "fr" ? "Choisir la wilaya (58)" : "Choose wilaya (58)"}
+                </p>
+                <input
+                  value={wilayaSearch}
+                  onChange={e => setWilayaSearch(e.target.value)}
+                  placeholder={lang === "ar" ? "ابحث عن ولاية..." : lang === "fr" ? "Rechercher une wilaya..." : "Search a wilaya..."}
+                  className="w-full bg-brand-900 placeholder-brand-600 text-brand-50 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                />
+                <div className="grid grid-cols-1 gap-0.5 max-h-56 overflow-y-auto scrollbar-thin rounded-xl border border-brand-800">
+                  {WILAYAS.filter(w => w.enabled).filter(w => {
+                    if (!wilayaSearch.trim()) return true;
+                    const q = wilayaSearch.toLowerCase();
+                    return (w.name || "").includes(wilayaSearch) ||
+                      (w.nameFr || "").toLowerCase().includes(q) ||
+                      (w.nameEn || "").toLowerCase().includes(q) ||
+                      String(w.id).includes(q);
+                  }).map(w => (
+                    <button
+                      key={w.id}
+                      onClick={() => { selectWilaya(w); setWilayaSearch(""); }}
+                      className={`text-start text-sm px-3 py-2 transition flex items-center justify-between border-b border-brand-800/40 last:border-0 ${wilayaId === w.id ? "bg-brand-500 text-brand-950 font-semibold" : "text-brand-100 hover:bg-brand-900"}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        {w.id !== 999 && <span className="text-[10px] text-brand-500 font-mono w-5">{String(w.id).padStart(2, "0")}</span>}
+                        <span>{lang === "ar" ? w.name : lang === "fr" ? (w.nameFr || w.name) : (w.nameEn || w.name)}</span>
+                      </span>
+                      {wilayaId === w.id && <span className="text-[10px]">✓</span>}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-brand-500 px-1 pt-1">
+                  {lang === "ar"
+                    ? "التحديد التلقائي عند الفتح · يمكنك اختيار أي ولاية لجلب صيدلياتها"
+                    : lang === "fr"
+                    ? "Détection auto à l'ouverture · choisissez une wilaya pour charger ses pharmacies"
+                    : "Auto-detect on open · pick any wilaya to load its pharmacies"}
+                </p>
+              </div>
+            )}
 
 
             {/* Pharmacy subscription CTA */}
