@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>اشتراك الصيدليات — Pharis · 500 دج/شهر</title>
+  <title>اشتراك الصيدليات — Pharis · تفعيل فوري</title>
   <meta name="theme-color" content="#022c22" />
-  <meta name="description" content="اشتراك صيدليتك على Pharis بـ 500 دينار جزائري شهرياً — شارة موثّقة وظهور أولاً." />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- PayPal SDK — استبدل CLIENT_ID بمعرّف تطبيقك من developer.paypal.com -->
+  <script src="https://www.paypal.com/sdk/js?client-id=BAAyteO6Rt73GUoprZZwhYu6mB8QqqmN_inSQxtT9-2AH-MwfC6RprZsfIoZtdghIi9F4nSq_0dgBq7bME&currency=USD&components=buttons"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
     body { font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; background: #ecfdf5; }
@@ -14,121 +17,212 @@
   </style>
 </head>
 <body class="text-stone-900">
-  <div class="gradient text-white px-6 py-14 text-center">
+  <div class="gradient text-white px-6 py-12 text-center">
     <div class="max-w-xl mx-auto">
-      <div class="w-16 h-16 mx-auto bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur">
-        <svg class="w-8 h-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z"/></svg>
+      <h1 class="text-2xl sm:text-3xl font-bold mb-2">اشتراك الصيدليات — تفعيل فوري</h1>
+      <p class="text-emerald-200 mb-4">ادفع → يظهر كود التفعيل مباشرة → أدخله في التطبيق</p>
+      <div class="inline-flex flex-col items-center bg-white/10 border border-emerald-400/40 rounded-2xl px-8 py-4">
+        <span class="text-4xl font-bold text-emerald-300" dir="ltr">500 دج</span>
+        <span class="text-emerald-200 text-sm">شهرياً · أو $4 عبر PayPal (تفعيل فوري)</span>
       </div>
-      <p class="text-emerald-300 text-sm font-semibold mb-2 tracking-wide">اشتراك الصيدليات</p>
-      <h1 class="text-2xl sm:text-3xl font-bold mb-3">أظهر صيدليتك لآلاف المستخدمين</h1>
-      <p class="text-emerald-200 text-base sm:text-lg mb-4">شارة «موثّقة» + ظهور أولاً في نتائج البحث</p>
-      <div class="inline-flex flex-col items-center bg-white/10 border border-emerald-400/40 rounded-2xl px-8 py-4 mb-6 backdrop-blur">
-        <span class="text-4xl sm:text-5xl font-bold text-emerald-300" dir="ltr">500 دج</span>
-        <span class="text-emerald-200 text-sm mt-1">شهرياً فقط</span>
-      </div>
-      <div>
-        <a href="https://wa.me/213664629517?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D8%A7%D9%84%D8%B4%D9%87%D8%B1%D9%8A%20(500%20%D8%AF%D8%AC)%20%D9%84%D8%B5%D9%8A%D8%AF%D9%84%D9%8A%D8%AA%D9%8A%20%D8%B9%D9%84%D9%89%20Pharis"
-           class="inline-block bg-emerald-400 text-emerald-950 font-bold px-8 py-4 rounded-2xl text-lg hover:bg-emerald-300 transition shadow-lg">
-          اشترك الآن عبر واتساب
-        </a>
-      </div>
-      <p class="text-emerald-300 text-sm mt-4">رد خلال 24 ساعة · تفعيل سريع بعد الدفع</p>
     </div>
   </div>
 
-  <div class="max-w-3xl mx-auto px-5 py-10 space-y-8">
-    <div class="grid sm:grid-cols-3 gap-4">
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 text-center">
-        <div class="text-3xl mb-2">🥇</div>
-        <h3 class="font-bold text-lg mb-1">ظهور أولاً</h3>
-        <p class="text-sm text-stone-500">صيدليتك في أعلى القائمة ضمن نفس المنطقة</p>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 text-center">
-        <div class="text-3xl mb-2">✅</div>
-        <h3 class="font-bold text-lg mb-1">شارة موثّقة</h3>
-        <p class="text-sm text-stone-500">ثقة أعلى مع شارة التحقق للمستخدمين</p>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 text-center">
-        <div class="text-3xl mb-2">📞</div>
-        <h3 class="font-bold text-lg mb-1">تواصل مباشر</h3>
-        <p class="text-sm text-stone-500">المستخدم يصل إليك بسهولة عبر التطبيق</p>
-      </div>
+  <div class="max-w-lg mx-auto px-5 py-8 space-y-6">
+
+    <!-- نتيجة الكود التلقائي -->
+    <div id="code-box" class="hidden bg-violet-600 text-white rounded-2xl p-6 text-center shadow-lg">
+      <p class="text-sm text-violet-100 mb-1">كود التفعيل الخاص بك</p>
+      <p id="auto-code" class="text-3xl font-mono font-bold tracking-widest my-3" dir="ltr">—</p>
+      <button type="button" id="copy-code-btn" class="bg-white text-violet-800 font-bold text-sm px-4 py-2 rounded-xl">نسخ الكود</button>
+      <p class="text-xs text-violet-100 mt-3 leading-relaxed">افتح التطبيق ← أضف صيدليتك ← الصق الكود في خانة «كود التفعيل» ← تُفعَّل الشارة فوراً</p>
+      <a href="./index.html" class="inline-block mt-3 text-sm font-semibold underline text-white">فتح التطبيق الآن ←</a>
     </div>
 
-    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-      <h2 class="font-bold text-amber-900 text-lg mb-1">خطط الاشتراك</h2>
-      <p class="text-xs text-amber-800 mb-4">أسعار بالدينار الجزائري · قابلة للإلغاء شهرياً</p>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <div class="flex-1 bg-white rounded-xl p-5 border-2 border-emerald-500 shadow-sm relative">
-          <div class="absolute -top-2 start-4 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">الأكثر طلباً</div>
-          <div class="text-3xl font-bold text-emerald-700 mt-1" dir="ltr">500 دج</div>
-          <div class="text-sm text-stone-500 mb-2">شهرياً</div>
-          <ul class="text-xs text-stone-600 space-y-1">
-            <li>✓ شارة موثّقة</li>
-            <li>✓ ظهور أولاً في القائمة</li>
-            <li>✓ تحديث أوقات العمل</li>
-            <li>✓ دعم واتساب</li>
-          </ul>
-        </div>
-        <div class="flex-1 bg-white rounded-xl p-5 border border-amber-100">
-          <div class="text-[10px] font-bold text-emerald-600 mb-1">وفّر شهرين</div>
-          <div class="text-3xl font-bold text-amber-700" dir="ltr">5,000 دج</div>
-          <div class="text-sm text-stone-500 mb-2">سنوياً <span class="text-emerald-600">(≈ 417 دج/شهر)</span></div>
-          <ul class="text-xs text-stone-600 space-y-1">
-            <li>✓ كل مزايا الاشتراك الشهري</li>
-            <li>✓ أولوية في الدعم</li>
-            <li>✓ شهران مجاناً</li>
-          </ul>
+    <div id="error-box" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-4 text-sm"></div>
+
+    <!-- PayPal — تفعيل فوري -->
+    <div class="bg-white rounded-2xl p-5 border border-blue-200 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">⚡</span>
+        <div>
+          <h2 class="font-bold text-lg">PayPal — تفعيل فوري بدون انتظار</h2>
+          <p class="text-xs text-stone-500">للجزائريين والأجانب · الكود يظهر بعد الدفع مباشرة</p>
         </div>
       </div>
-      <p class="text-xs text-amber-800 mt-4 leading-relaxed">
-        السعر يشمل: الشارة المميزة، الظهور في أعلى النتائج، تحديث أوقات العمل عند الطلب، ودعم عبر واتساب.
+      <p class="text-sm text-stone-600 mb-3">شهري <strong>$4</strong> · سنوي <strong>$40</strong></p>
+
+      <div class="flex gap-2 mb-3">
+        <button type="button" id="plan-monthly" class="flex-1 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white">شهري $4</button>
+        <button type="button" id="plan-yearly" class="flex-1 py-2 rounded-xl text-sm font-bold bg-stone-100 text-stone-600">سنوي $40</button>
+      </div>
+
+      <div id="paypal-button-container" class="min-h-[48px]"></div>
+      <p id="paypal-setup-hint" class="hidden text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2 leading-relaxed">
+        لتفعيل أزرار PayPal: أنشئ تطبيقاً على
+        <a class="underline font-semibold" href="https://developer.paypal.com/dashboard/applications/live" target="_blank" rel="noopener">developer.paypal.com</a>
+        وانسخ <strong>Client ID</strong> ثم استبدل <code class="bg-amber-100 px-1 rounded">YOUR_PAYPAL_CLIENT_ID</code> في هذا الملف.
       </p>
     </div>
 
-    <div class="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm">
-      <h2 class="font-bold text-stone-900 mb-3">كيف يتم التفعيل؟</h2>
-      <ol class="text-sm text-stone-600 space-y-3">
-        <li class="flex gap-3">
-          <span class="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">1</span>
-          <span>تواصل معنا عبر واتساب واختر الخطة (شهرية 500 دج أو سنوية 5,000 دج)</span>
-        </li>
-        <li class="flex gap-3">
-          <span class="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">2</span>
-          <span>أرسل اسم الصيدلية، العنوان، والمدينة / الولاية</span>
-        </li>
-        <li class="flex gap-3">
-          <span class="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">3</span>
-          <span>بعد تأكيد الدفع نفعّل الشارة والظهور المميز خلال ساعات</span>
-        </li>
-      </ol>
+    <!-- CCP بدون تفعيل فوري -->
+    <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">🇩🇿</span>
+        <div>
+          <h2 class="font-bold">CCP — داخل الجزائر</h2>
+          <p class="text-xs text-stone-500">التحويل البنكي لا يُؤكد آلياً · استخدم PayPal للتفعيل الفوري</p>
+        </div>
+      </div>
+      <div class="bg-stone-50 rounded-xl p-4 border border-stone-100">
+        <p class="text-xs text-stone-500">رقم CCP</p>
+        <p class="font-mono font-bold text-xl" dir="ltr">0025148966 / 05</p>
+        <p class="text-sm mt-1">باسم: <strong>Mohammed Naar</strong></p>
+        <button type="button" onclick="navigator.clipboard.writeText('0025148966')" class="mt-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">نسخ الرقم</button>
+      </div>
+      <p class="text-xs text-amber-800 mt-3 bg-amber-50 border border-amber-100 rounded-lg p-3 leading-relaxed">
+        بعد تحويل CCP راسل واتساب مع صورة الوصل ليُرسل لك الكود يدوياً:
+        <a class="font-bold underline" href="https://wa.me/213559856169">0559 85 61 69</a>
+      </p>
     </div>
 
-    <div class="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm space-y-3">
-      <h2 class="font-bold text-stone-900 mb-1">أسئلة شائعة</h2>
-      <div>
-        <p class="text-sm font-semibold text-stone-800">هل يمكن الإلغاء؟</p>
-        <p class="text-xs text-stone-500">نعم، الاشتراك الشهري يُلغى في أي وقت دون التزام سنوي.</p>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-stone-800">متى تظهر صيدليتي أولاً؟</p>
-        <p class="text-xs text-stone-500">بعد التفعيل مباشرة في منطقتك، مع شارة «موثّقة / مميزة».</p>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-stone-800">هل التسجيل المجاني متاح؟</p>
-        <p class="text-xs text-stone-500">نعم، إضافة الصيدلية مجانية من التطبيق. الاشتراك للشارة والظهور المميز فقط.</p>
-      </div>
-    </div>
-
-    <div class="text-center pb-10">
-      <a href="https://wa.me/213664629517?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D8%A7%D9%84%D8%B4%D9%87%D8%B1%D9%8A%20(500%20%D8%AF%D8%AC)%20%D8%B9%D9%84%D9%89%20Pharis"
-         class="inline-block bg-emerald-600 text-white font-bold px-8 py-3.5 rounded-xl mb-4 hover:bg-emerald-700 transition">
-        ابدأ الاشتراك — 500 دج / شهر
-      </a>
-      <div>
-        <a href="./index.html" class="text-emerald-800 underline text-sm">← العودة إلى التطبيق</a>
-      </div>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-900">
+      <strong>تسجيل مجاني:</strong> إضافة الصيدلية من التطبيق بدون اشتراك. الاشتراك فقط للشارة المميزة.
+      <a href="./index.html" class="underline font-semibold block mt-1">العودة للتطبيق ←</a>
     </div>
   </div>
+
+  <script>
+    // ── Firebase (نفس مشروع التطبيق) ──
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHMYoNaXnkrILKM38Q0f-bL1u72AXRbkE",
+      authDomain: "maftouha-ap.firebaseapp.com",
+      projectId: "maftouha-ap",
+      storageBucket: "maftouha-ap.firebasestorage.app",
+      messagingSenderId: "584528603494",
+      appId: "1:584528603494:web:46f17d9c9bee0cb208c0a7"
+    };
+    let db = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+    } catch (e) { console.warn(e); }
+
+    function randomCode() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let s = "PHARIS-";
+      for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+      return s;
+    }
+
+    async function issueActivationCode(meta) {
+      if (!db) throw new Error("Firebase غير متاح");
+      let code = randomCode();
+      // تأكد أن الكود غير موجود
+      for (let i = 0; i < 5; i++) {
+        const snap = await db.collection("activation_codes").doc(code).get();
+        if (!snap.exists) break;
+        code = randomCode();
+      }
+      await db.collection("activation_codes").doc(code).set({
+        used: false,
+        auto: true,
+        plan: meta.plan || "monthly",
+        amount: meta.amount || 4,
+        currency: "USD",
+        paypalOrderId: meta.orderId || null,
+        payerEmail: meta.email || null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      return code;
+    }
+
+    function showCode(code) {
+      document.getElementById("code-box").classList.remove("hidden");
+      document.getElementById("auto-code").textContent = code;
+      document.getElementById("code-box").scrollIntoView({ behavior: "smooth", block: "center" });
+      try { localStorage.setItem("pharis_last_activation_code", code); } catch (e) {}
+    }
+
+    document.getElementById("copy-code-btn").onclick = function () {
+      const c = document.getElementById("auto-code").textContent;
+      navigator.clipboard.writeText(c).then(() => {
+        this.textContent = "✓ تم النسخ";
+        setTimeout(() => { this.textContent = "نسخ الكود"; }, 1500);
+      });
+    };
+
+    // استعادة كود سابق إن وُجد
+    try {
+      const last = localStorage.getItem("pharis_last_activation_code");
+      if (last) showCode(last);
+    } catch (e) {}
+
+    // ── اختيار الخطة ──
+    let selectedPlan = "monthly";
+    let selectedAmount = "4.00";
+    const btnM = document.getElementById("plan-monthly");
+    const btnY = document.getElementById("plan-yearly");
+    function setPlan(plan) {
+      selectedPlan = plan;
+      selectedAmount = plan === "yearly" ? "40.00" : "4.00";
+      btnM.className = "flex-1 py-2 rounded-xl text-sm font-bold " + (plan === "monthly" ? "bg-emerald-600 text-white" : "bg-stone-100 text-stone-600");
+      btnY.className = "flex-1 py-2 rounded-xl text-sm font-bold " + (plan === "yearly" ? "bg-emerald-600 text-white" : "bg-stone-100 text-stone-600");
+      renderPayPal();
+    }
+    btnM.onclick = () => setPlan("monthly");
+    btnY.onclick = () => setPlan("yearly");
+
+    // ── PayPal Buttons ──
+    function renderPayPal() {
+      const container = document.getElementById("paypal-button-container");
+      container.innerHTML = "";
+      if (typeof paypal === "undefined" || !paypal.Buttons) {
+        document.getElementById("paypal-setup-hint").classList.remove("hidden");
+        container.innerHTML = '<p class="text-sm text-stone-500 text-center py-3">أزرار PayPal غير مفعّلة بعد — اتبع التعليمات بالأسفل</p>';
+        return;
+      }
+      document.getElementById("paypal-setup-hint").classList.add("hidden");
+      paypal.Buttons({
+        style: { layout: "vertical", color: "blue", shape: "rect", label: "pay" },
+        createOrder: function (data, actions) {
+          return actions.order.create({
+            purchase_units: [{
+              description: selectedPlan === "yearly" ? "Pharis Pharmacy Featured — Yearly" : "Pharis Pharmacy Featured — Monthly",
+              amount: { currency_code: "USD", value: selectedAmount }
+            }]
+          });
+        },
+        onApprove: function (data, actions) {
+          return actions.order.capture().then(async function (details) {
+            try {
+              const email = (details.payer && details.payer.email_address) || null;
+              const code = await issueActivationCode({
+                plan: selectedPlan,
+                amount: selectedAmount,
+                orderId: data.orderID,
+                email: email
+              });
+              showCode(code);
+            } catch (err) {
+              console.error(err);
+              const box = document.getElementById("error-box");
+              box.classList.remove("hidden");
+              box.textContent = "تم الدفع لكن تعذّر إنشاء الكود. راسل واتساب 0559856169 مع رقم العملية: " + (data.orderID || "");
+            }
+          });
+        },
+        onError: function (err) {
+          console.error(err);
+          const box = document.getElementById("error-box");
+          box.classList.remove("hidden");
+          box.textContent = "حدث خطأ في PayPal. جرّب مرة أخرى أو استخدم واتساب.";
+        }
+      }).render("#paypal-button-container");
+    }
+
+    // تأخير بسيط لتحميل الـ SDK
+    setTimeout(renderPayPal, 400);
+  </script>
 </body>
 </html>

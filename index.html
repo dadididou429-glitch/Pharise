@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v6</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v8</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -199,6 +199,14 @@
         formRequiredError: "أدخل اسم الصيدلية والعنوان على الأقل",
         unverifiedBadge: "غير موثقة",
         unverifiedNote: "أُضيفت من صاحبها ولم تُتحقق بعد",
+        addFreeNote: "التسجيل مجاني 100%. للحصول على شارة «مميزة» وظهور أولاً: اشتراك 500 دج/شهر",
+        upgradeFeatured: "ترقية لشارة مميزة — 500 دج/شهر",
+        freeRegister: "تسجيل مجاني",
+        activationCodeLabel: "كود التفعيل (اختياري — للشارة المميزة)",
+        activationCodePlaceholder: "مثال: PHARIS-XXXX",
+        activationOk: "✅ تم تفعيل الشارة المميزة!",
+        activationBad: "❌ كود غير صالح أو مستخدم مسبقاً",
+        activationHint: "بعد الدفع عبر CCP أو PayPal يصلك كود التفعيل على واتساب",
         adminLoginTitle: "دخول المسؤول",
         loginBtn: "دخول", loginError: "بيانات غير صحيحة",
         logoutBtn: "خروج",
@@ -294,6 +302,14 @@
         formRequiredError: "Indiquez au moins le nom et l'adresse",
         unverifiedBadge: "Non vérifiée",
         unverifiedNote: "Ajoutée par son propriétaire, pas encore vérifiée",
+        addFreeNote: "Inscription 100% gratuite. Badge « Mise en avant » + premier rang : 500 DA/mois",
+        upgradeFeatured: "Passer au badge premium — 500 DA/mois",
+        freeRegister: "Inscription gratuite",
+        activationCodeLabel: "Code d'activation (optionnel — badge premium)",
+        activationCodePlaceholder: "Ex: PHARIS-XXXX",
+        activationOk: "✅ Badge premium activé !",
+        activationBad: "❌ Code invalide ou déjà utilisé",
+        activationHint: "Après paiement CCP/PayPal vous recevez le code sur WhatsApp",
         adminLoginTitle: "Connexion admin",
         loginBtn: "Se connecter", loginError: "Identifiants incorrects",
         logoutBtn: "Déconnexion",
@@ -389,6 +405,14 @@
         formRequiredError: "Fill in at least the name and address",
         unverifiedBadge: "Unverified",
         unverifiedNote: "Added by its owner, not yet verified by the team",
+        addFreeNote: "100% free registration. « Featured » badge + rank first: 500 DZD/month",
+        upgradeFeatured: "Upgrade to featured badge — 500 DZD/month",
+        freeRegister: "Free registration",
+        activationCodeLabel: "Activation code (optional — featured badge)",
+        activationCodePlaceholder: "e.g. PHARIS-XXXX",
+        activationOk: "✅ Featured badge activated!",
+        activationBad: "❌ Invalid or already used code",
+        activationHint: "After CCP/PayPal payment you receive the code on WhatsApp",
         adminLoginTitle: "Admin login",
         loginBtn: "Log in", loginError: "Incorrect credentials",
         logoutBtn: "Log out",
@@ -1270,7 +1294,10 @@ out center tags;`;
                   <h3 className="font-semibold text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
                     {ph.name}
                     {ph.featured && (
-                      <span className="text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded-full px-1.5 py-0.5 flex-shrink-0">{t("featuredBadge")}</span>
+                      <span className="text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded-full px-1.5 py-0.5 flex-shrink-0">⭐ {t("featuredBadge")}</span>
+                    )}
+                    {ph.verified !== false && !ph.fromOSM && !ph.featured && (
+                      <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded-full px-1.5 py-0.5 flex-shrink-0">✓ {t("trustVerified")}</span>
                     )}
                   </h3>
                   <span className="font-mono text-xs text-stone-400 flex-shrink-0">
@@ -1485,7 +1512,7 @@ out center tags;`;
       const [loginLoading, setLoginLoading] = useState(false);
 
       // Add form
-      const [form, setForm] = useState({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "" });
+      const [form, setForm] = useState({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "", activationCode: "" });
       const [formLoc, setFormLoc] = useState(null);
       const [formLocStatus, setFormLocStatus] = useState(null);
       const [submitting, setSubmitting] = useState(false);
@@ -1996,14 +2023,54 @@ out center tags;`;
             hours: { open: Number(form.open), close: Number(form.close) },
             onDuty: form.onDuty,
             verified: false,
+            featured: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           };
 
+          // كود التفعيل — إن وُجد
+          const codeRaw = (form.activationCode || "").trim().toUpperCase();
+          let codeActivated = false;
+          if (codeRaw && db) {
+            try {
+              const codeRef = db.collection("activation_codes").doc(codeRaw);
+              const codeSnap = await codeRef.get();
+              if (codeSnap.exists && codeSnap.data().used !== true) {
+                payload.featured = true;
+                payload.verified = true;
+                codeActivated = true;
+                await codeRef.set({
+                  used: true,
+                  usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                  pharmacyName: payload.name,
+                  wilaya: payload.wilaya
+                }, { merge: true });
+              } else if (codeRaw) {
+                showToast(t("activationBad"));
+                setSubmitting(false);
+                return;
+              }
+            } catch (e) {
+              console.warn("activation code error", e);
+            }
+          }
+
           const ref = await db.collection("pharmacies_submitted").add(payload);
+          if (codeActivated) {
+            try {
+              await db.collection("pharmacy_features").doc(ref.id).set({
+                featured: true,
+                verified: true,
+                activatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                code: codeRaw
+              }, { merge: true });
+              setFeaturedMap(prev => ({ ...prev, [ref.id]: true, [String(ref.id)]: true }));
+            } catch (e) { console.warn(e); }
+          }
           setSubmitted(prev => [...prev, { id: ref.id, ...payload }]);
-          showToast(t("newPharmacySuccess")); if (analytics) analytics.logEvent("pharmacy_submitted", { country: form.country });
+          showToast(codeActivated ? t("activationOk") : t("newPharmacySuccess"));
+          if (analytics) analytics.logEvent("pharmacy_submitted", { country: form.country, featured: codeActivated });
           setShowAddForm(false);
-          setForm({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "" });
+          setForm({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "", activationCode: "" });
           setFormLoc(null);
           setFormLocStatus(null);
         } catch {
@@ -2396,6 +2463,12 @@ out center tags;`;
                   <div className="min-w-0">
                     <h2 className="text-xl font-bold text-stone-900 dark:text-brand-50 flex items-center gap-2 flex-wrap">
                       {selectedLive.name}
+                      {selectedLive.featured && (
+                        <span className="text-[10px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 rounded-full px-2 py-0.5">⭐ {t("featuredBadge")}</span>
+                      )}
+                      {selectedLive.verified !== false && !selectedLive.fromOSM && !selectedLive.featured && (
+                        <span className="text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-full px-2 py-0.5">✓ {t("trustVerified")}</span>
+                      )}
                       {selectedLive.verified === false && (
                         <span className="text-[10px] font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full px-2 py-0.5">{t("unverifiedBadge")}</span>
                       )}
@@ -2546,6 +2619,13 @@ out center tags;`;
                     <h2 className="text-xl font-bold">{t("addPharmacyTitle")}</h2>
                     <p className="text-sm text-stone-500 dark:text-brand-300 mt-0.5">{t("worldwide")}</p>
                     <p className="text-[10px] text-stone-400 mt-1">🔒 {t("protected")}</p>
+                    <div className="mt-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
+                      <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">✓ {t("freeRegister") || (lang === "ar" ? "تسجيل مجاني" : lang === "fr" ? "Inscription gratuite" : "Free registration")}</p>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5 leading-relaxed">{t("addFreeNote")}</p>
+                      <a href="./pharmacy-owner.html" className="inline-block mt-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 underline">
+                        ⭐ {t("upgradeFeatured")}
+                      </a>
+                    </div>
                   </div>
                   <button onClick={() => !submitting && setShowAddForm(false)} className="text-stone-400 p-1"><Icons.X className="w-5 h-5" /></button>
                 </div>
@@ -2604,6 +2684,19 @@ out center tags;`;
                     {formLocStatus === "ok" ? t("locationCaptured") : t("useMyLocation")}
                   </button>
                   {formLocStatus === "failed" && <p className="text-xs text-rose-500">{t("locationFailed")}</p>}
+
+                  <div className="rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-3 space-y-2">
+                    <label className="text-xs font-semibold text-violet-800 dark:text-violet-300 block">{t("activationCodeLabel")}</label>
+                    <input
+                      value={form.activationCode || ""}
+                      onChange={e => setForm(f => ({ ...f, activationCode: e.target.value.toUpperCase() }))}
+                      placeholder={t("activationCodePlaceholder")}
+                      dir="ltr"
+                      className="w-full bg-white dark:bg-black border border-violet-200 dark:border-violet-700 rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                    <p className="text-[10px] text-violet-600 dark:text-violet-400 leading-relaxed">{t("activationHint")}</p>
+                    <a href="./pharmacy-owner.html" className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline block">⭐ {t("upgradeFeatured")}</a>
+                  </div>
 
                   <button
                     onClick={submitNewPharmacy}
