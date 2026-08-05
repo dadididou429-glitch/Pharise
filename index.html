@@ -1735,6 +1735,14 @@ out center tags;`;
         }
       };
 
+      const copyDownloaderCode = () => {
+        navigator.clipboard.writeText("5040717").then(() => {
+          showToast(lang === "ar" ? "✅ تم نسخ الكود 5040717!" : lang === "fr" ? "✅ Code 5040717 copié!" : "✅ Code 5040717 copied!");
+        }).catch(() => {
+          showToast("5040717");
+        });
+      };
+
       const toggleFavorite = (id, name) => {
         setFavorites(prev => {
           const next = new Set(prev);
@@ -2435,6 +2443,30 @@ out center tags;`;
             <p className="text-[10px] text-stone-400 dark:text-brand-600" dir="ltr">© {new Date().getFullYear()} Pharis</p>
           
 
+
+            {/* Downloader Section */}
+            <div class="mt-4 mb-3 bg-gradient-to-r from-orange-900/40 to-amber-900/40 rounded-2xl p-4 border border-orange-700/50">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center text-white font-bold text-sm">D</div>
+                <p class="text-sm font-bold text-orange-200">تحميل عبر تطبيق Downloader</p>
+              </div>
+              <p class="text-[11px] text-orange-300/80 mb-3 leading-relaxed">
+                1. حمّل تطبيق <b>Downloader</b> من متجر Google Play أو Amazon Appstore<br/>
+                2. افتح التطبيق وادخل الكود أدناه<br/>
+                3. اضغط <b>Go</b> وابدأ التحميل
+              </p>
+              <div class="bg-black/30 rounded-xl p-3 text-center border border-orange-600/30">
+                <p class="text-[10px] text-orange-400 mb-1">الكود / Code</p>
+                <p class="text-3xl font-mono font-bold text-white tracking-widest" dir="ltr">5040717</p>
+                <button onclick="copyDownloaderCode()" class="mt-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-lg transition">
+                  📋 نسخ الكود
+                </button>
+              </div>
+              <div class="mt-2 text-center">
+                <p class="text-[10px] text-orange-400/70 mb-1">أو ادخل الرابط المباشر</p>
+                <p class="text-xs font-mono text-orange-200 bg-black/20 rounded-lg px-2 py-1" dir="ltr">aftv.news/5040717</p>
+              </div>
+            </div>
 </footer>
 
           {/* Detail Sheet */}
