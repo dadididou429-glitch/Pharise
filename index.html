@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v2</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v3</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -121,6 +121,7 @@
       Heart: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 21s-7.5-4.686-10-9A5.5 5.5 0 0112 6a5.5 5.5 0 0110 6c-2.5 4.314-10 9-10 9z"/></svg>,
       Star: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
       Share: (p) => <Icon {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></Icon>,
+      Download: (p) => <Icon {...p}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>,
       Plus: (p) => <Icon {...p}><path d="M12 5v14M5 12h14"/></Icon>,
       Map: (p) => <Icon {...p}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></Icon>,
       Globe: (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></Icon>,
@@ -1435,7 +1436,7 @@ out center tags;`;
         document.documentElement.classList.toggle("dark", dark);
       }, [dark]);
 
-      // Geolocation — تحديد الموقع تلقائياً + جلب محلي + OSM دفعة واحدة وبسرعة
+      // Geolocation — سريع + دقيق + كاش + عرض مدينة + بلد احترافي
       useEffect(() => {
         if (!navigator.geolocation) {
           setLocating(false);
@@ -1443,108 +1444,130 @@ out center tags;`;
           return;
         }
 
+        // تحميل موقع مخزن سابقًا فورًا (للسرعة)
+        try {
+          const cached = JSON.parse(localStorage.getItem("pharis_last_loc") || "null");
+          if (cached && cached.lat && cached.lng && Date.now() - (cached.ts || 0) < 30 * 60 * 1000) {
+            setUserLoc({ lat: cached.lat, lng: cached.lng });
+            if (cached.place) setCurrentPlace(cached.place);
+            if (cached.countryId) setCountryId(cached.countryId);
+            if (cached.wilayaId) setWilayaId(cached.wilayaId);
+            setLocating(false);
+          }
+        } catch {}
+
         const WILAYA_ALIASES = {
           16: ["الجزائر", "alger", "algiers", "alger centre", "باب الوادي"],
           31: ["وهران", "oran", "wahran"],
           22: ["سيدي بلعباس", "sidi bel abbes", "sidi bel abbès", "sidi-bel-abbes", "bel abbes"],
         };
 
-        navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setUserLoc({ lat, lng });
-            setLoadingOSM(true);
+        const processPosition = async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          setUserLoc({ lat, lng });
+          setLoadingOSM(true);
 
-            // جلب الاسم + الصيدليات من الخريطة بالتوازي (أسرع)
-            const reverseP = fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ar,en,fr`,
-              { headers: { "Accept-Language": "ar,en,fr" } }
-            )
-              .then((r) => r.json())
-              .catch(() => null);
+          const reverseP = fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=ar,en,fr`,
+            { headers: { "Accept-Language": "ar,en,fr" } }
+          ).then(r => r.json()).catch(() => null);
 
-            const osmP = fetchOSMPharmacies(lat, lng, 12000).catch(() => []);
+          const osmP = fetchOSMPharmacies(lat, lng, 12000).catch(() => []);
+
+          try {
+            const [geoData, osmData] = await Promise.all([reverseP, osmP]);
+
+            if (Array.isArray(osmData) && osmData.length > 0) {
+              setOsmPharmacies(osmData);
+            }
+
+            const addr = (geoData && geoData.address) || {};
+            const cc = (addr.country_code || "").toUpperCase();
+            let finalCountryId = "DZ";
+
+            if (cc && COUNTRIES.some(c => c.id === cc)) {
+              finalCountryId = cc;
+              setCountryId(cc);
+            } else if (cc) {
+              finalCountryId = "OTHER";
+              setCountryId("OTHER");
+            }
+
+            const placeName =
+              addr.city || addr.town || addr.village || addr.municipality ||
+              addr.suburb || addr.county || addr.state || "";
+
+            const countryName =
+              lang === "ar" ? (addr.country || "الجزائر") :
+              lang === "fr" ? (addr.country || "Algérie") :
+              (addr.country || "Algeria");
+
+            const hay = (
+              placeName + " " + (addr.state || "") + " " + (addr.county || "") + " " + (addr.suburb || "")
+            ).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            let matched = null;
+            for (const w of WILAYAS) {
+              if (!w.enabled || w.id === 999) continue;
+              const aliases = WILAYA_ALIASES[w.id] || [w.name];
+              if (aliases.some(a => hay.includes(String(a).toLowerCase()))) {
+                matched = w;
+                break;
+              }
+            }
+
+            let displayPlace = "";
+            let finalWilayaId = 999;
+
+            if (matched) {
+              finalWilayaId = matched.id;
+              setWilayaId(matched.id);
+              displayPlace = `${matched.name}، ${countryName}`;
+              setCurrentPlace(displayPlace);
+            } else {
+              setWilayaId(999);
+              displayPlace = placeName
+                ? `${placeName}، ${countryName}`
+                : (lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you");
+              setCurrentPlace(displayPlace);
+            }
 
             try {
-              const [geoData, osmData] = await Promise.all([reverseP, osmP]);
+              localStorage.setItem("pharis_last_loc", JSON.stringify({
+                lat, lng, place: displayPlace, countryId: finalCountryId, wilayaId: finalWilayaId, ts: Date.now()
+              }));
+            } catch {}
 
-              // دائماً ندمج نتائج الخريطة مع المحلية
-              if (Array.isArray(osmData) && osmData.length > 0) {
-                setOsmPharmacies(osmData);
-              }
-
-              const addr = (geoData && geoData.address) || {};
-              const cc = (addr.country_code || "").toUpperCase();
-              if (cc && COUNTRIES.some((c) => c.id === cc)) {
-                setCountryId(cc);
-              } else if (cc) {
-                setCountryId("OTHER");
-              }
-
-              const placeName =
-                addr.city || addr.town || addr.village || addr.municipality || addr.state || addr.county || "";
-              const hay = (
-                placeName +
-                " " +
-                (addr.state || "") +
-                " " +
-                (addr.county || "") +
-                " " +
-                (addr.suburb || "")
-              )
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
-
-              let matched = null;
-              for (const w of WILAYAS) {
-                if (!w.enabled || w.id === 999) continue;
-                const aliases = WILAYA_ALIASES[w.id] || [w.name];
-                if (aliases.some((a) => hay.includes(String(a).toLowerCase()))) {
-                  matched = w;
-                  break;
-                }
-              }
-
-              if (matched) {
-                // مدينة محلية: بيانات ثابتة + OSM معاً
-                setWilayaId(matched.id);
-                setCurrentPlace(matched.name);
-              } else {
-                // أي مكان آخر في العالم: OSM فقط حول المستخدم
-                setWilayaId(999);
-                setCurrentPlace(
-                  placeName ||
-                    (lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you")
-                );
-              }
-            } catch (e) {
-              console.error(e);
-            } finally {
-              setLoadingOSM(false);
-              setLocating(false);
-            }
-          },
-          async () => {
-            // رفض الموقع أو فشل GPS → نحمّل صيدليات حول الموقع الافتراضي + OSM
-            setGeoError("denied");
+          } catch (e) {
+            console.error(e);
+          } finally {
+            setLoadingOSM(false);
             setLocating(false);
-            setLoadingOSM(true);
-            try {
-              const data = await fetchOSMPharmacies(DEFAULT_LOC.lat, DEFAULT_LOC.lng, 12000);
-              if (data.length > 0) setOsmPharmacies(data);
-            } catch (e) {
-              console.error(e);
-            } finally {
-              setLoadingOSM(false);
-            }
-          },
-          {
-            enableHighAccuracy: false,
-            timeout: 8000,
-            maximumAge: 120000,
           }
+        };
+
+        // محاولة أولى: دقة عالية + وقت قصير
+        navigator.geolocation.getCurrentPosition(
+          processPosition,
+          () => {
+            // فشل → نحاول بدقة منخفضة
+            navigator.geolocation.getCurrentPosition(
+              processPosition,
+              async () => {
+                setGeoError("denied");
+                setLocating(false);
+                setLoadingOSM(true);
+                try {
+                  const data = await fetchOSMPharmacies(DEFAULT_LOC.lat, DEFAULT_LOC.lng, 12000);
+                  if (data.length > 0) setOsmPharmacies(data);
+                } catch (e) {}
+                finally { setLoadingOSM(false); }
+              },
+              { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 }
+            );
+          },
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
         );
       }, []);
 
@@ -1932,8 +1955,8 @@ out center tags;`;
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <button onClick={() => shareApp()} className="p-1.5 rounded-lg hover:bg-brand-900 transition text-brand-300" title={lang === "ar" ? "مشاركة التطبيق" : lang === "fr" ? "Partager l'app" : "Share app"}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <button onClick={() => copyDownloaderCode()} className="p-1.5 rounded-lg hover:bg-brand-900 transition text-brand-300" title={lang === "ar" ? "نسخ كود Downloader" : lang === "fr" ? "Copier le code Downloader" : "Copy Downloader code"}>
+                  <Icons.Download className="w-4 h-4" />
                 </button>
                 <button onClick={() => setDark(d => !d)} className="p-1.5 rounded-lg hover:bg-brand-900 transition" title={dark ? t("lightMode") : t("darkMode")}>
                   {dark ? <Icons.Sun className="w-4 h-4 text-brand-300" /> : <Icons.Moon className="w-4 h-4 text-brand-300" />}
@@ -2543,10 +2566,14 @@ out center tags;`;
         navigator.serviceWorker
           .register("./service-worker.js")
           .then((reg) => {
-            console.log("SW registered");
-            // فحص التحديثات كل دقيقة
-            setInterval(() => reg.update(), 60 * 1000);
+            console.log("SW registered v9");
+            // فحص التحديثات بسرعة (كل 20 ثانية + عند العودة للتطبيق)
+            setInterval(() => reg.update(), 20 * 1000);
             reg.update();
+            document.addEventListener("visibilitychange", () => {
+              if (document.visibilityState === "visible") reg.update();
+            });
+            window.addEventListener("focus", () => reg.update());
 
             reg.addEventListener("updatefound", () => {
               const newWorker = reg.installing;
