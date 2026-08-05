@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v3</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v4</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -905,10 +905,10 @@
     };
 
     const WILAYAS = [
-      { id: 16, name: "الجزائر", enabled: true },
-      { id: 31, name: "وهران", enabled: true },
-      { id: 22, name: "سيدي بلعباس", enabled: true },
-      { id: 999, name: "🌍 OpenStreetMap", enabled: true },
+      { id: 16, name: "الجزائر", nameFr: "Alger", nameEn: "Algiers", lat: 36.7538, lng: 3.0588, enabled: true },
+      { id: 31, name: "وهران", nameFr: "Oran", nameEn: "Oran", lat: 35.6971, lng: -0.6308, enabled: true },
+      { id: 22, name: "سيدي بلعباس", nameFr: "Sidi Bel Abbès", nameEn: "Sidi Bel Abbès", lat: 35.1917, lng: -0.6355, enabled: true },
+      { id: 999, name: "🌍 OpenStreetMap", nameFr: "🌍 OpenStreetMap", nameEn: "🌍 OpenStreetMap", lat: null, lng: null, enabled: true },
     ];
 
     // ═══════════════════════════════════════════════════════════
@@ -1385,10 +1385,12 @@ out center tags;`;
       const [adminTab, setAdminTab] = useState("review");
 
       // Location & data
+      const [countryId, setCountryId] = useState("DZ");
       const [wilayaId, setWilayaId] = useState(999);
       const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
       const [locating, setLocating] = useState(true);
       const [geoError, setGeoError] = useState(null);
+      const [showLocationPicker, setShowLocationPicker] = useState(false);
       const [osmPharmacies, setOsmPharmacies] = useState([]);
       const [loadingOSM, setLoadingOSM] = useState(false);
       const [submitted, setSubmitted] = useState([]);
@@ -1412,7 +1414,12 @@ out center tags;`;
       const [draftText, setDraftText] = useState("");
 
       // City search
-      const [currentPlace, setCurrentPlace] = useState("جارٍ تحديد موقعك...");
+      const [currentPlace, setCurrentPlace] = useState(() => {
+        const b = (navigator.language || "ar").slice(0, 2);
+        if (b === "fr") return "Détection...";
+        if (b === "en") return "Detecting...";
+        return "جارٍ تحديد موقعك...";
+      });
 
       // Admin
       const [adminUser, setAdminUser] = useState(null);
@@ -1824,6 +1831,44 @@ out center tags;`;
 
       
 
+      // تغيير الولاية يدويًا + جلب الصيدليات تلقائيًا
+      const selectWilaya = (w) => {
+        if (!w || !w.enabled) return;
+        setWilayaId(w.id);
+        const countryName = lang === "ar" ? "الجزائر" : lang === "fr" ? "Algérie" : "Algeria";
+        const cityLabel = lang === "ar" ? w.name : lang === "fr" ? (w.nameFr || w.name) : (w.nameEn || w.name);
+        const display = w.id === 999
+          ? (lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you")
+          : `${cityLabel}، ${countryName}`;
+        setCurrentPlace(display);
+        setShowLocationPicker(false);
+        setCountryId("DZ");
+
+        if (w.id !== 999 && w.lat && w.lng) {
+          setUserLoc({ lat: w.lat, lng: w.lng });
+          setLoadingOSM(true);
+          fetchOSMPharmacies(w.lat, w.lng, 12000)
+            .then((data) => {
+              if (data && data.length > 0) setOsmPharmacies(data);
+            })
+            .catch(() => {})
+            .finally(() => setLoadingOSM(false));
+          try {
+            localStorage.setItem("pharis_last_loc", JSON.stringify({
+              lat: w.lat, lng: w.lng, place: display, countryId: "DZ", wilayaId: w.id, ts: Date.now()
+            }));
+          } catch {}
+        } else if (userLoc) {
+          setLoadingOSM(true);
+          fetchOSMPharmacies(userLoc.lat, userLoc.lng, 12000)
+            .then((data) => {
+              if (data && data.length > 0) setOsmPharmacies(data);
+            })
+            .catch(() => {})
+            .finally(() => setLoadingOSM(false));
+        }
+      };
+
       // Add pharmacy
       const captureFormLocation = () => {
         if (!navigator.geolocation) {
@@ -1968,8 +2013,64 @@ out center tags;`;
               </div>
             </div>
 
-            {/* Location button */}
-            }
+            {/* Location button — مدينة + بلد + تغيير يدوي */}
+            <button
+              onClick={() => setShowLocationPicker(s => !s)}
+              className={`mt-2 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
+            >
+              <span className="flex items-center gap-2 text-sm font-medium min-w-0">
+                <Icons.MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  {locating
+                    ? (lang === "ar" ? "جارٍ تحديد موقعك..." : lang === "fr" ? "Détection de votre position..." : "Detecting your location...")
+                    : currentPlace}
+                </span>
+              </span>
+              <span className={`text-xs font-semibold underline flex-shrink-0 ${showLocationPicker ? "text-brand-950" : "text-brand-300"}`}>
+                {lang === "ar" ? "تغيير" : lang === "fr" ? "Changer" : "Change"}
+              </span>
+            </button>
+
+            {/* Languages — العربية | Français | English */}
+            <div className="flex gap-1.5 mt-2">
+              {[{ code: "ar", label: "العربية" }, { code: "fr", label: "Français" }, { code: "en", label: "English" }].map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${lang === l.code ? "bg-brand-400 text-brand-950" : "bg-brand-900 text-brand-300"}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Location picker panel */}
+            {showLocationPicker && (
+              <div className="mt-2 bg-brand-950 rounded-2xl p-3 border border-brand-800 space-y-2 animate-fade-in">
+                <p className="text-xs text-brand-300 px-1 font-medium">
+                  {lang === "ar" ? "اختر الولاية / المدينة" : lang === "fr" ? "Choisir la wilaya / ville" : "Choose wilaya / city"}
+                </p>
+                <div className="grid grid-cols-1 gap-1">
+                  {WILAYAS.filter(w => w.enabled).map(w => (
+                    <button
+                      key={w.id}
+                      onClick={() => selectWilaya(w)}
+                      className={`text-start text-sm px-3 py-2.5 rounded-xl transition flex items-center justify-between ${wilayaId === w.id ? "bg-brand-500 text-brand-950 font-semibold" : "text-brand-100 hover:bg-brand-900"}`}
+                    >
+                      <span>{lang === "ar" ? w.name : lang === "fr" ? (w.nameFr || w.name) : (w.nameEn || w.name)}</span>
+                      {wilayaId === w.id && <span className="text-[10px]">✓</span>}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-brand-500 px-1 pt-1">
+                  {lang === "ar"
+                    ? "التحديد التلقائي يعمل عند فتح التطبيق. يمكنك تغيير الولاية يدويًا في أي وقت."
+                    : lang === "fr"
+                    ? "La détection auto s'active à l'ouverture. Vous pouvez changer de wilaya manuellement."
+                    : "Auto-detect runs on open. You can change wilaya manually anytime."}
+                </p>
+              </div>
+            )}
 
             {/* Stats */}
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -2044,7 +2145,6 @@ out center tags;`;
             </div>
           )}
 
-          {}
 
           {/* Main */}
           <main className="px-4 py-4 space-y-3 max-w-lg mx-auto safe-bottom">
