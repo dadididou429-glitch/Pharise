@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v9</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v10</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2036,7 +2036,8 @@ out center tags;`;
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           };
 
-          // كود التفعيل — إن وُجد
+
+          // كود التفعيل — التحقق أولاً دون تغيير payload (القواعد تفرض verified==false عند الإنشاء)
           const codeRaw = (form.activationCode || "").trim().toUpperCase();
           let codeActivated = false;
           if (codeRaw && db) {
@@ -2044,36 +2045,47 @@ out center tags;`;
               const codeRef = db.collection("activation_codes").doc(codeRaw);
               const codeSnap = await codeRef.get();
               if (codeSnap.exists && codeSnap.data().used !== true) {
-                payload.featured = true;
-                payload.verified = true;
                 codeActivated = true;
-                await codeRef.set({
-                  used: true,
-                  usedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                  pharmacyName: payload.name,
-                  wilaya: payload.wilaya
-                }, { merge: true });
-              } else if (codeRaw) {
+              } else {
                 showToast(t("activationBad"));
                 setSubmitting(false);
                 return;
               }
             } catch (e) {
               console.warn("activation code error", e);
+              showToast(t("activationBad"));
+              setSubmitting(false);
+              return;
             }
           }
 
+          // دائماً غير موثّقة عند الإنشاء (متوافق مع Firestore Rules)
+          payload.verified = false;
+          payload.featured = false;
+
           const ref = await db.collection("pharmacies_submitted").add(payload);
-          if (codeActivated) {
+
+          if (codeActivated && db) {
             try {
+              const codeRef = db.collection("activation_codes").doc(codeRaw);
+              await codeRef.set({
+                used: true,
+                usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                pharmacyName: payload.name,
+                wilaya: payload.wilaya || "",
+                pharmacyId: ref.id
+              }, { merge: true });
               await db.collection("pharmacy_features").doc(ref.id).set({
                 featured: true,
                 verified: true,
                 activatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 code: codeRaw
-              }, { merge: true });
+              });
               setFeaturedMap(prev => ({ ...prev, [ref.id]: true, [String(ref.id)]: true }));
-            } catch (e) { console.warn(e); }
+            } catch (e) {
+              console.warn("feature activation error", e);
+              showToast(lang === "ar" ? "تم التسجيل لكن تعذّر تفعيل الشارة — تواصل عبر واتساب" : lang === "fr" ? "Enregistré mais badge non activé — contactez WhatsApp" : "Saved but badge failed — contact WhatsApp");
+            }
           }
           setSubmitted(prev => [...prev, { id: ref.id, ...payload }]);
           showToast(codeActivated ? t("activationOk") : t("newPharmacySuccess"));

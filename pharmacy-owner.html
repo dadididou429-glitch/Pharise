@@ -251,9 +251,13 @@
         code = randomCode();
       }
       await db.collection("activation_codes").doc(code).set({
-        used: false, auto: true, plan: meta.plan || "monthly",
-        amount: meta.amount || 4, currency: "USD",
-        paypalOrderId: meta.orderId || null, payerEmail: meta.email || null,
+        used: false,
+        auto: true,
+        plan: meta.plan || "monthly",
+        amount: meta.amount || 4,
+        currency: "USD",
+        paypalOrderId: meta.orderId || null,
+        payerEmail: meta.email || null,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       return code;
