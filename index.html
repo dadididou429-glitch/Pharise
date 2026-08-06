@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v8</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v9</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1441,9 +1441,18 @@ out center tags;`;
     function PharisApp() {
       const now = useNow();
       const [lang, setLang] = useState(() => {
+        try {
+          const saved = localStorage.getItem("pharis_lang");
+          if (saved && ["ar", "fr", "en"].includes(saved)) return saved;
+        } catch (e) {}
         const b = (navigator.language || "ar").slice(0, 2);
         return ["ar", "fr", "en"].includes(b) ? b : "ar";
       });
+      useEffect(() => {
+        try { localStorage.setItem("pharis_lang", lang); } catch (e) {}
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+      }, [lang]);
       const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
       const [queryInput, setQueryInput] = useState("");
       const query = useDebounce(queryInput, 300);

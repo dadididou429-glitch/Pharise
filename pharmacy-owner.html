@@ -3,97 +3,227 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>اشتراك الصيدليات — Pharis · تفعيل فوري</title>
+  <title>Pharis — Pharmacy subscription</title>
   <meta name="theme-color" content="#022c22" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <!-- PayPal SDK — استبدل CLIENT_ID بمعرّف تطبيقك من developer.paypal.com -->
   <script src="https://www.paypal.com/sdk/js?client-id=BAAyteO6Rt73GUoprZZwhYu6mB8QqqmN_inSQxtT9-2AH-MwfC6RprZsfIoZtdghIi9F4nSq_0dgBq7bME&currency=USD&components=buttons"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
     body { font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; background: #ecfdf5; }
     .gradient { background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); }
+    [dir="ltr"] body { font-family: system-ui, -apple-system, sans-serif; }
   </style>
 </head>
 <body class="text-stone-900">
-  <div class="gradient text-white px-6 py-12 text-center">
+  <div class="gradient text-white px-6 py-10 text-center">
     <div class="max-w-xl mx-auto">
-      <h1 class="text-2xl sm:text-3xl font-bold mb-2">اشتراك الصيدليات — تفعيل فوري</h1>
-      <p class="text-emerald-200 mb-4">ادفع → يظهر كود التفعيل مباشرة → أدخله في التطبيق</p>
+      <!-- Language switcher -->
+      <div class="flex justify-center gap-1.5 mb-4">
+        <button type="button" data-lang="ar" class="lang-btn px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-emerald-100">العربية</button>
+        <button type="button" data-lang="fr" class="lang-btn px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-emerald-100">Français</button>
+        <button type="button" data-lang="en" class="lang-btn px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-emerald-100">English</button>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold mb-2" data-i18n="title">اشتراك الصيدليات — تفعيل فوري</h1>
+      <p class="text-emerald-200 mb-4" data-i18n="subtitle">ادفع → يظهر كود التفعيل مباشرة → أدخله في التطبيق</p>
       <div class="inline-flex flex-col items-center bg-white/10 border border-emerald-400/40 rounded-2xl px-8 py-4">
         <span class="text-4xl font-bold text-emerald-300" dir="ltr">500 دج</span>
-        <span class="text-emerald-200 text-sm">شهرياً · أو $4 عبر PayPal (تفعيل فوري)</span>
+        <span class="text-emerald-200 text-sm" data-i18n="priceNote">شهرياً · أو $4 عبر PayPal (تفعيل فوري)</span>
       </div>
     </div>
   </div>
 
   <div class="max-w-lg mx-auto px-5 py-8 space-y-6">
 
-    <!-- نتيجة الكود التلقائي -->
     <div id="code-box" class="hidden bg-violet-600 text-white rounded-2xl p-6 text-center shadow-lg">
-      <p class="text-sm text-violet-100 mb-1">كود التفعيل الخاص بك</p>
+      <p class="text-sm text-violet-100 mb-1" data-i18n="yourCode">كود التفعيل الخاص بك</p>
       <p id="auto-code" class="text-3xl font-mono font-bold tracking-widest my-3" dir="ltr">—</p>
-      <button type="button" id="copy-code-btn" class="bg-white text-violet-800 font-bold text-sm px-4 py-2 rounded-xl">نسخ الكود</button>
-      <p class="text-xs text-violet-100 mt-3 leading-relaxed">افتح التطبيق ← أضف صيدليتك ← الصق الكود في خانة «كود التفعيل» ← تُفعَّل الشارة فوراً</p>
-      <a href="./index.html" class="inline-block mt-3 text-sm font-semibold underline text-white">فتح التطبيق الآن ←</a>
+      <button type="button" id="copy-code-btn" class="bg-white text-violet-800 font-bold text-sm px-4 py-2 rounded-xl" data-i18n="copyCode">نسخ الكود</button>
+      <p class="text-xs text-violet-100 mt-3 leading-relaxed" data-i18n="codeHelp">افتح التطبيق ← أضف صيدليتك ← الصق الكود في خانة «كود التفعيل» ← تُفعَّل الشارة فوراً</p>
+      <a href="./index.html" class="inline-block mt-3 text-sm font-semibold underline text-white" data-i18n="openApp">فتح التطبيق الآن ←</a>
     </div>
 
     <div id="error-box" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-4 text-sm"></div>
 
-    <!-- PayPal — تفعيل فوري -->
+    <!-- PayPal -->
     <div class="bg-white rounded-2xl p-5 border border-blue-200 shadow-sm">
       <div class="flex items-center gap-2 mb-2">
         <span class="text-2xl">⚡</span>
         <div>
-          <h2 class="font-bold text-lg">PayPal — تفعيل فوري بدون انتظار</h2>
-          <p class="text-xs text-stone-500">للجزائريين والأجانب · الكود يظهر بعد الدفع مباشرة</p>
+          <h2 class="font-bold text-lg" data-i18n="paypalTitle">PayPal — تفعيل فوري بدون انتظار</h2>
+          <p class="text-xs text-stone-500" data-i18n="paypalSub">للجزائريين والأجانب · الكود يظهر بعد الدفع مباشرة</p>
         </div>
       </div>
-      <p class="text-sm text-stone-600 mb-3">شهري <strong>$4</strong> · سنوي <strong>$40</strong></p>
+      <p class="text-sm text-stone-600 mb-3" data-i18n="paypalPrices">شهري <strong>$4</strong> · سنوي <strong>$40</strong></p>
 
       <div class="flex gap-2 mb-3">
-        <button type="button" id="plan-monthly" class="flex-1 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white">شهري $4</button>
-        <button type="button" id="plan-yearly" class="flex-1 py-2 rounded-xl text-sm font-bold bg-stone-100 text-stone-600">سنوي $40</button>
+        <button type="button" id="plan-monthly" class="flex-1 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white" data-i18n="planMonthly">شهري $4</button>
+        <button type="button" id="plan-yearly" class="flex-1 py-2 rounded-xl text-sm font-bold bg-stone-100 text-stone-600" data-i18n="planYearly">سنوي $40</button>
       </div>
 
       <div id="paypal-button-container" class="min-h-[48px]"></div>
-      <p id="paypal-setup-hint" class="hidden text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2 leading-relaxed">
-        لتفعيل أزرار PayPal: أنشئ تطبيقاً على
-        <a class="underline font-semibold" href="https://developer.paypal.com/dashboard/applications/live" target="_blank" rel="noopener">developer.paypal.com</a>
-        وانسخ <strong>Client ID</strong> ثم استبدل <code class="bg-amber-100 px-1 rounded">YOUR_PAYPAL_CLIENT_ID</code> في هذا الملف.
-      </p>
+      <p id="paypal-setup-hint" class="hidden text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2 leading-relaxed" data-i18n="paypalHint"></p>
     </div>
 
-    <!-- CCP بدون تفعيل فوري -->
+    <!-- CCP -->
     <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
       <div class="flex items-center gap-2 mb-2">
         <span class="text-2xl">🇩🇿</span>
         <div>
-          <h2 class="font-bold">CCP — داخل الجزائر</h2>
-          <p class="text-xs text-stone-500">التحويل البنكي لا يُؤكد آلياً · استخدم PayPal للتفعيل الفوري</p>
+          <h2 class="font-bold" data-i18n="ccpTitle">CCP — داخل الجزائر</h2>
+          <p class="text-xs text-stone-500" data-i18n="ccpSub">التحويل البنكي لا يُؤكد آلياً · استخدم PayPal للتفعيل الفوري</p>
         </div>
       </div>
       <div class="bg-stone-50 rounded-xl p-4 border border-stone-100">
-        <p class="text-xs text-stone-500">رقم CCP</p>
+        <p class="text-xs text-stone-500" data-i18n="ccpLabel">رقم CCP</p>
         <p class="font-mono font-bold text-xl" dir="ltr">0025148966 / 05</p>
-        <p class="text-sm mt-1">باسم: <strong>Mohammed Naar</strong></p>
-        <button type="button" onclick="navigator.clipboard.writeText('0025148966')" class="mt-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">نسخ الرقم</button>
+        <p class="text-sm mt-1"><span data-i18n="ccpName">باسم:</span> <strong>Mohammed Naar</strong></p>
+        <button type="button" id="copy-ccp" class="mt-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5" data-i18n="copyNumber">نسخ الرقم</button>
       </div>
-      <p class="text-xs text-amber-800 mt-3 bg-amber-50 border border-amber-100 rounded-lg p-3 leading-relaxed">
+      <p class="text-xs text-amber-800 mt-3 bg-amber-50 border border-amber-100 rounded-lg p-3 leading-relaxed" data-i18n="ccpNote">
         بعد تحويل CCP راسل واتساب مع صورة الوصل ليُرسل لك الكود يدوياً:
         <a class="font-bold underline" href="https://wa.me/213559856169">0559 85 61 69</a>
       </p>
     </div>
 
     <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-900">
-      <strong>تسجيل مجاني:</strong> إضافة الصيدلية من التطبيق بدون اشتراك. الاشتراك فقط للشارة المميزة.
-      <a href="./index.html" class="underline font-semibold block mt-1">العودة للتطبيق ←</a>
+      <strong data-i18n="freeTitle">تسجيل مجاني:</strong>
+      <span data-i18n="freeBody"> إضافة الصيدلية من التطبيق بدون اشتراك. الاشتراك فقط للشارة المميزة.</span>
+      <a href="./index.html" class="underline font-semibold block mt-1" data-i18n="backApp">العودة للتطبيق ←</a>
     </div>
   </div>
 
   <script>
-    // ── Firebase (نفس مشروع التطبيق) ──
+    const I18N = {
+      ar: {
+        title: "اشتراك الصيدليات — تفعيل فوري",
+        subtitle: "ادفع → يظهر كود التفعيل مباشرة → أدخله في التطبيق",
+        priceNote: "شهرياً · أو $4 عبر PayPal (تفعيل فوري)",
+        yourCode: "كود التفعيل الخاص بك",
+        copyCode: "نسخ الكود",
+        codeHelp: "افتح التطبيق ← أضف صيدليتك ← الصق الكود في خانة «كود التفعيل» ← تُفعَّل الشارة فوراً",
+        openApp: "فتح التطبيق الآن ←",
+        paypalTitle: "PayPal — تفعيل فوري بدون انتظار",
+        paypalSub: "للجزائريين والأجانب · الكود يظهر بعد الدفع مباشرة",
+        paypalPrices: "شهري $4 · سنوي $40",
+        planMonthly: "شهري $4",
+        planYearly: "سنوي $40",
+        ccpTitle: "CCP — داخل الجزائر",
+        ccpSub: "التحويل البنكي لا يُؤكد آلياً · استخدم PayPal للتفعيل الفوري",
+        ccpLabel: "رقم CCP",
+        ccpName: "باسم:",
+        copyNumber: "نسخ الرقم",
+        ccpNote: "بعد تحويل CCP راسل واتساب مع صورة الوصل ليُرسل لك الكود يدوياً: ",
+        freeTitle: "تسجيل مجاني:",
+        freeBody: " إضافة الصيدلية من التطبيق بدون اشتراك. الاشتراك فقط للشارة المميزة.",
+        backApp: "العودة للتطبيق ←",
+        copied: "✓ تم النسخ",
+        payError: "تم الدفع لكن تعذّر إنشاء الكود. راسل واتساب 0559856169 مع رقم العملية: ",
+        paypalError: "حدث خطأ في PayPal. جرّب مرة أخرى أو استخدم واتساب.",
+        docTitle: "اشتراك الصيدليات — Pharis"
+      },
+      fr: {
+        title: "Abonnement pharmacies — activation instantanée",
+        subtitle: "Payez → le code d'activation s'affiche → saisissez-le dans l'app",
+        priceNote: "Par mois · ou 4 $ via PayPal (activation immédiate)",
+        yourCode: "Votre code d'activation",
+        copyCode: "Copier le code",
+        codeHelp: "Ouvrez l'app ← Ajoutez votre pharmacie ← Collez le code ← le badge s'active aussitôt",
+        openApp: "Ouvrir l'application →",
+        paypalTitle: "PayPal — activation immédiate",
+        paypalSub: "Algérie et international · le code s'affiche juste après le paiement",
+        paypalPrices: "Mensuel 4 $ · Annuel 40 $",
+        planMonthly: "Mensuel 4 $",
+        planYearly: "Annuel 40 $",
+        ccpTitle: "CCP — en Algérie",
+        ccpSub: "Le virement n'est pas confirmé automatiquement · utilisez PayPal pour l'instantané",
+        ccpLabel: "N° CCP",
+        ccpName: "Au nom de :",
+        copyNumber: "Copier le numéro",
+        ccpNote: "Après virement CCP, envoyez le reçu sur WhatsApp pour recevoir le code : ",
+        freeTitle: "Inscription gratuite :",
+        freeBody: " Ajouter une pharmacie dans l'app est gratuit. L'abonnement sert uniquement au badge premium.",
+        backApp: "Retour à l'application →",
+        copied: "✓ Copié",
+        payError: "Paiement OK mais code non créé. WhatsApp 0559856169 avec l'id commande : ",
+        paypalError: "Erreur PayPal. Réessayez ou utilisez WhatsApp.",
+        docTitle: "Abonnement pharmacies — Pharis"
+      },
+      en: {
+        title: "Pharmacy subscription — instant activation",
+        subtitle: "Pay → activation code appears → enter it in the app",
+        priceNote: "Per month · or $4 via PayPal (instant activation)",
+        yourCode: "Your activation code",
+        copyCode: "Copy code",
+        codeHelp: "Open the app ← Add your pharmacy ← Paste the code ← badge activates instantly",
+        openApp: "Open the app →",
+        paypalTitle: "PayPal — instant activation",
+        paypalSub: "Algeria & international · code appears right after payment",
+        paypalPrices: "Monthly $4 · Yearly $40",
+        planMonthly: "Monthly $4",
+        planYearly: "Yearly $40",
+        ccpTitle: "CCP — inside Algeria",
+        ccpSub: "Bank transfer is not auto-confirmed · use PayPal for instant activation",
+        ccpLabel: "CCP number",
+        ccpName: "Account name:",
+        copyNumber: "Copy number",
+        ccpNote: "After CCP transfer, send the receipt on WhatsApp to get your code: ",
+        freeTitle: "Free registration:",
+        freeBody: " Adding a pharmacy in the app is free. Subscription is only for the featured badge.",
+        backApp: "Back to the app →",
+        copied: "✓ Copied",
+        payError: "Paid but code failed. WhatsApp 0559856169 with order id: ",
+        paypalError: "PayPal error. Try again or use WhatsApp.",
+        docTitle: "Pharmacy subscription — Pharis"
+      }
+    };
+
+    function detectLang() {
+      try {
+        const saved = localStorage.getItem("pharis_lang");
+        if (saved && I18N[saved]) return saved;
+      } catch (e) {}
+      const b = (navigator.language || "ar").slice(0, 2).toLowerCase();
+      if (b === "fr") return "fr";
+      if (b === "en") return "en";
+      return "ar";
+    }
+
+    let lang = detectLang();
+
+    function applyLang(l) {
+      lang = I18N[l] ? l : "ar";
+      try { localStorage.setItem("pharis_lang", lang); } catch (e) {}
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+      document.title = I18N[lang].docTitle;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (I18N[lang][key] != null) {
+          if (key === "ccpNote") {
+            el.innerHTML = I18N[lang][key] + '<a class="font-bold underline" href="https://wa.me/213559856169">0559 85 61 69</a>';
+          } else if (key === "paypalPrices") {
+            el.innerHTML = I18N[lang][key].replace("$4", "<strong>$4</strong>").replace("$40", "<strong>$40</strong>")
+              .replace("4 $", "<strong>4 $</strong>").replace("40 $", "<strong>40 $</strong>");
+          } else {
+            el.textContent = I18N[lang][key];
+          }
+        }
+      });
+      document.querySelectorAll(".lang-btn").forEach(btn => {
+        const active = btn.getAttribute("data-lang") === lang;
+        btn.className = "lang-btn px-2.5 py-1 rounded-full text-xs font-medium transition " +
+          (active ? "bg-emerald-400 text-emerald-950 font-bold" : "bg-white/10 text-emerald-100");
+      });
+    }
+
+    document.querySelectorAll(".lang-btn").forEach(btn => {
+      btn.addEventListener("click", () => applyLang(btn.getAttribute("data-lang")));
+    });
+    applyLang(lang);
+
+    // Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDHMYoNaXnkrILKM38Q0f-bL1u72AXRbkE",
       authDomain: "maftouha-ap.firebaseapp.com",
@@ -103,10 +233,7 @@
       appId: "1:584528603494:web:46f17d9c9bee0cb208c0a7"
     };
     let db = null;
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-    } catch (e) { console.warn(e); }
+    try { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); } catch (e) { console.warn(e); }
 
     function randomCode() {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -116,22 +243,17 @@
     }
 
     async function issueActivationCode(meta) {
-      if (!db) throw new Error("Firebase غير متاح");
+      if (!db) throw new Error("Firebase unavailable");
       let code = randomCode();
-      // تأكد أن الكود غير موجود
       for (let i = 0; i < 5; i++) {
         const snap = await db.collection("activation_codes").doc(code).get();
         if (!snap.exists) break;
         code = randomCode();
       }
       await db.collection("activation_codes").doc(code).set({
-        used: false,
-        auto: true,
-        plan: meta.plan || "monthly",
-        amount: meta.amount || 4,
-        currency: "USD",
-        paypalOrderId: meta.orderId || null,
-        payerEmail: meta.email || null,
+        used: false, auto: true, plan: meta.plan || "monthly",
+        amount: meta.amount || 4, currency: "USD",
+        paypalOrderId: meta.orderId || null, payerEmail: meta.email || null,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       return code;
@@ -147,18 +269,21 @@
     document.getElementById("copy-code-btn").onclick = function () {
       const c = document.getElementById("auto-code").textContent;
       navigator.clipboard.writeText(c).then(() => {
-        this.textContent = "✓ تم النسخ";
-        setTimeout(() => { this.textContent = "نسخ الكود"; }, 1500);
+        const o = this.textContent; this.textContent = I18N[lang].copied;
+        setTimeout(() => { this.textContent = I18N[lang].copyCode; }, 1500);
       });
     };
-
-    // استعادة كود سابق إن وُجد
+    document.getElementById("copy-ccp").onclick = function () {
+      navigator.clipboard.writeText("0025148966").then(() => {
+        const o = this.textContent; this.textContent = I18N[lang].copied;
+        setTimeout(() => { this.textContent = I18N[lang].copyNumber; }, 1500);
+      });
+    };
     try {
       const last = localStorage.getItem("pharis_last_activation_code");
       if (last) showCode(last);
     } catch (e) {}
 
-    // ── اختيار الخطة ──
     let selectedPlan = "monthly";
     let selectedAmount = "4.00";
     const btnM = document.getElementById("plan-monthly");
@@ -173,13 +298,11 @@
     btnM.onclick = () => setPlan("monthly");
     btnY.onclick = () => setPlan("yearly");
 
-    // ── PayPal Buttons ──
     function renderPayPal() {
       const container = document.getElementById("paypal-button-container");
       container.innerHTML = "";
       if (typeof paypal === "undefined" || !paypal.Buttons) {
         document.getElementById("paypal-setup-hint").classList.remove("hidden");
-        container.innerHTML = '<p class="text-sm text-stone-500 text-center py-3">أزرار PayPal غير مفعّلة بعد — اتبع التعليمات بالأسفل</p>';
         return;
       }
       document.getElementById("paypal-setup-hint").classList.add("hidden");
@@ -198,17 +321,15 @@
             try {
               const email = (details.payer && details.payer.email_address) || null;
               const code = await issueActivationCode({
-                plan: selectedPlan,
-                amount: selectedAmount,
-                orderId: data.orderID,
-                email: email
+                plan: selectedPlan, amount: selectedAmount,
+                orderId: data.orderID, email: email
               });
               showCode(code);
             } catch (err) {
               console.error(err);
               const box = document.getElementById("error-box");
               box.classList.remove("hidden");
-              box.textContent = "تم الدفع لكن تعذّر إنشاء الكود. راسل واتساب 0559856169 مع رقم العملية: " + (data.orderID || "");
+              box.textContent = I18N[lang].payError + (data.orderID || "");
             }
           });
         },
@@ -216,12 +337,10 @@
           console.error(err);
           const box = document.getElementById("error-box");
           box.classList.remove("hidden");
-          box.textContent = "حدث خطأ في PayPal. جرّب مرة أخرى أو استخدم واتساب.";
+          box.textContent = I18N[lang].paypalError;
         }
       }).render("#paypal-button-container");
     }
-
-    // تأخير بسيط لتحميل الـ SDK
     setTimeout(renderPayPal, 400);
   </script>
 </body>
