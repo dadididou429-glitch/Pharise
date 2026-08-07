@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v16</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v17</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1755,6 +1755,28 @@ out center tags;`;
         return unsub;
       }, []);
 
+
+      // عند فتح لوحة التحكم أعد تحميل الشارات المميزة
+      useEffect(() => {
+        if (!adminView || !db) return;
+        db.collection("pharmacy_features").get()
+          .then(snap => {
+            const map = {};
+            snap.docs.forEach(d => {
+              const data = d.data() || {};
+              if (data.featured === false) return;
+              [d.id, String(d.id)].forEach(k => { map[k] = true; });
+              if (!isNaN(d.id) && d.id !== "") map[Number(d.id)] = true;
+              if (data.pharmacyId != null) {
+                map[data.pharmacyId] = true;
+                map[String(data.pharmacyId)] = true;
+              }
+            });
+            setFeaturedMap(map);
+          })
+          .catch(() => {});
+      }, [adminView]);
+
       // Load submitted + removed + featured (مدفوع)
       useEffect(() => {
         if (!db) return;
@@ -1784,11 +1806,16 @@ out center tags;`;
             const map = {};
             snap.docs.forEach(d => {
               const data = d.data() || {};
-              if (data.featured === true) {
-                map[d.id] = true;
-                map[String(d.id)] = true;
-                if (!isNaN(d.id)) map[Number(d.id)] = true;
+              // أي مستند في pharmacy_features = مميزة (حتى لو featured غير موجود)
+              const on = data.featured !== false;
+              if (!on) return;
+              const keys = [d.id, String(d.id)];
+              if (!isNaN(d.id) && d.id !== "") keys.push(Number(d.id));
+              if (data.pharmacyId != null) {
+                keys.push(data.pharmacyId, String(data.pharmacyId));
+                if (!isNaN(data.pharmacyId)) keys.push(Number(data.pharmacyId));
               }
+              keys.forEach(k => { map[k] = true; });
             });
             setFeaturedMap(map);
           })
@@ -1848,7 +1875,13 @@ out center tags;`;
               : 99999;
             const complaintCount = complaints[ph.id] || complaints[String(ph.id)] || 0;
             const r = ratings[ph.id] || ratings[String(ph.id)] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
-            const isFeatured = !!(ph.featured || featuredMap[ph.id] || featuredMap[String(ph.id)]);
+            const isFeatured = !!(
+              ph.featured === true
+              || featuredMap[ph.id]
+              || featuredMap[String(ph.id)]
+              || (ph.id != null && !isNaN(ph.id) && featuredMap[Number(ph.id)])
+              || (ph.osmId && (featuredMap[ph.osmId] || featuredMap[String(ph.osmId)]))
+            );
             return {
               ...ph,
               featured: isFeatured,
@@ -2355,7 +2388,22 @@ out center tags;`;
         }
         try {
           if (db) {
-            await db.collection("pharmacy_features").doc(String(id)).delete();
+            const ids = [String(id)];
+            if (id != null && !isNaN(id)) ids.push(String(Number(id)));
+            await Promise.all(ids.map(docId =>
+              db.collection("pharmacy_features").doc(docId).delete().catch(() => {})
+            ));
+            // احذف أي مستند يشير لنفس pharmacyId
+            try {
+              const snap = await db.collection("pharmacy_features").get();
+              await Promise.all(snap.docs.map(d => {
+                const data = d.data() || {};
+                if (String(data.pharmacyId) === String(id) || d.id === String(id)) {
+                  return d.ref.delete();
+                }
+                return null;
+              }));
+            } catch (e) {}
           }
           setFeaturedMap(prev => {
             const next = { ...prev };
@@ -3066,11 +3114,11 @@ const dismissComplaints = (id, name) => {
                       {allComputed.filter(ph => matchesSearch(ph, adminSearch)).map(ph => (
                         <div key={ph.id} className="bg-brand-900 rounded-xl p-3 border border-brand-800 flex items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-brand-50 truncate">{ph.featured ? "⭐ " : ""}{ph.name}</p>
+                            <p className="text-sm font-medium text-brand-50 truncate">{(ph.featured || featuredMap[ph.id] || featuredMap[String(ph.id)]) ? "⭐ " : ""}{ph.name}</p>
                             <p className="text-xs text-brand-400 truncate">{ph.area}</p>
                           </div>
                           <div className="flex flex-col gap-1 flex-shrink-0">
-                            {ph.featured && (
+                            {(ph.featured || featuredMap[ph.id] || featuredMap[String(ph.id)] || (ph.id != null && featuredMap[Number(ph.id)])) && (
                               <button
                                 onClick={() => removeFeaturedBadge(ph.id, ph.name)}
                                 className="bg-amber-950 text-amber-300 text-[10px] font-medium rounded-lg px-2.5 py-1.5 border border-amber-800"
