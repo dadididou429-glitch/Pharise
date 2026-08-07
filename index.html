@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v10</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v11</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1715,7 +1715,18 @@ out center tags;`;
             .catch(() => {});
         }
         db.collection("removed_pharmacies").get()
-          .then(snap => setRemovedIds(new Set(snap.docs.map(d => isNaN(d.id) ? d.id : Number(d.id)))))
+          .then(snap => {
+            const s = new Set();
+            snap.docs.forEach(d => {
+              s.add(d.id);
+              s.add(String(d.id));
+              if (!isNaN(d.id) && d.id !== "") s.add(Number(d.id));
+              const data = d.data() || {};
+              // بصمة إضافية: اسم + إحداثيات لتقادي عودة OSM/نسخ مكررة
+              if (data.fingerprint) s.add(data.fingerprint);
+            });
+            setRemovedIds(s);
+          })
           .catch(() => {});
         // صيدليات مميزة / موثّقة من لوحة Firebase
         db.collection("pharmacy_features").get()
@@ -1744,22 +1755,40 @@ out center tags;`;
       }, [selected?.id]);
 
       // Computed list
+      const pharmacyFingerprint = (ph) => {
+        const n = (ph.name || "").trim().toLowerCase();
+        const lat = ph.lat != null ? Number(ph.lat).toFixed(4) : "";
+        const lng = ph.lng != null ? Number(ph.lng).toFixed(4) : "";
+        return n + "|" + lat + "|" + lng;
+      };
+
+      const isRemovedPh = (ph) => {
+        if (!ph) return false;
+        if (removedIds.has(ph.id) || removedIds.has(String(ph.id))) return true;
+        if (ph.id != null && !isNaN(ph.id) && removedIds.has(Number(ph.id))) return true;
+        if (removedIds.has(pharmacyFingerprint(ph))) return true;
+        return false;
+      };
+
       const baseList = useMemo(() => {
-        // Show ALL local pharmacies + submitted + OSM, no wilaya filtering
-        const submittedMapped = submitted.map(p => ({
-          ...p,
-          verified: false,
-          hours: p.hours || { open: 8, close: 21 },
-          complaints: 0,
-          ratingSum: 0,
-          ratingCount: 0
-        }));
-        return [...RAW, ...submittedMapped, ...osmPharmacies];
-      }, [submitted, osmPharmacies]);
+        const submittedMapped = submitted
+          .filter(p => !isRemovedPh(p))
+          .map(p => ({
+            ...p,
+            verified: false,
+            hours: p.hours || { open: 8, close: 21 },
+            complaints: 0,
+            ratingSum: 0,
+            ratingCount: 0
+          }));
+        const rawFiltered = RAW.filter(p => !isRemovedPh(p));
+        const osmFiltered = osmPharmacies.filter(p => !isRemovedPh(p));
+        return [...rawFiltered, ...submittedMapped, ...osmFiltered];
+      }, [submitted, osmPharmacies, removedIds]);
 
       const allComputed = useMemo(() => {
         return baseList
-          .filter(ph => !removedIds.has(ph.id) && !removedIds.has(String(ph.id)))
+          .filter(ph => !isRemovedPh(ph))
           .map(ph => {
             const status = computeStatus(ph, now);
             const distance = haversine(userLoc.lat, userLoc.lng, ph.lat, ph.lng);
@@ -2117,20 +2146,54 @@ out center tags;`;
         }
       };
 
-      const removePermanently = async (id, name) => {
-        setRemovedIds(prev => new Set(prev).add(id));
-        showToast(t("removedToast", { name }));
+      const removePermanently = async (id, name, ph) => {
+        if (!adminUser) {
+          showToast(lang === "ar" ? "يجب تسجيل دخول الأدمن أولاً للحذف النهائي" : lang === "fr" ? "Connexion admin requise" : "Admin login required");
+          return;
+        }
+        const fp = ph ? pharmacyFingerprint(ph) : null;
+        // إخفاء فوري من الواجهة
+        setRemovedIds(prev => {
+          const next = new Set(prev);
+          next.add(id);
+          next.add(String(id));
+          if (id != null && !isNaN(id)) next.add(Number(id));
+          if (fp) next.add(fp);
+          return next;
+        });
+        setSubmitted(prev => prev.filter(p => p.id !== id && String(p.id) !== String(id)));
+        showToast(t("removedToast", { name: name || "" }));
+
         try {
-          if (typeof id === "string") {
-            await db.collection("pharmacies_submitted").doc(id).delete();
-            setSubmitted(prev => prev.filter(p => p.id !== id));
-          } else {
-            await db.collection("removed_pharmacies").doc(String(id)).set({
-              name,
-              removedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+          if (!db) throw new Error("no db");
+          // قائمة الحذف الدائمة (لكل الأنواع: محلي / مُرسل / OSM)
+          const removedDoc = {
+            name: name || "",
+            removedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            fingerprint: fp || null,
+            sourceId: id
+          };
+          await db.collection("removed_pharmacies").doc(String(id)).set(removedDoc, { merge: true });
+          // إن وُجدت بصمة مختلفة كمفتاح إضافي
+          if (fp) {
+            await db.collection("removed_pharmacies").doc("fp_" + fp.replace(/[^a-z0-9|.-]/gi, "_").slice(0, 120)).set(removedDoc, { merge: true });
           }
-        } catch {}
+          // حذف من الصيدليات المُرسلة إن كان المعرّف من Firestore
+          if (typeof id === "string" && id.length > 8) {
+            try {
+              await db.collection("pharmacies_submitted").doc(id).delete();
+            } catch (e) {
+              console.warn("submitted delete", e);
+            }
+          }
+          // إزالة الشارة إن وُجدت
+          try {
+            await db.collection("pharmacy_features").doc(String(id)).delete();
+          } catch (e) {}
+        } catch (e) {
+          console.error(e);
+          showToast(lang === "ar" ? "فشل الحفظ على السيرفر — تحقق من صلاحيات الأدمن" : "Server delete failed — check admin rights");
+        }
       };
 
       const dismissComplaints = (id, name) => {
@@ -2791,7 +2854,7 @@ out center tags;`;
                           </div>
                           <div className="flex gap-2 mt-4">
                             <button onClick={() => dismissComplaints(ph.id, ph.name)} className="flex-1 bg-brand-800 text-brand-300 text-sm font-medium rounded-lg py-2.5">{t("verifyReturn")}</button>
-                            <button onClick={() => removePermanently(ph.id, ph.name)} className="flex-1 bg-rose-950 text-rose-300 text-sm font-medium rounded-lg py-2.5">{t("deleteFinal")}</button>
+                            <button onClick={() => removePermanently(ph.id, ph.name, ph)} className="flex-1 bg-rose-950 text-rose-300 text-sm font-medium rounded-lg py-2.5">{t("deleteFinal")}</button>
                           </div>
                         </div>
                       ))}
@@ -2809,7 +2872,7 @@ out center tags;`;
                             <p className="text-sm font-medium text-brand-50 truncate">{ph.name}</p>
                             <p className="text-xs text-brand-400 truncate">{ph.area}</p>
                           </div>
-                          <button onClick={() => removePermanently(ph.id, ph.name)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
+                          <button onClick={() => removePermanently(ph.id, ph.name, ph)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
                         </div>
                       ))}
                     </div>
