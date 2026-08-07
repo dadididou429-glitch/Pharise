@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v14</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v15</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1841,7 +1841,11 @@ out center tags;`;
           .filter(ph => !isRemovedPh(ph))
           .map(ph => {
             const status = computeStatus(ph, now);
-            const distance = haversine(userLoc.lat, userLoc.lng, ph.lat, ph.lng);
+            const hasCoords = Number.isFinite(Number(ph.lat)) && Number.isFinite(Number(ph.lng))
+              && Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng));
+            const distance = hasCoords
+              ? haversine(userLoc.lat, userLoc.lng, Number(ph.lat), Number(ph.lng))
+              : 99999;
             const complaintCount = complaints[ph.id] || complaints[String(ph.id)] || 0;
             const r = ratings[ph.id] || ratings[String(ph.id)] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
             const isFeatured = !!(ph.featured || featuredMap[ph.id] || featuredMap[String(ph.id)]);
@@ -1861,17 +1865,20 @@ out center tags;`;
 
       const list = useMemo(() => {
         return allComputed
-          .filter(ph => (ph.name + " " + (ph.area || "") + " " + (ph.address || "")).toLowerCase().includes(query.toLowerCase()))
+          .filter(ph => matchesSearch(ph, query))
           .filter(ph => filter === "open" ? ph.status.open : true)
           .filter(ph => filter === "urgent" ? ph.onDuty : true)
           .filter(ph => filter === "favorites" ? ph.isFavorite : true)
           .filter(ph => filter === "late" ? (ph.status.open && (ph.hours?.close > 22 || ph.onDuty)) : true)
           .sort((a, b) => {
-            // الصيدليات المميزة أولاً (مصدر دخل)، ثم الأقرب
-            const fa = a.featured ? 1 : 0;
-            const fb = b.featured ? 1 : 0;
-            if (fa !== fb) return fb - fa;
-            return a.distance - b.distance;
+            // 1) المميزة أولاً (اشتراك)
+            if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
+            // 2) المفتوحة قبل المغلقة
+            if (!!a.status?.open !== !!b.status?.open) return a.status?.open ? -1 : 1;
+            // 3) المناوبة 24س
+            if (!!a.onDuty !== !!b.onDuty) return a.onDuty ? -1 : 1;
+            // 4) الأقرب فالأقرب
+            return (a.distance ?? 99999) - (b.distance ?? 99999);
           });
       }, [allComputed, query, filter]);
 
@@ -1882,10 +1889,9 @@ out center tags;`;
         return allComputed
           .filter(ph => ph.status.open)
           .sort((a, b) => {
-            // featured → 24h → distance
             if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
             if (a.onDuty !== b.onDuty) return a.onDuty ? -1 : 1;
-            return a.distance - b.distance;
+            return (a.distance ?? 99999) - (b.distance ?? 99999);
           })
           .slice(0, 8);
       }, [allComputed]);
