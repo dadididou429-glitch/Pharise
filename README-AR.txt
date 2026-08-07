@@ -1,24 +1,15 @@
-# Pharis — حزمة كاملة (حقوق + صفحات قانونية + قواعد)
+# Pharis — نسختك الكاملة مع الحقوق فقط
 
-## الملفات
-- index.html  ← التطبيق مع تذييل الحقوق الواضح
-- LICENSE
-- privacy.html
-- terms.html
-- firestore.rules
+## ماذا تغيّر؟
+1) سطر الحقوق في تذييل index.html فقط
+2) LICENSE جديد
+3) privacy.html + terms.html
+4) service-worker → pharis-v27-legal (لتظهر النسخة الجديدة)
+5) firestore.rules (النسخة التي تعمل عندك)
 
-## الرفع على GitHub
-1. فك الضغط
-2. ارفع الملفات إلى مستودع Pharise (استبدال الموجود)
-3. Commit + Push
-4. انتظر دقيقة ثم افتح الموقع مع تحديث قوي (مسح الكاش)
+## لم يُحذف شيء
+كل الملفات: بيانات الصيدليات، الأيقونات، pharmacy-owner، md، إلخ — كما أرسلتها.
 
-## Firebase
-الصق firestore.rules في Console → Firestore → Rules → Publier
-
-## ماذا يظهر في التطبيق
-أسفل الصفحة:
-© 2026 Pharis — جميع الحقوق محفوظة
-All rights reserved
-الخصوصية · الشروط
-© OpenStreetMap contributors
+## الرفع
+ارفع كل محتويات المجلد إلى مستودع Pharise ثم Commit.
+امسح كاش المتصفح أو اضغط «تحديث الآن» إن ظهر البانر.
