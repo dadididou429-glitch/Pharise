@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v13</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v14</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3119,41 +3119,50 @@ out center tags;`;
   <script>
     // ═══════════════════════════════════════════════════════════
     // نظام التحديث التلقائي المحسّن
-    // ═══════════════════════════════════════════════════════════
     if ("serviceWorker" in navigator) {
       let refreshing = false;
-
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
         if (refreshing) return;
         refreshing = true;
         window.location.reload();
       });
 
+      navigator.serviceWorker.addEventListener("message", function (event) {
+        if (event.data && event.data.type === "SW_UPDATED") {
+          // نسخت جديدة فعّالة — أعد التحميل إن لم يكن الزر مضغوطاً بعد
+        }
+      });
+
       window.addEventListener("load", function () {
         navigator.serviceWorker
           .register("./service-worker.js")
-          .then((reg) => {
-            console.log("SW registered v9");
-            // فحص التحديثات بسرعة (كل 20 ثانية + عند العودة للتطبيق)
-            setInterval(() => reg.update(), 20 * 1000);
-            reg.update();
-            document.addEventListener("visibilitychange", () => {
-              if (document.visibilityState === "visible") reg.update();
-            });
-            window.addEventListener("focus", () => reg.update());
+          .then(function (reg) {
+            const promptUpdate = function (worker) {
+              if (worker) showUpdateBanner(worker);
+              else showUpdateBanner(null);
+            };
 
-            reg.addEventListener("updatefound", () => {
+            if (reg.waiting) {
+              promptUpdate(reg.waiting);
+            }
+
+            reg.addEventListener("updatefound", function () {
               const newWorker = reg.installing;
               if (!newWorker) return;
-
-              newWorker.addEventListener("statechange", () => {
-                if (
-                  newWorker.state === "installed" &&
-                  navigator.serviceWorker.controller
-                ) {
-                  showUpdateBanner(newWorker);
+              newWorker.addEventListener("statechange", function () {
+                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  promptUpdate(newWorker);
                 }
               });
+            });
+
+            // فحص دوري + عند العودة للتطبيق
+            setInterval(function () { reg.update().catch(function () {}); }, 20 * 1000);
+            document.addEventListener("visibilitychange", function () {
+              if (document.visibilityState === "visible") reg.update().catch(function () {});
+            });
+            window.addEventListener("focus", function () {
+              reg.update().catch(function () {});
             });
           })
           .catch(function (err) {
@@ -3210,7 +3219,7 @@ out center tags;`;
           animation: pharisSlideUp 0.35s ease;
         ">
           <span style="flex:1">${msg.text}</span>
-          <button id="pharis-update-btn" style="
+          <button type="button" id="pharis-update-btn" style="
             background: #10b981;
             color: #022c22;
             border: none;
@@ -3219,8 +3228,9 @@ out center tags;`;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
+            pointer-events: auto;
           ">${msg.btn}</button>
-          <button id="pharis-close-update-btn" style="
+          <button type="button" id="pharis-close-update-btn" style="
             background: transparent;
             color: #6ee7b7;
             border: none;
@@ -3228,6 +3238,7 @@ out center tags;`;
             cursor: pointer;
             padding: 0 4px;
             line-height: 1;
+            pointer-events: auto;
           ">✕</button>
         </div>
         <style>
@@ -3240,13 +3251,46 @@ out center tags;`;
 
       document.body.appendChild(banner);
 
-      document.getElementById("pharis-update-btn").onclick = () => {
-        worker.postMessage({ type: "SKIP_WAITING" });
+      const doUpdate = function () {
+        const btn = document.getElementById("pharis-update-btn");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = lang === "fr" ? "..." : lang === "en" ? "..." : "...";
+        }
+        // 1) أخبر الـ SW بالتخطي
+        try {
+          if (worker) worker.postMessage({ type: "SKIP_WAITING" });
+        } catch (e) {}
+        try {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: "SKIP_WAITING" });
+            navigator.serviceWorker.controller.postMessage({ type: "CLEAR_CACHE" });
+          }
+        } catch (e) {}
+        // 2) امسح الكاش من الصفحة
+        if (window.caches && caches.keys) {
+          caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+          }).catch(function () {}).finally(function () {
+            window.location.reload();
+          });
+        } else {
+          window.location.reload();
+        }
+        // أمان: إعادة تحميل بعد ثانيتين حتى لو علق الكاش
+        setTimeout(function () { window.location.reload(); }, 2000);
       };
 
-      document.getElementById("pharis-close-update-btn").onclick = () => {
+      document.getElementById("pharis-update-btn").addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        doUpdate();
+      });
+
+      document.getElementById("pharis-close-update-btn").addEventListener("click", function (e) {
+        e.preventDefault();
         banner.remove();
-      };
+      });
     }
 
     // PWA Install Prompt

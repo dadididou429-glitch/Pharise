@@ -1,6 +1,5 @@
-// Pharis Service Worker — v9 (fast update)
-// غيّر رقم الإصدار عند كل تحديث ليفرض التحديث فورًا
-const CACHE_NAME = "pharis-v24";
+// Pharis Service Worker — fast update
+const CACHE_NAME = "pharis-v25";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 const EXTERNAL = [
@@ -13,7 +12,6 @@ const EXTERNAL = [
 ];
 
 self.addEventListener("install", (event) => {
-  // تثبيت فوري بدون انتظار
   self.skipWaiting();
   event.waitUntil(
     (async () => {
@@ -30,14 +28,11 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // حذف كل الكاش القديم فورًا
       const keys = await caches.keys();
       await Promise.all(
         keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
       );
-      // السيطرة على كل التبويبات فورًا
       await self.clients.claim();
-      // إخبار كل الصفحات أن هناك تحديث جديد
       const clients = await self.clients.matchAll({ type: "window" });
       clients.forEach((client) => {
         client.postMessage({ type: "SW_UPDATED", version: CACHE_NAME });
@@ -47,13 +42,14 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
+  if (!event.data) return;
+  if (event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
-  if (event.data && event.data.type === "CLEAR_CACHE") {
-    caches.keys().then((keys) => {
-      keys.forEach((k) => caches.delete(k));
-    });
+  if (event.data.type === "CLEAR_CACHE") {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+    );
   }
 });
 
@@ -72,7 +68,6 @@ self.addEventListener("fetch", (event) => {
     url.hostname.includes("tile") ||
     url.hostname.includes("ipapi");
 
-  // APIs: شبكة أولاً دائمًا
   if (isAPI) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
@@ -80,49 +75,41 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // index.html و service-worker: شبكة أولاً ثم كاش (تحديث سريع)
-  const isCritical =
+  // Network-first for HTML / app shell so updates apply quickly
+  const isNav =
+    event.request.mode === "navigate" ||
+    url.pathname.endsWith(".html") ||
     url.pathname.endsWith("/") ||
-    url.pathname.endsWith("/index.html") ||
-    url.pathname.endsWith("service-worker.js") ||
-    url.pathname.endsWith("manifest.json");
+    url.pathname.endsWith("/Pharise") ||
+    url.pathname.endsWith("/Pharise/");
 
-  if (isCritical) {
+  if (isNav) {
     event.respondWith(
       fetch(event.request)
-        .then(async (res) => {
-          if (res && res.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(event.request, res.clone());
-          }
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(event.request, copy));
           return res;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() =>
+          caches.match(event.request).then((r) => r || caches.match("./index.html"))
+        )
     );
     return;
   }
 
-  // باقي الملفات: كاش أولاً ثم تحديث في الخلفية
   event.respondWith(
-    (async () => {
-      const cached = await caches.match(event.request);
-
-      const fetchPromise = fetch(event.request)
-        .then(async (res) => {
+    caches.match(event.request).then((cached) => {
+      const fetched = fetch(event.request)
+        .then((res) => {
           if (res && res.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            if (
-              url.origin === self.location.origin ||
-              EXTERNAL.some((e) => event.request.url.startsWith(e.split("?")[0]))
-            ) {
-              cache.put(event.request, res.clone());
-            }
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(event.request, copy));
           }
           return res;
         })
         .catch(() => cached);
-
-      return cached || fetchPromise;
-    })()
+      return cached || fetched;
+    })
   );
 });
