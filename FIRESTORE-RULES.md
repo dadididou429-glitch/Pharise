@@ -1,6 +1,6 @@
-# قواعد Firestore النهائية — انشرها في Firebase
+# قواعد Firestore — أدمن متعدد
 
-Firebase Console → Firestore → Rules → الصق → ضع UID الأدمن → Publish
+انشر هذه القواعد بعد استبدال PRIMARY إن لزم:
 
 ```
 rules_version = '2';
@@ -8,9 +8,21 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAdmin() {
+    function isPrimaryAdmin() {
       return request.auth != null
-        && request.auth.uid == "REPLACE_WITH_YOUR_ADMIN_UID";
+        && request.auth.uid == "vAz85zAbCTX5ipHqDowdCZBROR53";
+    }
+
+    function isAdmin() {
+      return request.auth != null && (
+        isPrimaryAdmin()
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     match /pharmacies_submitted/{docId} {
@@ -83,6 +95,3 @@ service cloud.firestore {
   }
 }
 ```
-
-## UID الأدمن
-Authentication → Users → انسخ User UID وضعها بدل REPLACE_WITH_YOUR_ADMIN_UID

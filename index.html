@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v11</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v12</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -175,6 +175,13 @@
         adminTitle: "لوحة التحكم",
         adminSubtitle: "صيدليات قيد المراجعة (الحد: {n} شكاوى)",
         adminEmpty: "لا توجد صيدليات قيد المراجعة",
+        adminSearchPh: "ابحث عن صيدلية بالاسم...",
+        adminTabAdmins: "المشرفون",
+        addAdminTitle: "إضافة أدمن",
+        addAdminUid: "User UID من Firebase",
+        addAdminEmail: "البريد (اختياري)",
+        addAdminBtn: "إضافة",
+        adminSearchNoResults: "لا نتائج",
         verifyReturn: "تحقق — إعادتها",
         deleteFinal: "حذف نهائي",
         comingSoon: "قريباً",
@@ -278,6 +285,13 @@
         adminTitle: "Tableau de bord",
         adminSubtitle: "Pharmacies en revue (seuil : {n})",
         adminEmpty: "Aucune pharmacie en revue",
+        adminSearchPh: "Rechercher une pharmacie...",
+        adminTabAdmins: "Admins",
+        addAdminTitle: "Ajouter un admin",
+        addAdminUid: "User UID Firebase",
+        addAdminEmail: "Email (optionnel)",
+        addAdminBtn: "Ajouter",
+        adminSearchNoResults: "Aucun résultat",
         verifyReturn: "Vérifiée — restaurer",
         deleteFinal: "Supprimer",
         comingSoon: "Bientôt",
@@ -381,6 +395,13 @@
         adminTitle: "Dashboard",
         adminSubtitle: "Pharmacies under review (threshold: {n})",
         adminEmpty: "No pharmacies under review",
+        adminSearchPh: "Search pharmacy by name...",
+        adminTabAdmins: "Admins",
+        addAdminTitle: "Add admin",
+        addAdminUid: "Firebase User UID",
+        addAdminEmail: "Email (optional)",
+        addAdminBtn: "Add",
+        adminSearchNoResults: "No results",
         verifyReturn: "Verified — restore",
         deleteFinal: "Delete permanently",
         comingSoon: "Coming soon",
@@ -2135,7 +2156,20 @@ out center tags;`;
         setLoginError(null);
         setLoginLoading(true);
         try {
-          await auth.signInWithEmailAndPassword(loginEmail.trim(), loginPassword);
+          const cred = await auth.signInWithEmailAndPassword(loginEmail.trim(), loginPassword);
+          const u = cred.user;
+          let allowed = u.uid === PRIMARY_ADMIN_UID;
+          if (!allowed && db) {
+            try {
+              const doc = await db.collection("admins").doc(u.uid).get();
+              allowed = doc.exists;
+            } catch (e) { console.warn(e); }
+          }
+          if (!allowed) {
+            await auth.signOut();
+            setLoginError(lang === "ar" ? "هذا الحساب ليس أدمن" : lang === "fr" ? "Compte non admin" : "Not an admin account");
+            return;
+          }
           setShowLogin(false);
           setAdminView(true);
           setLoginPassword("");
@@ -2143,6 +2177,47 @@ out center tags;`;
           setLoginError(t("loginError"));
         } finally {
           setLoginLoading(false);
+        }
+      };
+
+      const addAdminAccount = async () => {
+        setAdminMgmtMsg("");
+        const uid = newAdminUid.trim();
+        if (!uid || uid.length < 10) {
+          setAdminMgmtMsg(lang === "ar" ? "أدخل User UID صالحاً من Firebase Authentication" : "Enter a valid Firebase User UID");
+          return;
+        }
+        if (!adminUser || !db) return;
+        try {
+          await db.collection("admins").doc(uid).set({
+            email: newAdminEmail.trim() || "",
+            addedBy: adminUser.uid,
+            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          setAdminList(prev => {
+            const rest = prev.filter(a => a.id !== uid);
+            return [...rest, { id: uid, email: newAdminEmail.trim(), addedBy: adminUser.uid }];
+          });
+          setNewAdminUid("");
+          setNewAdminEmail("");
+          setAdminMgmtMsg(lang === "ar" ? "✓ تم إضافة الأدمن" : lang === "fr" ? "✓ Admin ajouté" : "✓ Admin added");
+        } catch (e) {
+          console.error(e);
+          setAdminMgmtMsg(lang === "ar" ? "فشل الإضافة — تحقق من قواعد Firestore" : "Failed — check Firestore rules");
+        }
+      };
+
+      const removeAdminAccount = async (uid) => {
+        if (uid === PRIMARY_ADMIN_UID) {
+          setAdminMgmtMsg(lang === "ar" ? "لا يمكن حذف الأدمن الأساسي" : "Cannot remove primary admin");
+          return;
+        }
+        try {
+          await db.collection("admins").doc(uid).delete();
+          setAdminList(prev => prev.filter(a => a.id !== uid));
+          setAdminMgmtMsg(lang === "ar" ? "تم حذف الأدمن" : "Admin removed");
+        } catch (e) {
+          setAdminMgmtMsg(lang === "ar" ? "فشل الحذف" : "Remove failed");
         }
       };
 
@@ -2827,21 +2902,39 @@ out center tags;`;
                 </div>
                 <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
 
-                <div className="flex gap-2 mb-5">
+                <div className="flex gap-2 mb-3">
                   <button onClick={() => setAdminTab("review")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "review" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
                     {t("reviewBtn", { n: reviewQueue.length })}
                   </button>
                   <button onClick={() => setAdminTab("all")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "all" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
                     {t("allPharmaciesTab", { n: allComputed.length })}
                   </button>
+                  <button onClick={() => setAdminTab("admins")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "admins" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
+                    {t("adminTabAdmins")}
+                  </button>
                 </div>
+
+                {(adminTab === "review" || adminTab === "all") && (
+                  <div className="relative mb-4">
+                    <span className="absolute top-1/2 -translate-y-1/2 start-3 text-brand-500 pointer-events-none">
+                      <Icons.Search className="w-4 h-4" />
+                    </span>
+                    <input
+                      value={adminSearch}
+                      onChange={e => setAdminSearch(e.target.value)}
+                      placeholder={t("adminSearchPh")}
+                      className="w-full bg-brand-900 border border-brand-800 text-brand-50 placeholder-brand-600 rounded-xl py-2.5 pe-3 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                      style={{ paddingInlineStart: "2.25rem" }}
+                    />
+                  </div>
+                )}
 
                 {adminTab === "review" && (
                   <>
                     <p className="text-sm text-brand-300 mb-4">{t("adminSubtitle", { n: COMPLAINT_THRESHOLD })}</p>
-                    {reviewQueue.length === 0 && <div className="text-center text-brand-600 mt-16 text-sm">{t("adminEmpty")}</div>}
+                    {reviewQueue.filter(ph => !adminSearch.trim() || (ph.name + " " + (ph.area || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).length === 0 && <div className="text-center text-brand-600 mt-16 text-sm">{adminSearch.trim() ? t("adminSearchNoResults") : t("adminEmpty")}</div>}
                     <div className="space-y-3">
-                      {reviewQueue.map(ph => (
+                      {reviewQueue.filter(ph => !adminSearch.trim() || (ph.name + " " + (ph.area || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).map(ph => (
                         <div key={ph.id} className="bg-brand-900 rounded-2xl p-4 border border-brand-800">
                           <div className="flex items-start justify-between">
                             <div>
@@ -2866,7 +2959,7 @@ out center tags;`;
                   <>
                     <p className="text-sm text-brand-300 mb-4">{t("allPharmaciesSubtitle")}</p>
                     <div className="space-y-2">
-                      {allComputed.map(ph => (
+                      {allComputed.filter(ph => !adminSearch.trim() || (ph.name + " " + (ph.area || "") + " " + (ph.address || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).map(ph => (
                         <div key={ph.id} className="bg-brand-900 rounded-xl p-3 border border-brand-800 flex items-center justify-between gap-2">
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-brand-50 truncate">{ph.name}</p>
@@ -2875,8 +2968,45 @@ out center tags;`;
                           <button onClick={() => removePermanently(ph.id, ph.name, ph)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
                         </div>
                       ))}
+                      {adminSearch.trim() && allComputed.filter(ph => (ph.name + " " + (ph.area || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).length === 0 && (
+                        <div className="text-center text-brand-600 py-10 text-sm">{t("adminSearchNoResults")}</div>
+                      )}
                     </div>
                   </>
+                )}
+
+                {adminTab === "admins" && (
+                  <div className="space-y-4">
+                    <div className="bg-brand-900 rounded-2xl p-4 border border-brand-800 space-y-3">
+                      <h3 className="font-semibold text-brand-50 text-sm">{t("addAdminTitle")}</h3>
+                      <p className="text-[11px] text-brand-400 leading-relaxed">
+                        {lang === "ar"
+                          ? "1) أنشئ حساباً للشخص من Firebase Authentication (Email/Password) أو اطلب منه التسجيل مرة. 2) انسخ User UID من Authentication → Users. 3) الصقه هنا."
+                          : lang === "fr"
+                          ? "1) Créez un compte dans Firebase Authentication. 2) Copiez le User UID. 3) Collez-le ici."
+                          : "1) Create an account in Firebase Authentication. 2) Copy the User UID. 3) Paste it here."}
+                      </p>
+                      <input value={newAdminUid} onChange={e => setNewAdminUid(e.target.value)} dir="ltr" placeholder={t("addAdminUid")} className="w-full bg-black border border-brand-800 rounded-xl px-3 py-2.5 text-sm text-brand-50 font-mono outline-none focus:ring-2 focus:ring-brand-500" />
+                      <input value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} dir="ltr" placeholder={t("addAdminEmail")} className="w-full bg-black border border-brand-800 rounded-xl px-3 py-2.5 text-sm text-brand-50 outline-none focus:ring-2 focus:ring-brand-500" />
+                      <button onClick={addAdminAccount} className="w-full bg-brand-500 text-brand-950 font-bold rounded-xl py-2.5 text-sm">{t("addAdminBtn")}</button>
+                      {adminMgmtMsg && <p className="text-xs text-emerald-400">{adminMgmtMsg}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      {(adminList.length ? adminList : [{ id: PRIMARY_ADMIN_UID, email: adminUser?.email, primary: true }]).map(a => (
+                        <div key={a.id} className="bg-brand-900 rounded-xl p-3 border border-brand-800 flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs text-brand-50 font-mono truncate" dir="ltr">{a.id}</p>
+                            <p className="text-[11px] text-brand-400 truncate" dir="ltr">{a.email || "—"} {a.primary || a.id === PRIMARY_ADMIN_UID ? "· primary" : ""}</p>
+                          </div>
+                          {a.id !== PRIMARY_ADMIN_UID && (
+                            <button onClick={() => removeAdminAccount(a.id)} className="text-xs text-rose-300 border border-rose-900 rounded-lg px-2 py-1 flex-shrink-0">
+                              {lang === "ar" ? "حذف" : lang === "fr" ? "Retirer" : "Remove"}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
