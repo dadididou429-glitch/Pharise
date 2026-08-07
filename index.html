@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v12</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v13</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -466,7 +466,30 @@
       }
     };
 
-    function tr(lang, key, vars = {}) {
+
+    // تطبيع النص للبحث (عربي + لاتيني)
+    function normalizeSearch(s) {
+      return String(s || "")
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u064B-\u065F\u0670]/g, "") // تشكيل
+        .replace(/\u0640/g, "") // تطويل
+        .replace(/[أإآٱ]/g, "ا")
+        .replace(/[ىئ]/g, "ي")
+        .replace(/ة/g, "ه")
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    function matchesSearch(ph, qRaw) {
+      const q = normalizeSearch(qRaw);
+      if (!q) return true;
+      const hay = normalizeSearch([ph.name, ph.area, ph.address, ph.wilaya, ph.commune, ph.phone].filter(Boolean).join(" "));
+      // كل كلمة في البحث يجب أن توجد
+      return q.split(" ").every(w => w && hay.includes(w));
+    }
+
+        function tr(lang, key, vars = {}) {
       let str = (T[lang] && T[lang][key]) || T.ar[key] || key;
       Object.entries(vars).forEach(([k, v]) => { str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v); });
       return str;
@@ -2979,9 +3002,9 @@ out center tags;`;
                 {adminTab === "review" && (
                   <>
                     <p className="text-sm text-brand-300 mb-4">{t("adminSubtitle", { n: COMPLAINT_THRESHOLD })}</p>
-                    {reviewQueue.filter(ph => !adminSearch.trim() || (ph.name + " " + (ph.area || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).length === 0 && <div className="text-center text-brand-600 mt-16 text-sm">{adminSearch.trim() ? t("adminSearchNoResults") : t("adminEmpty")}</div>}
+                    {reviewQueue.filter(ph => matchesSearch(ph, adminSearch)).length === 0 && <div className="text-center text-brand-600 mt-16 text-sm">{adminSearch.trim() ? t("adminSearchNoResults") : t("adminEmpty")}</div>}
                     <div className="space-y-3">
-                      {reviewQueue.filter(ph => !adminSearch.trim() || (ph.name + " " + (ph.area || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).map(ph => (
+                      {reviewQueue.filter(ph => matchesSearch(ph, adminSearch)).map(ph => (
                         <div key={ph.id} className="bg-brand-900 rounded-2xl p-4 border border-brand-800">
                           <div className="flex items-start justify-between">
                             <div>
@@ -3006,7 +3029,7 @@ out center tags;`;
                   <>
                     <p className="text-sm text-brand-300 mb-4">{t("allPharmaciesSubtitle")}</p>
                     <div className="space-y-2">
-                      {allComputed.filter(ph => !adminSearch.trim() || (ph.name + " " + (ph.area || "") + " " + (ph.address || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).map(ph => (
+                      {allComputed.filter(ph => matchesSearch(ph, adminSearch)).map(ph => (
                         <div key={ph.id} className="bg-brand-900 rounded-xl p-3 border border-brand-800 flex items-center justify-between gap-2">
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-brand-50 truncate">{ph.name}</p>
@@ -3015,7 +3038,7 @@ out center tags;`;
                           <button onClick={() => removePermanently(ph.id, ph.name, ph)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
                         </div>
                       ))}
-                      {adminSearch.trim() && allComputed.filter(ph => (ph.name + " " + (ph.area || "")).toLowerCase().includes(adminSearch.trim().toLowerCase())).length === 0 && (
+                      {adminSearch.trim() && allComputed.filter(ph => matchesSearch(ph, adminSearch)).length === 0 && (
                         <div className="text-center text-brand-600 py-10 text-sm">{t("adminSearchNoResults")}</div>
                       )}
                     </div>
@@ -3142,6 +3165,26 @@ out center tags;`;
     function showUpdateBanner(worker) {
       if (document.getElementById("pharis-update-banner")) return;
 
+      let lang = "ar";
+      try {
+        const saved = localStorage.getItem("pharis_lang");
+        if (saved && ["ar", "fr", "en"].includes(saved)) lang = saved;
+        else {
+          const b = (navigator.language || "ar").slice(0, 2).toLowerCase();
+          if (b === "fr" || b === "en") lang = b;
+        }
+      } catch (e) {}
+
+      const msg = {
+        ar: { text: "🔄 يوجد تحديث جديد للتطبيق", btn: "تحديث الآن" },
+        fr: { text: "🔄 Une nouvelle mise à jour est disponible", btn: "Mettre à jour" },
+        en: { text: "🔄 A new app update is available", btn: "Update now" }
+      }[lang] || { text: "🔄 يوجد تحديث جديد للتطبيق", btn: "تحديث الآن" };
+      const dir = lang === "ar" ? "rtl" : "ltr";
+      const font = lang === "ar"
+        ? "'IBM Plex Sans Arabic', system-ui, sans-serif"
+        : "system-ui, -apple-system, sans-serif";
+
       const banner = document.createElement("div");
       banner.id = "pharis-update-banner";
       banner.innerHTML = `
@@ -3162,11 +3205,11 @@ out center tags;`;
           font-size: 15px;
           border: 1px solid #047857;
           min-width: 280px;
-          font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
-          direction: rtl;
+          font-family: ${font};
+          direction: ${dir};
           animation: pharisSlideUp 0.35s ease;
         ">
-          <span style="flex:1">🔄 يوجد تحديث جديد للتطبيق</span>
+          <span style="flex:1">${msg.text}</span>
           <button id="pharis-update-btn" style="
             background: #10b981;
             color: #022c22;
@@ -3176,7 +3219,7 @@ out center tags;`;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
-          ">تحديث الآن</button>
+          ">${msg.btn}</button>
           <button id="pharis-close-update-btn" style="
             background: transparent;
             color: #6ee7b7;
