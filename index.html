@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v15</title>
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v16</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2347,7 +2347,35 @@ out center tags;`;
         }
       };
 
-      const dismissComplaints = (id, name) => {
+      
+      const removeFeaturedBadge = async (id, name) => {
+        if (!adminUser) {
+          showToast(lang === "ar" ? "سجّل دخول الأدمن أولاً" : "Admin login required");
+          return;
+        }
+        try {
+          if (db) {
+            await db.collection("pharmacy_features").doc(String(id)).delete();
+          }
+          setFeaturedMap(prev => {
+            const next = { ...prev };
+            delete next[id];
+            delete next[String(id)];
+            if (id != null && !isNaN(id)) delete next[Number(id)];
+            return next;
+          });
+          showToast(
+            lang === "ar" ? ("أُزيلت الشارة المميزة من «" + (name || "") + "»")
+            : lang === "fr" ? ("Badge retiré : " + (name || ""))
+            : ("Featured badge removed: " + (name || ""))
+          );
+        } catch (e) {
+          console.error(e);
+          showToast(lang === "ar" ? "فشل إزالة الشارة" : "Failed to remove badge");
+        }
+      };
+
+const dismissComplaints = (id, name) => {
         setComplaints(prev => ({ ...prev, [id]: 0 }));
         showToast(t("dismissedToast", { name }));
       };
@@ -3038,10 +3066,20 @@ out center tags;`;
                       {allComputed.filter(ph => matchesSearch(ph, adminSearch)).map(ph => (
                         <div key={ph.id} className="bg-brand-900 rounded-xl p-3 border border-brand-800 flex items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-brand-50 truncate">{ph.name}</p>
+                            <p className="text-sm font-medium text-brand-50 truncate">{ph.featured ? "⭐ " : ""}{ph.name}</p>
                             <p className="text-xs text-brand-400 truncate">{ph.area}</p>
                           </div>
-                          <button onClick={() => removePermanently(ph.id, ph.name, ph)} className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
+                          <div className="flex flex-col gap-1 flex-shrink-0">
+                            {ph.featured && (
+                              <button
+                                onClick={() => removeFeaturedBadge(ph.id, ph.name)}
+                                className="bg-amber-950 text-amber-300 text-[10px] font-medium rounded-lg px-2.5 py-1.5 border border-amber-800"
+                              >
+                                {lang === "ar" ? "إزالة المميزة" : lang === "fr" ? "Retirer badge" : "Remove badge"}
+                              </button>
+                            )}
+                            <button onClick={() => removePermanently(ph.id, ph.name, ph)} className="bg-rose-950 text-rose-300 text-xs font-medium rounded-lg px-3 py-2">{t("deleteFinal")}</button>
+                          </div>
                         </div>
                       ))}
                       {adminSearch.trim() && allComputed.filter(ph => matchesSearch(ph, adminSearch)).length === 0 && (
