@@ -1,24 +1,24 @@
-# حزمة الحماية القانونية — Pharis
+# Pharis — حزمة كاملة (حقوق + صفحات قانونية + قواعد)
 
 ## الملفات
-| الملف | الاستخدام |
-|--------|-----------|
-| LICENSE | ضعْه في جذر المستودع |
-| privacy.html | استبدل الملف بنفس الاسم في المستودع |
-| terms.html | استبدل الملف بنفس الاسم في المستودع |
-| firestore.rules | انسخ المحتوى إلى Firebase Console → Firestore → Rules → Publish |
+- index.html  ← التطبيق مع تذييل الحقوق الواضح
+- LICENSE
+- privacy.html
+- terms.html
+- firestore.rules
 
-## طريقة الرفع على GitHub
+## الرفع على GitHub
 1. فك الضغط
-2. ارفع الملفات الثلاثة (LICENSE, privacy.html, terms.html) إلى مستودع Pharise (استبدال القديم)
-3. Commit
+2. ارفع الملفات إلى مستودع Pharise (استبدال الموجود)
+3. Commit + Push
+4. انتظر دقيقة ثم افتح الموقع مع تحديث قوي (مسح الكاش)
 
 ## Firebase
-1. افتح Console → مشروع maftouha-ap
-2. Firestore → Rules
-3. الصق محتوى firestore.rules
-4. Publish
-5. تأكد أن UID الأدمن في الملف يطابق حسابك
+الصق firestore.rules في Console → Firestore → Rules → Publier
 
-## التواصل
-الصفحات تشير إلى GitHub Issues للمستودع (بدون بريد وهمي).
+## ماذا يظهر في التطبيق
+أسفل الصفحة:
+© 2026 Pharis — جميع الحقوق محفوظة
+All rights reserved
+الخصوصية · الشروط
+© OpenStreetMap contributors
