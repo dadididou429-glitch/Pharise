@@ -1535,7 +1535,13 @@ out center tags;`;
       });
 
       // Admin
+      const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
       const [adminUser, setAdminUser] = useState(null);
+      const [adminSearch, setAdminSearch] = useState("");
+      const [adminList, setAdminList] = useState([]);
+      const [newAdminUid, setNewAdminUid] = useState("");
+      const [newAdminEmail, setNewAdminEmail] = useState("");
+      const [adminMgmtMsg, setAdminMgmtMsg] = useState("");
       const [loginEmail, setLoginEmail] = useState("");
       const [loginPassword, setLoginPassword] = useState("");
       const [loginError, setLoginError] = useState(null);
@@ -2156,25 +2162,66 @@ out center tags;`;
         setLoginError(null);
         setLoginLoading(true);
         try {
-          const cred = await auth.signInWithEmailAndPassword(loginEmail.trim(), loginPassword);
+          if (!auth) {
+            setLoginError(lang === "ar" ? "Firebase غير جاهز" : "Firebase not ready");
+            return;
+          }
+          const email = loginEmail.trim();
+          const pass = loginPassword;
+          if (!email || !pass) {
+            setLoginError(lang === "ar" ? "أدخل البريد وكلمة المرور" : "Enter email and password");
+            return;
+          }
+          const cred = await auth.signInWithEmailAndPassword(email, pass);
           const u = cred.user;
-          let allowed = u.uid === PRIMARY_ADMIN_UID;
+
+          // الأدمن الأساسي دائماً مسموح + تسجيله في admins
+          let allowed = (u.uid === PRIMARY_ADMIN_UID);
+          if (allowed && db) {
+            try {
+              await db.collection("admins").doc(u.uid).set({
+                email: u.email || email,
+                primary: true,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+            } catch (e) { console.warn("admins bootstrap", e); }
+          }
           if (!allowed && db) {
             try {
               const doc = await db.collection("admins").doc(u.uid).get();
               allowed = doc.exists;
-            } catch (e) { console.warn(e); }
+            } catch (e) {
+              console.warn(e);
+              // إن فشل قراءة admins بسبب القواعد، لا تمنع الأدمن الأساسي فقط
+              allowed = false;
+            }
           }
           if (!allowed) {
             await auth.signOut();
-            setLoginError(lang === "ar" ? "هذا الحساب ليس أدمن" : lang === "fr" ? "Compte non admin" : "Not an admin account");
+            setLoginError(
+              lang === "ar"
+                ? "هذا الحساب ليس ضمن المشرفين. أضفه من تبويب المشرفون أو استخدم حساب الأدمن الأساسي."
+                : lang === "fr"
+                ? "Ce compte n'est pas admin."
+                : "This account is not an admin."
+            );
             return;
           }
           setShowLogin(false);
           setAdminView(true);
           setLoginPassword("");
-        } catch {
-          setLoginError(t("loginError"));
+        } catch (e) {
+          console.error(e);
+          const code = e && e.code ? e.code : "";
+          if (code === "auth/invalid-email") {
+            setLoginError(lang === "ar" ? "بريد غير صالح" : "Invalid email");
+          } else if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
+            setLoginError(lang === "ar" ? "البريد أو كلمة المرور غير صحيحة" : lang === "fr" ? "Email ou mot de passe incorrect" : "Wrong email or password");
+          } else if (code === "auth/too-many-requests") {
+            setLoginError(lang === "ar" ? "محاولات كثيرة — انتظر قليلاً" : "Too many attempts — wait");
+          } else {
+            setLoginError((lang === "ar" ? "خطأ: " : "Error: ") + (code || (e && e.message) || t("loginError")));
+          }
         } finally {
           setLoginLoading(false);
         }
