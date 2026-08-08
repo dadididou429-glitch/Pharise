@@ -67,5 +67,13 @@ service cloud.firestore {
         allow update, delete: if isAdmin();
       }
     }
+  
+    // عدّاد المستخدمين العام
+    match /stats/{docId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
+
   }
 }

@@ -1560,6 +1560,7 @@ out center tags;`;
         if (b === "en") return "Detecting...";
         return "جارٍ تحديد موقعك...";
       });
+      const [userCount, setUserCount] = useState(null);
 
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
@@ -1736,6 +1737,40 @@ out center tags;`;
         );
       }, []);
 
+
+      // عدّاد المستخدمين (مرة واحدة لكل جهاز عبر localStorage)
+      useEffect(() => {
+        if (!firebaseReady || !db) return;
+        const statsRef = db.collection("stats").doc("users");
+        let unsub = null;
+        try {
+          unsub = statsRef.onSnapshot(
+            (snap) => {
+              if (snap.exists) {
+                const n = Number(snap.data().count) || 0;
+                setUserCount(n);
+              } else {
+                setUserCount(0);
+              }
+            },
+            () => {}
+          );
+        } catch (e) {}
+
+        const COUNTED_KEY = "pharis_user_counted_v1";
+        try {
+          if (!localStorage.getItem(COUNTED_KEY)) {
+            statsRef.set(
+              { count: firebase.firestore.FieldValue.increment(1), updatedAt: firebase.firestore.FieldValue.serverTimestamp() },
+              { merge: true }
+            ).then(() => {
+              try { localStorage.setItem(COUNTED_KEY, "1"); } catch (e) {}
+            }).catch(() => {});
+          }
+        } catch (e) {}
+
+        return () => { if (unsub) unsub(); };
+      }, []);
 
       // PWA install + offline
       useEffect(() => {
@@ -2417,6 +2452,16 @@ out center tags;`;
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-brand-400 leading-tight" dir="ltr">Pharis</h1>
                   <p className="text-[11px] text-brand-300">{currentPlace}</p>
+                  {userCount != null && (
+                    <p className="text-[10px] text-brand-400/80 mt-0.5 flex items-center gap-1">
+                      <span aria-hidden="true">👥</span>
+                      <span>
+                        {userCount.toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
+                        {" "}
+                        {lang === "ar" ? "مستخدم" : lang === "fr" ? "utilisateurs" : "users"}
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
