@@ -217,6 +217,16 @@
         activationCodePlaceholder: "مثال: PHARIS-XXXX",
         activationOk: "✅ تم تفعيل الشارة المميزة!",
         activationBad: "❌ كود غير صالح أو مستخدم مسبقاً",
+        payModalTitle: "الدفع بالبطاقة الذهبية",
+        payModalSub: "اشتراك الصيدلية المميزة — 500 دج / شهر",
+        payStep1: "1) انسخ رقم حساب CCP",
+        payStep2: "2) ادفع 500 دج عبر بريدي موب أو البطاقة الذهبية",
+        payStep3: "3) أرسل صورة الوصل على واتساب لاستلام كود التفعيل",
+        payCopyCcp: "نسخ رقم الحساب",
+        payWhatsapp: "إرسال الوصل عبر واتساب",
+        payPaypalForeign: "أجنبي؟ ادفع عبر PayPal (تفعيل فوري)",
+        payAccountName: "باسم",
+        payCcpCopied: "تم نسخ رقم الحساب",
         activationHint: "بعد الدفع عبر CCP أو PayPal يصلك كود التفعيل على واتساب",
         adminLoginTitle: "دخول المسؤول",
         loginBtn: "دخول", loginError: "بيانات غير صحيحة",
@@ -327,6 +337,16 @@
         activationCodePlaceholder: "Ex: PHARIS-XXXX",
         activationOk: "✅ Badge premium activé !",
         activationBad: "❌ Code invalide ou déjà utilisé",
+        payModalTitle: "Paiement carte Edahabia",
+        payModalSub: "Abonnement pharmacie mise en avant — 500 DA / mois",
+        payStep1: "1) Copiez le n° de compte CCP",
+        payStep2: "2) Payez 500 DA via BaridiMob ou carte dorée",
+        payStep3: "3) Envoyez le reçu sur WhatsApp pour recevoir le code",
+        payCopyCcp: "Copier le n° de compte",
+        payWhatsapp: "Envoyer le reçu sur WhatsApp",
+        payPaypalForeign: "Étranger ? Payez via PayPal (activation immédiate)",
+        payAccountName: "Au nom de",
+        payCcpCopied: "Numéro copié",
         activationHint: "Après paiement CCP/PayPal vous recevez le code sur WhatsApp",
         adminLoginTitle: "Connexion admin",
         loginBtn: "Se connecter", loginError: "Identifiants incorrects",
@@ -437,6 +457,16 @@
         activationCodePlaceholder: "e.g. PHARIS-XXXX",
         activationOk: "✅ Featured badge activated!",
         activationBad: "❌ Invalid or already used code",
+        payModalTitle: "Golden Card payment",
+        payModalSub: "Featured pharmacy subscription — 500 DZD / month",
+        payStep1: "1) Copy the CCP account number",
+        payStep2: "2) Pay 500 DZD via BaridiMob or Golden Card",
+        payStep3: "3) Send the receipt on WhatsApp to get your activation code",
+        payCopyCcp: "Copy account number",
+        payWhatsapp: "Send receipt on WhatsApp",
+        payPaypalForeign: "Outside Algeria? Pay with PayPal (instant activation)",
+        payAccountName: "Account name",
+        payCcpCopied: "Account number copied",
         activationHint: "After CCP/PayPal payment you receive the code on WhatsApp",
         adminLoginTitle: "Admin login",
         loginBtn: "Log in", loginError: "Incorrect credentials",
@@ -1561,6 +1591,7 @@ out center tags;`;
         return "جارٍ تحديد موقعك...";
       });
       const [userCount, setUserCount] = useState(null);
+      const [showPayModal, setShowPayModal] = useState(false);
 
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
@@ -2554,10 +2585,10 @@ out center tags;`;
             )}
 
 
-            {/* Pharmacy subscription CTA */}
-            <a href="./pharmacy-owner.html" className="mt-2 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
+            {/* Pharmacy subscription CTA — الدفع من داخل التطبيق */}
+            <button type="button" onClick={() => setShowPayModal(true)} className="mt-2 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
               🏥 {t("aboutMoney")}
-            </a>
+            </button>
 
             {/* Stats */}
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -2749,6 +2780,67 @@ out center tags;`;
               </>
             )}
           </main>
+
+
+          {/* نافذة الدفع بالبطاقة الذهبية من داخل التطبيق */}
+          {showPayModal && (
+            <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" onClick={() => setShowPayModal(false)}>
+              <div className="w-full max-w-lg bg-brand-950 border border-brand-700 rounded-t-2xl sm:rounded-2xl shadow-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} dir={lang === "ar" ? "rtl" : "ltr"}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-brand-300">{t("payModalTitle")}</h3>
+                    <p className="text-xs text-brand-200 mt-1">{t("payModalSub")}</p>
+                  </div>
+                  <button type="button" onClick={() => setShowPayModal(false)} className="text-brand-300 hover:text-white text-xl leading-none px-2">×</button>
+                </div>
+
+                <div className="bg-emerald-900/40 border-2 border-emerald-500 rounded-xl p-4 space-y-2">
+                  <p className="text-xs text-emerald-200/90">{t("payStep1")}</p>
+                  <p className="font-mono text-2xl font-bold text-white tracking-wide" dir="ltr">0025148966 / 05</p>
+                  <p className="text-sm text-brand-100"><span className="text-brand-300">{t("payAccountName")}:</span> <strong>Mohammed Naar</strong></p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        navigator.clipboard.writeText("0025148966/05");
+                        alert(t("payCcpCopied"));
+                      } catch (e) {
+                        alert("0025148966 / 05");
+                      }
+                    }}
+                    className="w-full mt-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold"
+                  >
+                    {t("payCopyCcp")}
+                  </button>
+                </div>
+
+                <ol className="text-sm text-brand-100 space-y-2 list-none">
+                  <li className="bg-brand-900/50 rounded-lg px-3 py-2">{t("payStep2")}</li>
+                  <li className="bg-brand-900/50 rounded-lg px-3 py-2">{t("payStep3")}</li>
+                </ol>
+
+                <a
+                  href={"https://wa.me/213559856169?text=" + encodeURIComponent(lang === "ar" ? "مرحبا، دفعت اشتراك صيدلية Pharis 500 دج بالبطاقة الذهبية. هذه صورة الوصل:" : lang === "fr" ? "Bonjour, j'ai payé l'abonnement pharmacie Pharis 500 DA par carte Edahabia. Voici le reçu :" : "Hello, I paid the Pharis pharmacy subscription 500 DZD via Golden Card. Here is the receipt:")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold text-sm"
+                >
+                  {t("payWhatsapp")}
+                </a>
+
+                <a
+                  href="./pharmacy-owner.html"
+                  className="block w-full text-center py-2.5 rounded-xl border-2 border-blue-400 text-blue-300 hover:bg-blue-500/10 text-sm font-bold"
+                >
+                  {t("payPaypalForeign")}
+                </a>
+
+                <p className="text-[11px] text-brand-400 text-center leading-relaxed">
+                  {lang === "ar" ? "بعد استلام الكود: أضف صيدليتك والصق الكود في خانة «كود التفعيل»." : lang === "fr" ? "Après réception du code : ajoutez votre pharmacie et collez le code dans le champ d'activation." : "After you receive the code: add your pharmacy and paste the code in the activation field."}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Footer — قانوني + عرض تجاري للصيدليات */}
           <footer className="max-w-lg mx-auto px-4 pb-8 pt-2 text-center space-y-2">
@@ -3029,7 +3121,8 @@ out center tags;`;
                       className="w-full bg-white dark:bg-black border border-violet-200 dark:border-violet-700 rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-violet-500"
                     />
                     <p className="text-[10px] text-violet-600 dark:text-violet-400 leading-relaxed">{t("activationHint")}</p>
-                    <a href="./pharmacy-owner.html" className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline block">⭐ {t("upgradeFeatured")}</a>
+                    <button type="button" onClick={() => setShowPayModal(true)} className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline block text-start">⭐ {t("upgradeFeatured")} — {lang === "ar" ? "ادفع بالبطاقة الذهبية" : lang === "fr" ? "Payer par Edahabia" : "Pay with Golden Card"}</button>
+                    <a href="./pharmacy-owner.html" className="text-[10px] text-blue-600 dark:text-blue-300 underline block mt-1">{t("payPaypalForeign")}</a>
                   </div>
 
                   <button

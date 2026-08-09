@@ -1,5 +1,5 @@
 // Pharis Service Worker — fast update
-const CACHE_NAME = "pharis-v33-edahabia";
+const CACHE_NAME = "pharis-v34-pay-modal";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 const EXTERNAL = [
