@@ -29,7 +29,7 @@
       <p class="text-emerald-200 mb-4" data-i18n="subtitle">ادفع → يظهر كود التفعيل مباشرة → أدخله في التطبيق</p>
       <div class="inline-flex flex-col items-center bg-white/10 border border-emerald-400/40 rounded-2xl px-8 py-4">
         <span class="text-4xl font-bold text-emerald-300" dir="ltr">500 دج</span>
-        <span class="text-emerald-200 text-sm" data-i18n="priceNote">شهرياً · أو $4 عبر PayPal (تفعيل فوري)</span>
+        <span class="text-emerald-200 text-sm" data-i18n="priceNote">500 دج بالبطاقة الذهبية (الجزائر) · أو $4 PayPal للأجانب</span>
       </div>
     </div>
   </div>
@@ -46,13 +46,35 @@
 
     <div id="error-box" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-4 text-sm"></div>
 
-    <!-- PayPal -->
-    <div class="bg-white rounded-2xl p-5 border border-blue-200 shadow-sm">
+    <!-- البطاقة الذهبية (مُفضّل داخل الجزائر) -->
+    <div class="bg-white rounded-2xl p-5 border-2 border-emerald-500 shadow-md">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-2xl">🇩🇿</span>
+        <div>
+          <h2 class="font-bold" data-i18n="ccpTitle">البطاقة الذهبية — داخل الجزائر</h2>
+          <p class="text-xs text-stone-500" data-i18n="ccpSub">ادفع عبر بريدي موب أو البطاقة الذهبية إلى حساب CCP · ثم أرسل الوصل على واتساب</p>
+        </div>
+      </div>
+      <div class="bg-stone-50 rounded-xl p-4 border border-stone-100">
+        <p class="text-xs text-stone-500" data-i18n="ccpLabel">رقم CCP</p>
+        <p class="font-mono font-bold text-xl" dir="ltr">0025148966 / 05</p>
+        <p class="text-sm mt-1"><span data-i18n="ccpName">باسم:</span> <strong>Mohammed Naar</strong></p>
+        <button type="button" id="copy-ccp" class="mt-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5" data-i18n="copyNumber">نسخ الرقم</button>
+      </div>
+      <p class="text-xs text-amber-800 mt-3 bg-amber-50 border border-amber-100 rounded-lg p-3 leading-relaxed" data-i18n="ccpNote">
+        بعد الدفع بالبطاقة الذهبية / بريدي موب أرسل صورة الوصل على واتساب ليُرسل لك كود التفعيل:
+        <a class="font-bold underline" href="https://wa.me/213559856169">0559 85 61 69</a>
+      </p>
+    </div>
+
+    
+<!-- PayPal -->
+    <div class="bg-white rounded-2xl p-5 border-2 border-blue-400 shadow-sm">
       <div class="flex items-center gap-2 mb-2">
         <span class="text-2xl">⚡</span>
         <div>
-          <h2 class="font-bold text-lg" data-i18n="paypalTitle">PayPal — تفعيل فوري بدون انتظار</h2>
-          <p class="text-xs text-stone-500" data-i18n="paypalSub">للجزائريين والأجانب · الكود يظهر بعد الدفع مباشرة</p>
+          <h2 class="font-bold text-lg" data-i18n="paypalTitle">PayPal — للأجانب (تفعيل فوري)</h2>
+          <p class="text-xs text-stone-500" data-i18n="paypalSub">مخصص للأجانب وخارج الجزائر · الكود يظهر فوراً بعد الدفع</p>
         </div>
       </div>
       <p class="text-sm text-stone-600 mb-3" data-i18n="paypalPrices">شهري <strong>$4</strong> · سنوي <strong>$40</strong></p>
@@ -64,27 +86,6 @@
 
       <div id="paypal-button-container" class="min-h-[48px]"></div>
       <p id="paypal-setup-hint" class="hidden text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2 leading-relaxed" data-i18n="paypalHint"></p>
-    </div>
-
-    <!-- CCP -->
-    <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="text-2xl">🇩🇿</span>
-        <div>
-          <h2 class="font-bold" data-i18n="ccpTitle">CCP — داخل الجزائر</h2>
-          <p class="text-xs text-stone-500" data-i18n="ccpSub">التحويل البنكي لا يُؤكد آلياً · استخدم PayPal للتفعيل الفوري</p>
-        </div>
-      </div>
-      <div class="bg-stone-50 rounded-xl p-4 border border-stone-100">
-        <p class="text-xs text-stone-500" data-i18n="ccpLabel">رقم CCP</p>
-        <p class="font-mono font-bold text-xl" dir="ltr">0025148966 / 05</p>
-        <p class="text-sm mt-1"><span data-i18n="ccpName">باسم:</span> <strong>Mohammed Naar</strong></p>
-        <button type="button" id="copy-ccp" class="mt-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5" data-i18n="copyNumber">نسخ الرقم</button>
-      </div>
-      <p class="text-xs text-amber-800 mt-3 bg-amber-50 border border-amber-100 rounded-lg p-3 leading-relaxed" data-i18n="ccpNote">
-        بعد تحويل CCP راسل واتساب مع صورة الوصل ليُرسل لك الكود يدوياً:
-        <a class="font-bold underline" href="https://wa.me/213559856169">0559 85 61 69</a>
-      </p>
     </div>
 
     <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-900">
@@ -99,22 +100,22 @@
       ar: {
         title: "اشتراك الصيدليات — تفعيل فوري",
         subtitle: "ادفع → يظهر كود التفعيل مباشرة → أدخله في التطبيق",
-        priceNote: "شهرياً · أو $4 عبر PayPal (تفعيل فوري)",
+        priceNote: "500 دج بالبطاقة الذهبية (الجزائر) · أو $4 PayPal للأجانب",
         yourCode: "كود التفعيل الخاص بك",
         copyCode: "نسخ الكود",
         codeHelp: "افتح التطبيق ← أضف صيدليتك ← الصق الكود في خانة «كود التفعيل» ← تُفعَّل الشارة فوراً",
         openApp: "فتح التطبيق الآن ←",
-        paypalTitle: "PayPal — تفعيل فوري بدون انتظار",
-        paypalSub: "للجزائريين والأجانب · الكود يظهر بعد الدفع مباشرة",
+        paypalTitle: "PayPal — للأجانب (تفعيل فوري)",
+        paypalSub: "مخصص للأجانب وخارج الجزائر · الكود يظهر فوراً بعد الدفع",
         paypalPrices: "شهري $4 · سنوي $40",
         planMonthly: "شهري $4",
         planYearly: "سنوي $40",
-        ccpTitle: "CCP — داخل الجزائر",
-        ccpSub: "التحويل البنكي لا يُؤكد آلياً · استخدم PayPal للتفعيل الفوري",
+        ccpTitle: "البطاقة الذهبية — داخل الجزائر",
+        ccpSub: "ادفع عبر بريدي موب أو البطاقة الذهبية إلى حساب CCP · ثم أرسل الوصل على واتساب",
         ccpLabel: "رقم CCP",
         ccpName: "باسم:",
         copyNumber: "نسخ الرقم",
-        ccpNote: "بعد تحويل CCP راسل واتساب مع صورة الوصل ليُرسل لك الكود يدوياً: ",
+        ccpNote: "بعد الدفع بالبطاقة الذهبية / بريدي موب أرسل صورة الوصل على واتساب ليُرسل لك كود التفعيل: ",
         freeTitle: "تسجيل مجاني:",
         freeBody: " إضافة الصيدلية من التطبيق بدون اشتراك. الاشتراك فقط للشارة المميزة.",
         backApp: "العودة للتطبيق ←",
@@ -126,22 +127,22 @@
       fr: {
         title: "Abonnement pharmacies — activation instantanée",
         subtitle: "Payez → le code d'activation s'affiche → saisissez-le dans l'app",
-        priceNote: "Par mois · ou 4 $ via PayPal (activation immédiate)",
+        priceNote: "500 DA carte Edahabia (Algérie) · ou 4 $ PayPal (étranger)",
         yourCode: "Votre code d'activation",
         copyCode: "Copier le code",
         codeHelp: "Ouvrez l'app ← Ajoutez votre pharmacie ← Collez le code ← le badge s'active aussitôt",
         openApp: "Ouvrir l'application →",
-        paypalTitle: "PayPal — activation immédiate",
-        paypalSub: "Algérie et international · le code s'affiche juste après le paiement",
+        paypalTitle: "PayPal — international (activation immédiate)",
+        paypalSub: "Pour l'étranger / hors Algérie · code affiché immédiatement après paiement",
         paypalPrices: "Mensuel 4 $ · Annuel 40 $",
         planMonthly: "Mensuel 4 $",
         planYearly: "Annuel 40 $",
-        ccpTitle: "CCP — en Algérie",
-        ccpSub: "Le virement n'est pas confirmé automatiquement · utilisez PayPal pour l'instantané",
-        ccpLabel: "N° CCP",
+        ccpTitle: "Carte Edahabia — en Algérie",
+        ccpSub: "Payez via BaridiMob ou carte dorée vers le compte CCP · puis envoyez le reçu sur WhatsApp",
+        ccpLabel: "N° de compte (CCP)",
         ccpName: "Au nom de :",
         copyNumber: "Copier le numéro",
-        ccpNote: "Après virement CCP, envoyez le reçu sur WhatsApp pour recevoir le code : ",
+        ccpNote: "Après paiement Edahabia / BaridiMob, envoyez le reçu sur WhatsApp pour recevoir le code : ",
         freeTitle: "Inscription gratuite :",
         freeBody: " Ajouter une pharmacie dans l'app est gratuit. L'abonnement sert uniquement au badge premium.",
         backApp: "Retour à l'application →",
@@ -153,22 +154,22 @@
       en: {
         title: "Pharmacy subscription — instant activation",
         subtitle: "Pay → activation code appears → enter it in the app",
-        priceNote: "Per month · or $4 via PayPal (instant activation)",
+        priceNote: "500 DZD Golden Card (Algeria) · or $4 PayPal (international)",
         yourCode: "Your activation code",
         copyCode: "Copy code",
         codeHelp: "Open the app ← Add your pharmacy ← Paste the code ← badge activates instantly",
         openApp: "Open the app →",
-        paypalTitle: "PayPal — instant activation",
-        paypalSub: "Algeria & international · code appears right after payment",
+        paypalTitle: "PayPal — international (instant activation)",
+        paypalSub: "For international users · code appears immediately after payment",
         paypalPrices: "Monthly $4 · Yearly $40",
         planMonthly: "Monthly $4",
         planYearly: "Yearly $40",
-        ccpTitle: "CCP — inside Algeria",
-        ccpSub: "Bank transfer is not auto-confirmed · use PayPal for instant activation",
-        ccpLabel: "CCP number",
+        ccpTitle: "Golden Card — Algeria",
+        ccpSub: "Pay via BaridiMob or Golden Card to the CCP account · then send the receipt on WhatsApp",
+        ccpLabel: "Account number (CCP)",
         ccpName: "Account name:",
         copyNumber: "Copy number",
-        ccpNote: "After CCP transfer, send the receipt on WhatsApp to get your code: ",
+        ccpNote: "After Golden Card / BaridiMob payment, send the receipt on WhatsApp to get your code: ",
         freeTitle: "Free registration:",
         freeBody: " Adding a pharmacy in the app is free. Subscription is only for the featured badge.",
         backApp: "Back to the app →",
