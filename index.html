@@ -3649,42 +3649,35 @@ out center tags;`;
 
       window.addEventListener("load", function () {
         navigator.serviceWorker
-          .register("./service-worker.js")
+          .register("./service-worker.js", { updateViaCache: "none" })
           .then(function (reg) {
-            // تحديث تلقائي بدون انتظار ضغط المستخدم
+            // تحديث فوري وتلقائي
             const applyUpdate = function (worker) {
-              if (!worker) {
-                window.location.reload();
-                return;
+              if (worker) {
+                try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
               }
-              try {
-                worker.postMessage({ type: "SKIP_WAITING" });
-              } catch (e) {}
-              // إن بقي waiting ولم يحدث controllerchange خلال ثانيتين — أعد التحميل
               setTimeout(function () {
-                if (reg.waiting) {
-                  try { reg.waiting.postMessage({ type: "SKIP_WAITING" }); } catch (e2) {}
+                if (!refreshing) {
+                  refreshing = true;
+                  window.location.reload();
                 }
-                window.location.reload();
-              }, 1500);
+              }, 400);
             };
 
-            if (reg.waiting) {
-              applyUpdate(reg.waiting);
-            }
+            if (reg.waiting) applyUpdate(reg.waiting);
 
             reg.addEventListener("updatefound", function () {
               const newWorker = reg.installing;
               if (!newWorker) return;
               newWorker.addEventListener("statechange", function () {
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                if (newWorker.state === "installed") {
                   applyUpdate(newWorker);
                 }
               });
             });
 
-            // فحص دوري + عند العودة للتطبيق (اكتشاف النسخة الجديدة بسرعة)
-            setInterval(function () { reg.update().catch(function () {}); }, 15 * 1000);
+            // فحص سريع جداً كل 5 ثوان + عند العودة للتطبيق
+            setInterval(function () { reg.update().catch(function () {}); }, 5 * 1000);
             document.addEventListener("visibilitychange", function () {
               if (document.visibilityState === "visible") reg.update().catch(function () {});
             });
