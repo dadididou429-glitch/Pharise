@@ -1,6 +1,6 @@
 // Pharis Service Worker — ultra-fast auto update
 // غيّر رقم الإصدار عند كل نشر حتى يتخلص المستخدمون من النسخة القديمة تلقائيًا.
-const CACHE_NAME = "pharis-v48-fast-reference-boot";
+const CACHE_NAME = "pharis-v49-visible-assembly-boot";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png"];
 
 const EXTERNAL = [
