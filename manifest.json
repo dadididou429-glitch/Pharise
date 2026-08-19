@@ -4,8 +4,8 @@
   "description": "Find open pharmacies near you in real time",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#022c22",
-  "theme_color": "#022c22",
+  "background_color": "#0a0a1a",
+  "theme_color": "#0a0a1a",
   "orientation": "portrait-primary",
   "icons": [
     {
