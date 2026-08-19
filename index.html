@@ -77,18 +77,24 @@
           playsinline
           webkit-playsinline
           preload="auto"
-          style="width:240px;height:240px;object-fit:contain;display:block;margin:0 auto;background:transparent;border:none;outline:none;mix-blend-mode:multiply;filter:contrast(1.05)"
+          style="width:240px;height:240px;object-fit:contain;display:block;margin:0 auto;background:transparent;border:none;outline:none"
         ></video>
       </div>
-      <h1 dir="ltr" style="margin:0 0 8px;font-size:34px;font-weight:800;color:#6ee7b7;letter-spacing:0.1em;animation:pharisTitle 2.2s ease-in-out infinite">Pharis</h1>
+      <h1 dir="ltr" style="margin:0 0 8px;font-size:34px;font-weight:800;color:#6ee7b7;letter-spacing:0.1em;animation:pharisTitle 1.4s ease-out forwards, pharisTitleLoop 2s ease-in-out 1.4s infinite">Pharis</h1>
       <p style="font-size:13px;color:#a7f3d0;margin:0;animation:pharisFade 2.2s ease-in-out infinite">جاري التحميل...</p>
     </div>
   </div>
   <div id="root"></div>
   <style>
     @keyframes pharisTitle{
-      0%,100%{opacity:0.88;transform:translateY(0);letter-spacing:0.08em;text-shadow:0 0 18px rgba(16,185,129,0.35)}
-      50%{opacity:1;transform:translateY(-4px);letter-spacing:0.16em;text-shadow:0 0 28px rgba(52,211,153,0.75)}
+      0%{opacity:0;transform:translateY(18px) scale(0.92);letter-spacing:0.28em}
+      35%{opacity:1;transform:translateY(0) scale(1);letter-spacing:0.12em}
+      70%{opacity:1;transform:translateY(-3px) scale(1.03);letter-spacing:0.1em;text-shadow:0 0 28px rgba(52,211,153,0.75)}
+      100%{opacity:1;transform:translateY(0) scale(1);letter-spacing:0.1em;text-shadow:0 0 18px rgba(16,185,129,0.4)}
+    }
+    @keyframes pharisTitleLoop{
+      0%,100%{transform:translateY(0);text-shadow:0 0 16px rgba(16,185,129,0.35)}
+      50%{transform:translateY(-4px);text-shadow:0 0 28px rgba(52,211,153,0.7)}
     }
     @keyframes pharisFade{
       0%,100%{opacity:0.5}
@@ -99,7 +105,7 @@
     (function () {
       var boot = document.getElementById("pharis-boot");
       var vid = document.getElementById("pharis-boot-video");
-      var minMs = 2800;
+      var minMs = 3500;
       var started = Date.now();
       var hidden = false;
       function tryPlay() {
@@ -3081,7 +3087,7 @@ out center tags;`;
             <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
               <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
                 <div className="mx-auto w-28 h-28 rounded-2xl overflow-hidden bg-transparent flex items-center justify-center">
-                  <video src="./splash-logo.mp4" autoPlay muted loop playsInline className="w-28 h-28 object-contain" style={{mixBlendMode:"multiply"}} />
+                  <video src="./splash-logo.mp4" autoPlay muted loop playsInline className="w-28 h-28 object-contain" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-brand-300" dir="ltr">Pharis</h2>

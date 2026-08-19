@@ -1,5 +1,5 @@
 // Pharis Service Worker — ultra-fast auto update
-const CACHE_NAME = "pharis-v44-boot-video";
+const CACHE_NAME = "pharis-v45-true-colors";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-logo.mp4"];
 
 const EXTERNAL = [
