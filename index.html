@@ -64,58 +64,55 @@
   </style>
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
-      <!-- شاشة فتح متحركة خارج root حتى لا يمحوها React فوراً -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:rtl;background:#022c22;overflow:hidden;transition:opacity 0.45s ease">
-    <div style="text-align:center;padding:24px 20px;max-width:340px">
-      <div style="width:240px;height:240px;margin:0 auto 14px;background:transparent">
-        <video
-          id="pharis-boot-video"
-          src="./splash-logo.mp4"
-          autoplay
-          muted
-          loop
-          playsinline
-          webkit-playsinline
-          preload="auto"
-          style="width:240px;height:240px;object-fit:contain;display:block;margin:0 auto;background:transparent;border:none;outline:none"
-        ></video>
+      <!-- شاشة فتح فخمة -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.5s ease">
+    <div style="text-align:center;padding:28px 20px;max-width:360px">
+      <div style="width:180px;height:180px;margin:0 auto 22px;perspective:900px">
+        <img src="./splash-icon.png" alt="Pharis" width="180" height="180"
+          style="width:180px;height:180px;display:block;margin:0 auto;background:transparent;border:none;animation:pharisLogo3d 3s ease-in-out infinite" />
       </div>
-      <h1 dir="ltr" style="margin:0 0 8px;font-size:34px;font-weight:800;color:#6ee7b7;letter-spacing:0.1em;animation:pharisTitle 1.4s ease-out forwards, pharisTitleLoop 2s ease-in-out 1.4s infinite">Pharis</h1>
-      <p style="font-size:13px;color:#a7f3d0;margin:0;animation:pharisFade 2.2s ease-in-out infinite">جاري التحميل...</p>
+      <div id="pharis-boot-name" aria-label="Pharis" style="height:42px;display:flex;justify-content:center;align-items:center;gap:1px;direction:ltr">
+        <span class="pn" style="--i:0">P</span>
+        <span class="pn" style="--i:1">h</span>
+        <span class="pn" style="--i:2">a</span>
+        <span class="pn" style="--i:3">r</span>
+        <span class="pn" style="--i:4">i</span>
+        <span class="pn" style="--i:5">s</span>
+      </div>
+      <p style="font-size:12px;color:#6ee7b7;margin:14px 0 0;opacity:0;animation:pharisSubIn 0.6s ease 1.35s forwards">جاري التحميل...</p>
     </div>
   </div>
   <div id="root"></div>
   <style>
-    @keyframes pharisTitle{
-      0%{opacity:0;transform:translateY(18px) scale(0.92);letter-spacing:0.28em}
-      35%{opacity:1;transform:translateY(0) scale(1);letter-spacing:0.12em}
-      70%{opacity:1;transform:translateY(-3px) scale(1.03);letter-spacing:0.1em;text-shadow:0 0 28px rgba(52,211,153,0.75)}
-      100%{opacity:1;transform:translateY(0) scale(1);letter-spacing:0.1em;text-shadow:0 0 18px rgba(16,185,129,0.4)}
+    #pharis-boot .pn{
+      display:inline-block;
+      font-size:34px;
+      font-weight:800;
+      color:#6ee7b7;
+      text-shadow:0 0 20px rgba(52,211,153,0.45);
+      opacity:0;
+      transform:translateY(22px) scale(0.6) rotate(-8deg);
+      animation:pharisLetterIn 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation-delay:calc(0.55s + var(--i) * 0.08s);
     }
-    @keyframes pharisTitleLoop{
-      0%,100%{transform:translateY(0);text-shadow:0 0 16px rgba(16,185,129,0.35)}
-      50%{transform:translateY(-4px);text-shadow:0 0 28px rgba(52,211,153,0.7)}
+    @keyframes pharisLetterIn{
+      0%{opacity:0;transform:translateY(28px) scale(0.5) rotate(-12deg);filter:blur(4px)}
+      70%{opacity:1;transform:translateY(-3px) scale(1.06) rotate(0deg);filter:blur(0)}
+      100%{opacity:1;transform:translateY(0) scale(1) rotate(0deg);filter:blur(0)}
     }
-    @keyframes pharisFade{
-      0%,100%{opacity:0.5}
-      50%{opacity:1}
+    @keyframes pharisLogo3d{
+      0%{transform:translateY(0) rotateY(-16deg) rotateX(6deg) scale(1)}
+      50%{transform:translateY(-16px) rotateY(16deg) rotateX(-5deg) scale(1.07)}
+      100%{transform:translateY(0) rotateY(-16deg) rotateX(6deg) scale(1)}
     }
+    @keyframes pharisSubIn{to{opacity:0.85}}
   </style>
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var vid = document.getElementById("pharis-boot-video");
-      var minMs = 3500;
+      var minMs = 3400;
       var started = Date.now();
       var hidden = false;
-      function tryPlay() {
-        if (!vid) return;
-        var p = vid.play();
-        if (p && p.catch) p.catch(function () {});
-      }
-      tryPlay();
-      document.addEventListener("DOMContentLoaded", tryPlay);
-      window.addEventListener("load", tryPlay);
       window.__pharisHideBoot = function () {
         if (hidden || !boot) return;
         var wait = Math.max(0, minMs - (Date.now() - started));
@@ -125,13 +122,12 @@
           boot.style.opacity = "0";
           setTimeout(function () {
             if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-          }, 480);
+          }, 520);
         }, wait);
       };
-      // أمان: أخفِ بعد 8 ثوانٍ حتى لو تأخر React
       setTimeout(function () {
         if (window.__pharisHideBoot) window.__pharisHideBoot();
-      }, 8000);
+      }, 9000);
     })();
   </script>
 
@@ -3086,8 +3082,8 @@ out center tags;`;
           {showOnboard && (
             <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
               <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
-                <div className="mx-auto w-28 h-28 rounded-2xl overflow-hidden bg-transparent flex items-center justify-center">
-                  <video src="./splash-logo.mp4" autoPlay muted loop playsInline className="w-28 h-28 object-contain" />
+                <div className="mx-auto w-24 h-24 bg-transparent flex items-center justify-center" style={{perspective:"600px"}}>
+                  <img src="./splash-icon.png" alt="Pharis" className="w-24 h-24 object-contain" style={{animation:"pharisLogo3d 3s ease-in-out infinite", background:"transparent"}} />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-brand-300" dir="ltr">Pharis</h2>

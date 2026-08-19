@@ -1,6 +1,6 @@
 // Pharis Service Worker — ultra-fast auto update
-const CACHE_NAME = "pharis-v45-true-colors";
-const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-logo.mp4"];
+const CACHE_NAME = "pharis-v46-luxury-boot";
+const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png", "./splash-logo.mp4"];
 
 const EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
