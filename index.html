@@ -65,17 +65,13 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-  <div id="pharis-boot" aria-label="Pharis" role="status">
-    <div class="pharis-boot-stage">
-      <div class="pharis-boot-card" aria-hidden="true">
-        <div class="pharis-boot-assembly">
-          <img id="pharis-boot-icon" class="pharis-boot-icon pharis-boot-icon-base" src="./splash-icon.png" alt="" width="220" height="220" />
-          <img class="pharis-boot-piece pharis-boot-piece-top" src="./splash-icon.png" alt="" width="220" height="220" />
-          <img class="pharis-boot-piece pharis-boot-piece-middle" src="./splash-icon.png" alt="" width="220" height="220" />
-          <img class="pharis-boot-piece pharis-boot-piece-bottom" src="./splash-icon.png" alt="" width="220" height="220" />
-        </div>
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.5s ease">
+    <div style="text-align:center;padding:28px 20px;max-width:360px">
+      <div style="width:180px;height:180px;margin:0 auto 22px">
+        <img src="./splash-icon-solid.png" alt="Pharis" width="180" height="180"
+          style="width:180px;height:180px;display:block;margin:0 auto;background:transparent;border:none;animation:pharisLogo3d 2.8s ease-in-out infinite" />
       </div>
-      <div class="pharis-boot-wordmark" id="pharis-boot-name" aria-label="Pharis" dir="ltr">
+      <div id="pharis-boot-name" aria-label="Pharis" style="height:42px;display:flex;justify-content:center;align-items:center;gap:1px;direction:ltr">
         <span class="pn" style="--i:0">P</span>
         <span class="pn" style="--i:1">h</span>
         <span class="pn" style="--i:2">a</span>
@@ -83,204 +79,40 @@
         <span class="pn" style="--i:4">i</span>
         <span class="pn" style="--i:5">s</span>
       </div>
+      <p style="font-size:12px;color:#6ee7b7;margin:14px 0 0;opacity:0;animation:pharisSubIn 0.6s ease 1.35s forwards">جاري التحميل...</p>
     </div>
   </div>
   <div id="root"></div>
   <style>
-    #pharis-boot{
-      position:fixed;
-      inset:0;
-      z-index:999999;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      background:#022c22;
-      color:#ecfdf5;
-      direction:ltr;
-      opacity:1;
-      transition:opacity .58s ease-in-out;
-      isolation:isolate;
-    }
-    #pharis-boot::before{
-      content:"";
-      position:absolute;
-      left:50%;
-      top:50%;
-      width:42vmax;
-      height:42vmax;
-      border:1px solid rgba(110,231,183,.055);
-      border-radius:50%;
-      transform:translate(-50%,-42%);
-      animation:pharisReferencePulse 3.6s ease-out infinite;
-      pointer-events:none;
-    }
-    .pharis-boot-stage{
-      position:relative;
-      z-index:1;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      width:100%;
-      min-height:100%;
-      padding:24px;
-      text-align:center;
-    }
-    .pharis-boot-card{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      width:min(56vw,250px);
-      aspect-ratio:1;
-      padding:10px;
-      overflow:hidden;
-      background:#fff;
-      border-radius:23%;
-      box-shadow:0 18px 42px rgba(0,0,0,.24),0 0 0 1px rgba(255,255,255,.75);
-      transform:translateY(10px) scale(.86);
-      opacity:0;
-      animation:pharisReferenceCardIn 1.1s cubic-bezier(.22,1,.36,1) .05s forwards, pharisReferenceFloat 3.8s ease-in-out 2.15s infinite;
-    }
-    .pharis-boot-assembly{
-      position:relative;
-      width:100%;
-      height:100%;
-      perspective:850px;
-      transform-style:preserve-3d;
-    }
-    .pharis-boot-icon,
-    .pharis-boot-piece{
-      display:block;
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      border-radius:17%;
-      background:#fff;
-    }
-    .pharis-boot-icon-base{
-      position:relative;
-      z-index:1;
-      opacity:0;
-      transform:scale(1.28);
-      animation:pharisIconBaseIn .58s ease-out 1.42s forwards;
-    }
-    .pharis-boot-piece{
-      position:absolute;
-      inset:0;
-      z-index:2;
-      opacity:.98;
-      pointer-events:none;
-      transform-origin:50% 50%;
-    }
-    .pharis-boot-piece-top{
-      clip-path:polygon(0 0,100% 0,100% 38%,0 42%);
-      transform:translate3d(-28px,-22px,26px) rotate(-7deg) scale(.94);
-      animation:pharisPieceTop 1.65s cubic-bezier(.22,1,.36,1) .12s forwards;
-    }
-    .pharis-boot-piece-middle{
-      clip-path:polygon(0 31%,100% 28%,100% 74%,0 76%);
-      transform:translate3d(31px,12px,38px) rotate(5deg) scale(.92);
-      animation:pharisPieceMiddle 1.55s cubic-bezier(.22,1,.36,1) .24s forwards;
-    }
-    .pharis-boot-piece-bottom{
-      clip-path:polygon(0 68%,100% 64%,100% 100%,0 100%);
-      transform:translate3d(-22px,27px,18px) rotate(-4deg) scale(.96);
-      animation:pharisPieceBottom 1.45s cubic-bezier(.22,1,.36,1) .34s forwards;
-    }
-    .pharis-boot-wordmark{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-height:28px;
-      margin-top:12px;
-      direction:ltr;
-    }
     #pharis-boot .pn{
       display:inline-block;
-      min-width:.53em;
-      font-size:clamp(21px,5.7vw,29px);
-      line-height:1;
-      font-weight:700;
-      letter-spacing:-.035em;
-      color:#a7f3d0;
-      text-shadow:0 2px 12px rgba(0,0,0,.25);
-      opacity:0;
-      transform:translateY(7px) scale(.9);
-      filter:blur(2px);
-      animation:pharisReferenceLetters .48s ease-out forwards;
-      animation-delay:calc(1.48s + var(--i) * .075s);
-    }
-    .pharis-boot-subtitle{
-      margin:12px 0 0;
+      font-size:34px;
+      font-weight:800;
       color:#6ee7b7;
-      font-size:11px;
-      font-weight:400;
+      text-shadow:0 0 20px rgba(52,211,153,0.45);
       opacity:0;
-      animation:pharisReferenceSubtitle .5s ease-out 2.15s forwards;
+      transform:translateY(22px) scale(0.6) rotate(-8deg);
+      animation:pharisLetterIn 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation-delay:calc(0.55s + var(--i) * 0.08s);
     }
-    @keyframes pharisIconBaseIn{
-      from{opacity:0;transform:scale(1.36)}
-      to{opacity:1;transform:scale(1.28)}
+    @keyframes pharisLetterIn{
+      0%{opacity:0;transform:translateY(16px);filter:blur(2px)}
+      100%{opacity:1;transform:translateY(0);filter:blur(0)}
     }
-    @keyframes pharisPieceTop{
-      0%{opacity:.98;transform:translate3d(-28px,-22px,26px) rotate(-7deg) scale(.94)}
-      72%{opacity:1;transform:translate3d(2px,-1px,4px) rotate(.6deg) scale(1.015)}
-      100%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
-    }
-    @keyframes pharisPieceMiddle{
-      0%{opacity:.98;transform:translate3d(31px,12px,38px) rotate(5deg) scale(.92)}
-      72%{opacity:1;transform:translate3d(-1px,1px,4px) rotate(-.5deg) scale(1.015)}
-      100%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
-    }
-    @keyframes pharisPieceBottom{
-      0%{opacity:.98;transform:translate3d(-22px,27px,18px) rotate(-4deg) scale(.96)}
-      72%{opacity:1;transform:translate3d(1px,0,4px) rotate(.4deg) scale(1.015)}
-      100%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
-    }
-    @keyframes pharisReferenceCardIn{
-      0%{opacity:0;transform:translateY(10px) scale(.86);filter:brightness(.78)}
-      65%{opacity:1;transform:translateY(-2px) scale(1.025);filter:brightness(1.04)}
-      100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}
-    }
-    @keyframes pharisReferenceFloat{
-      0%,100%{transform:translateY(0) scale(1)}
-      50%{transform:translateY(-5px) scale(1.012)}
-    }
-    @keyframes pharisReferenceLetters{
-      from{opacity:0;transform:translateY(7px) scale(.9);filter:blur(2px)}
-      to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
-    }
-    @keyframes pharisReferenceSubtitle{
-      from{opacity:0;transform:translateY(5px)}
-      to{opacity:.82;transform:translateY(0)}
-    }
-    @keyframes pharisReferencePulse{
-      0%,100%{opacity:.12;transform:translate(-50%,-42%) scale(.92)}
-      50%{opacity:.38;transform:translate(-50%,-42%) scale(1.04)}
-    }
-    /* حركة احتياطية للأيقونة داخل بطاقة الترحيب */
     @keyframes pharisLogo3d{
-      0%,100%{transform:translateY(0) scale(1)}
-      50%{transform:translateY(-6px) scale(1.035)}
+      0%,100%{transform:translateY(0) scale(1);opacity:1}
+      50%{transform:translateY(-8px) scale(1.03);opacity:1}
     }
     @keyframes pharisGlow{
-      0%,100%{filter:drop-shadow(0 8px 16px rgba(0,0,0,.22))}
-      50%{filter:drop-shadow(0 10px 22px rgba(16,185,129,.30))}
+      0%,100%{filter:none}
+      50%{filter:none}
     }
-    @media (prefers-reduced-motion:reduce){
-      #pharis-boot::before,.pharis-boot-card,#pharis-boot .pn,.pharis-boot-subtitle,.pharis-boot-piece,.pharis-boot-icon-base{animation:none!important}
-      .pharis-boot-card{opacity:1;transform:none}
-      .pharis-boot-icon-base{opacity:1;transform:scale(1.28)}
-      .pharis-boot-piece{display:none}
-      #pharis-boot .pn{opacity:1;transform:none;filter:none}
-      .pharis-boot-subtitle{opacity:.82}
-    }
+    @keyframes pharisSubIn{to{opacity:0.85}}
   </style>
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var minMs = 3200;
+      var minMs = 2600;
       var started = Date.now();
       var hidden = false;
       window.__pharisHideBoot = function () {
@@ -297,7 +129,7 @@
       };
       setTimeout(function () {
         if (window.__pharisHideBoot) window.__pharisHideBoot();
-      }, 6000);
+      }, 9000);
     })();
   </script>
 
@@ -3253,7 +3085,7 @@ out center tags;`;
             <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
               <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
                 <div className="mx-auto w-24 h-24 bg-transparent flex items-center justify-center">
-                  <img src="./splash-icon.png" alt="Pharis" className="w-24 h-24 object-contain" style={{animation:"pharisLogo3d 2.8s ease-in-out infinite, pharisGlow 2.8s ease-in-out infinite", background:"transparent"}} />
+                  <img src="./splash-icon-solid.png" alt="Pharis" className="w-24 h-24 object-contain" style={{animation:"pharisLogo3d 2.8s ease-in-out infinite, pharisGlow 2.8s ease-in-out infinite", background:"transparent"}} />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-brand-300" dir="ltr">Pharis</h2>

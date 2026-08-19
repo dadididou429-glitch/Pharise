@@ -1,7 +1,6 @@
 // Pharis Service Worker — ultra-fast auto update
-// غيّر رقم الإصدار عند كل نشر حتى يتخلص المستخدمون من النسخة القديمة تلقائيًا.
-const CACHE_NAME = "pharis-v49-visible-assembly-boot";
-const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png"];
+const CACHE_NAME = "pharis-v48-clean-icon";
+const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png", "./splash-icon-solid.png", "./splash-logo.mp4"];
 
 const EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
@@ -74,8 +73,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Same-origin app files: NETWORK FIRST (تحديث سريع للمستخدمين)
-  // لا نعيد استخدام HTML أو أصول الشاشة القديمة إذا كانت الشبكة متاحة.
+  // Same-origin app files: NETWORK FIRST (تحديث سريع)
   const isAppFile =
     event.request.mode === "navigate" ||
     url.pathname.endsWith(".html") ||
