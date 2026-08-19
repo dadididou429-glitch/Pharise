@@ -62,14 +62,37 @@
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
     .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
       /* Splash */
-    #pharis-boot{position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1f15}
-    #pharis-boot.hide{opacity:0;pointer-events:none;transition:opacity .6s ease}
-    #pharis-boot svg{animation:bootIn .7s ease forwards;opacity:0}
-    #pharis-boot .boot-name{margin-top:20px;font-family:Poppins,system-ui,sans-serif;font-size:40px;font-weight:900;letter-spacing:8px;color:#fff;opacity:0;animation:bootIn .5s .4s ease forwards}
-    #pharis-boot .boot-bar{position:absolute;bottom:60px;width:130px;height:2px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;opacity:0;animation:bootIn .3s .2s ease forwards}
-    #pharis-boot .boot-bar div{height:100%;width:0%;background:#22c55e;border-radius:2px;animation:barLoad 1.4s .2s ease forwards}
-    @keyframes bootIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes barLoad{from{width:0%}to{width:100%}}
+    /* Splash Screen */
+    #pharis-splash{position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#0d2b1a 0%,#06140c 100%);overflow:hidden}
+    #pharis-splash.done{opacity:0;pointer-events:none;transition:opacity .8s ease}
+    #pharis-splash .stage{position:relative;width:260px;height:300px}
+    #pharis-splash .stage .ripple{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);border:2px solid rgba(34,197,94,.25);border-radius:50%;animation:rippleOut 2s ease-out infinite}
+    #pharis-splash .stage .ripple:nth-child(2){animation-delay:.5s}
+    #pharis-splash .stage .ripple:nth-child(3){animation-delay:1s}
+    #pharis-splash .stage .glow{position:absolute;left:50%;bottom:35px;transform:translateX(-50%);width:100px;height:30px;background:radial-gradient(ellipse,rgba(34,197,94,.3) 0%,transparent 70%);animation:glowPulse 2s ease-in-out infinite}
+    #pharis-splash .stage .pin-wrap{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);animation:pinIn .7s ease forwards, pinFloat 3s ease-in-out infinite .7s;opacity:0}
+    #pharis-splash .stage .pin-wrap .shine{position:absolute;inset:-10px;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.3) 50%,transparent 60%);animation:shineSweep 2.5s ease-in-out infinite;border-radius:50%;pointer-events:none}
+    #pharis-splash .stage .capsule-wrap{position:absolute;left:50%;top:35%;width:180px;height:180px;transform:translate(-50%,-50%);animation:orbitPath 2.5s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
+    #pharis-splash .name{margin-top:28px;font-family:Poppins,system-ui,sans-serif;font-size:48px;font-weight:900;letter-spacing:10px;color:#fff;display:flex;gap:4px;direction:ltr}
+    #pharis-splash .name span{display:inline-block;opacity:0}
+    #pharis-splash .name span:nth-child(1){animation:letterIn .5s 1.6s cubic-bezier(.34,1.56,.64,1) forwards}
+    #pharis-splash .name span:nth-child(2){animation:letterIn .5s 1.75s cubic-bezier(.34,1.56,.64,1) forwards}
+    #pharis-splash .name span:nth-child(3){animation:letterIn .5s 1.9s cubic-bezier(.34,1.56,.64,1) forwards}
+    #pharis-splash .name span:nth-child(4){animation:letterIn .5s 2.05s cubic-bezier(.34,1.56,.64,1) forwards}
+    #pharis-splash .name span:nth-child(5){animation:letterIn .5s 2.2s cubic-bezier(.34,1.56,.64,1) forwards}
+    #pharis-splash .name span:nth-child(6){animation:letterIn .5s 2.35s cubic-bezier(.34,1.56,.64,1) forwards}
+    #pharis-splash .subtitle{margin-top:10px;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:6px;text-transform:uppercase;font-family:Poppins,system-ui,sans-serif;opacity:0;animation:fadeUp .5s 2.8s ease forwards}
+    #pharis-splash .bar{position:absolute;bottom:55px;width:150px;height:2px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;opacity:0;animation:fadeUp .3s .3s ease forwards}
+    #pharis-splash .bar div{height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:2px;animation:barFill 2s .3s ease forwards}
+    @keyframes rippleOut{0%{width:30px;height:15px;opacity:.7}100%{width:180px;height:90px;opacity:0}}
+    @keyframes glowPulse{0%,100%{opacity:.4;transform:translateX(-50%) scale(1)}50%{opacity:.8;transform:translateX(-50%) scale(1.3)}}
+    @keyframes pinIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) translateY(30px)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) translateY(0)}}
+    @keyframes pinFloat{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-6px)}}
+    @keyframes shineSweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+    @keyframes orbitPath{0%{transform:translate(-50%,-50%) rotate(0deg) scale(0);opacity:0}20%{transform:translate(-50%,-50%) rotate(180deg) scale(1.1);opacity:1}60%{transform:translate(-50%,-50%) rotate(540deg) scale(1);opacity:1}100%{transform:translate(-50%,-50%) rotate(720deg) scale(1);opacity:1}}
+    @keyframes letterIn{0%{opacity:0;transform:translateY(30px) scale(.4) rotate(-15deg);filter:blur(6px)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0);filter:blur(0)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes barFill{from{width:0%}to{width:100%}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,49 +102,95 @@
   </head>
 <body class="bg-brand-50 text-stone-900 antialiased" style="background:#0a0a1a;margin:0">
 
-<div id="pharis-boot">
-  <svg width="110" height="110" viewBox="0 0 200 200">
-    <defs>
-      <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4ade80"/><stop offset="50%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#16a34a"/></linearGradient>
-      <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#86efac"/><stop offset="100%" style="stop-color:#22c55e"/></linearGradient>
-    </defs>
-    <rect width="200" height="200" rx="40" fill="#fff"/>
-    <path d="M100 30 C65 30 38 57 38 93 C38 128 100 180 100 180 C100 180 162 128 162 93 C162 57 135 30 100 30 Z" fill="url(#pg)"/>
-    <circle cx="100" cy="88" r="32" fill="#fff"/>
-    <rect x="89" y="62" width="22" height="52" rx="3" fill="url(#cg)"/>
-    <rect x="74" y="77" width="52" height="22" rx="3" fill="url(#cg)"/>
-    <ellipse cx="76" cy="68" rx="14" ry="20" fill="rgba(255,255,255,0.2)" transform="rotate(-18 76 68)"/>
-  </svg>
-  <div class="boot-name">Pharis</div>
-  <div class="boot-bar"><div></div></div>
+<div id="pharis-splash">
+  <div class="stage">
+    <div class="ripple" style="width:30px;height:15px"></div>
+    <div class="ripple" style="width:30px;height:15px"></div>
+    <div class="ripple" style="width:30px;height:15px"></div>
+    <div class="glow"></div>
+    <div class="pin-wrap">
+      <svg width="180" height="200" viewBox="0 0 180 200" style="filter:drop-shadow(0 12px 30px rgba(0,0,0,.5))">
+        <defs>
+          <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4ade80"/><stop offset="50%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#16a34a"/></linearGradient>
+          <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#86efac"/><stop offset="100%" style="stop-color:#22c55e"/></linearGradient>
+        </defs>
+        <path d="M90 15 C58 15 32 40 32 75 C32 110 90 180 90 180 C90 180 148 110 148 75 C148 40 122 15 90 15 Z" fill="url(#pg)" stroke="#16a34a" stroke-width="1.5"/>
+        <circle cx="90" cy="72" r="34" fill="#fff" stroke="#e5e7eb" stroke-width=".5"/>
+        <rect x="80" y="48" width="20" height="48" rx="3" fill="url(#cg)"/>
+        <rect x="66" y="62" width="48" height="20" rx="3" fill="url(#cg)"/>
+        <ellipse cx="70" cy="55" rx="14" ry="22" fill="rgba(255,255,255,.2)" transform="rotate(-18 70 55)"/>
+      </svg>
+      <div class="shine"></div>
+    </div>
+    <div class="capsule-wrap">
+      <div style="position:absolute;left:50%;top:0;transform:translateX(-50%)">
+        <svg width="40" height="64" viewBox="0 0 40 64" style="filter:drop-shadow(0 6px 16px rgba(0,0,0,.4))">
+          <defs>
+            <linearGradient id="cw" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f8f8f8"/><stop offset="50%" style="stop-color:#fff"/><stop offset="100%" style="stop-color:#e8e8e8"/></linearGradient>
+            <linearGradient id="cr" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#dc2626"/><stop offset="50%" style="stop-color:#ef4444"/><stop offset="100%" style="stop-color:#b91c1c"/></linearGradient>
+          </defs>
+          <path d="M4 20 Q4 4 20 4 Q36 4 36 20 L36 32 L4 32 Z" fill="url(#cw)" stroke="#ddd" stroke-width=".5"/>
+          <path d="M4 32 L36 32 L36 44 Q36 60 20 60 Q4 60 4 44 Z" fill="url(#cr)"/>
+          <ellipse cx="15" cy="20" rx="6" ry="10" fill="rgba(255,255,255,.25)" transform="rotate(-15 15 20)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="name"><span>P</span><span>h</span><span>a</span><span>r</span><span>i</span><span>s</span></div>
+  <div class="subtitle">Find Your Pharmacy</div>
+  <div class="bar"><div></div></div>
 </div>
-<script>(function(){var b=document.getElementById('pharis-boot');if(!b)return;setTimeout(function(){b.classList.add('hide');},2200);setTimeout(function(){if(b)b.style.display='none';},2900);})();</script>
+<script>
+(function(){
+  var s=document.getElementById('pharis-splash');
+  if(!s)return;
+  // Audio context for sound effects
+  var audioCtx=null;
+  function playSound(freq,dur,type,vol,delay){
+    setTimeout(function(){
+      if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+      var osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+      osc.type=type||'sine';osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol||0.06,audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+      osc.connect(gain);gain.connect(audioCtx.destination);osc.start();osc.stop(audioCtx.currentTime+dur);
+    },delay||0);
+  }
+  function playNoise(dur,vol,delay){
+    setTimeout(function(){
+      if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+      var bufSize=audioCtx.sampleRate*dur,buffer=audioCtx.createBuffer(1,bufSize,audioCtx.sampleRate),data=buffer.getChannelData(0),gain=audioCtx.createGain();
+      for(var i=0;i<bufSize;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/bufSize,2);
+      var src=audioCtx.createBufferSource();src.buffer=buffer;
+      gain.gain.setValueAtTime(vol||0.03,audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+      src.connect(gain);gain.connect(audioCtx.destination);src.start();
+    },delay||0);
+  }
+  // Water drop sound for capsule orbit
+  playNoise(.4,.04,200);
+  playNoise(.3,.03,900);
+  // Musical pops for letters
+  playSound(880,.12,'sine',.05,1600);
+  playSound(1100,.12,'sine',.05,1750);
+  playSound(1320,.12,'sine',.05,1900);
+  playSound(880,.12,'sine',.05,2050);
+  playSound(1100,.12,'sine',.05,2200);
+  playSound(1320,.15,'sine',.06,2350);
+  // Final chime
+  playSound(523,.35,'sine',.05,2800);
+  playSound(659,.35,'sine',.05,2900);
+  playSound(784,.45,'sine',.06,3000);
+  // Auto-hide after 4 seconds
+  setTimeout(function(){s.classList.add('done');},4000);
+})();
+</script>
+
+
+
 
       
-    <script>
-    (function () {
-      var boot = document.getElementById("pharis-boot");
-      var minMs = 6500;
-      var started = Date.now();
-      var hidden = false;
-      window.__pharisHideBoot = function () {
-        if (hidden || !boot) return;
-        var wait = Math.max(0, minMs - (Date.now() - started));
-        setTimeout(function () {
-          if (hidden || !boot) return;
-          hidden = true;
-          boot.style.opacity = "0";
-          boot.style.transform = "scale(1.2)";
-          setTimeout(function () {
-            if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-          }, 900);
-        }, wait);
-      };
-      setTimeout(function () {
-        if (window.__pharisHideBoot) window.__pharisHideBoot();
-      }, 13000);
-    })();
-  </script>
+    
 
   <script>
     // Firebase
@@ -3903,5 +3972,6 @@ out center tags;`;
     }
   })();
   </script>
+<div id="root"></div>
 </body>
 </html>
