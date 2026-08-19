@@ -67,6 +67,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#0a0a1a">
   <style>html,body{background:#0a0a1a !important;margin:0}</style>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   </head>
 <body class="bg-brand-50 text-stone-900 antialiased" style="background:#0a0a1a;margin:0">
       <!-- شاشة فتح 3D فاخرة -->
@@ -4024,30 +4027,69 @@ out center tags;`;
   };
   </script>
 
-  <!-- Auto-Update Client -->
+  <!-- FAST AUTO-UPDATE CLIENT: < 5 seconds -->
   <script>
   (function(){
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('service-worker.js').then(function(reg){
-        // Check for updates every 15 seconds
-        setInterval(function(){reg.update();},15000);
-        // Listen for new service worker
-        reg.addEventListener('updatefound',function(){
-          var newWorker=reg.installing;
-          newWorker.addEventListener('statechange',function(){
-            if(newWorker.state==='installed'&&navigator.serviceWorker.controller){
-              // New version available - reload immediately
+    if(!('serviceWorker' in navigator)) return;
+
+    var CHECK_INTERVAL = 5000; // 5 seconds
+    var isReloading = false;
+
+    navigator.serviceWorker.register('service-worker.js?v=49').then(function(reg){
+      console.log('[Pharis] SW registered');
+
+      // Check for updates every 5 seconds
+      setInterval(function(){
+        reg.update().then(function(){
+          console.log('[Pharis] Update check done');
+        }).catch(function(e){
+          console.log('[Pharis] Update check failed', e);
+        });
+      }, CHECK_INTERVAL);
+
+      // Immediate first check
+      reg.update();
+
+      // When a new SW is found
+      reg.addEventListener('updatefound', function(){
+        var newWorker = reg.installing;
+        console.log('[Pharis] New SW found');
+
+        newWorker.addEventListener('statechange', function(){
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            console.log('[Pharis] New SW ready - reloading...');
+            if(!isReloading){
+              isReloading = true;
+              // Force skip waiting and reload
               newWorker.postMessage('skipWaiting');
-              window.location.reload();
+              newWorker.postMessage({type:'SKIP_WAITING'});
+              // Reload after short delay to let SW activate
+              setTimeout(function(){
+                window.location.reload(true);
+              }, 500);
             }
-          });
+          }
         });
       });
-      // Also reload when controller changes
-      navigator.serviceWorker.addEventListener('controllerchange',function(){
-        window.location.reload();
-      });
-    }
+    }).catch(function(e){
+      console.log('[Pharis] SW registration failed', e);
+    });
+
+    // Reload when controller changes (new SW activated)
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      console.log('[Pharis] Controller changed - reloading');
+      if(!isReloading){
+        isReloading = true;
+        window.location.reload(true);
+      }
+    });
+
+    // Listen for SW messages
+    navigator.serviceWorker.addEventListener('message', function(event){
+      if(event.data && event.data.type === 'SW_UPDATED'){
+        console.log('[Pharis] SW updated to', event.data.version);
+      }
+    });
   })();
   </script>
 </body>

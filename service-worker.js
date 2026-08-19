@@ -1,5 +1,5 @@
 // Pharis Service Worker — ultra-fast auto update
-const CACHE_NAME = "pharis-v48-clean-icon";
+const CACHE_NAME = "pharis-v49-fast-update";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png", "./splash-icon-solid.png", "./splash-logo.mp4"];
 
 const EXTERNAL = [
@@ -121,23 +121,20 @@ self.addEventListener("fetch", (event) => {
 });
 
 
-// ===== AUTO-UPDATE: Check every 30 seconds =====
+// ===== AUTO-UPDATE: Check every 5 seconds =====
 self.addEventListener('message', function(event) {
-  if (event.data === 'skipWaiting') {
+  if (event.data === 'skipWaiting' || event.data === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// Check for updates periodically
+// Check for updates every 5 seconds
 setInterval(function() {
   self.registration.update();
-}, 30000); // Every 30 seconds
+}, 5000);
 
-// Auto-claim clients on install
-self.addEventListener('install', function(event) {
-  self.skipWaiting();
-});
-
+// Also check immediately on activation
 self.addEventListener('activate', function(event) {
   event.waitUntil(self.clients.claim());
+  self.registration.update();
 });
