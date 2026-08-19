@@ -61,391 +61,77 @@
     .scrollbar-thin::-webkit-scrollbar { width: 4px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
     .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-  
-/* ===== PHARIS 3D SPLASH SCREEN ===== */
-.pharis-splash-overlay {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 999999;
-    overflow: hidden;
-    perspective: 1200px;
-    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.pharis-splash-overlay::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.pharis-splash-overlay.pharis-hidden {
-    opacity: 0;
-    transform: scale(1.15);
-    pointer-events: none;
-}
-
-/* 3D Capsule */
-.pharis-capsule-wrap {
-    width: 140px;
-    height: 220px;
-    position: relative;
-    transform-style: preserve-3d;
-    animation: pharisCapsuleFloat 3s ease-in-out infinite;
-}
-
-@keyframes pharisCapsuleFloat {
-    0%, 100% { transform: translateY(0) rotateX(10deg); }
-    50% { transform: translateY(-15px) rotateX(10deg); }
-}
-
-.pharis-capsule-3d {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    animation: pharisCapsuleSpin 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes pharisCapsuleSpin {
-    0% { transform: rotateY(0deg) rotateX(0deg) scale(0.3); opacity: 0; }
-    30% { transform: rotateY(180deg) rotateX(20deg) scale(1.1); opacity: 1; }
-    60% { transform: rotateY(360deg) rotateX(0deg) scale(1); opacity: 1; }
-    100% { transform: rotateY(360deg) rotateX(0deg) scale(1); opacity: 1; }
-}
-
-.pharis-capsule-svg {
-    width: 140px;
-    height: 220px;
-    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4)) drop-shadow(0 0 30px rgba(220,38,38,0.3));
-}
-
-.pharis-capsule-glow {
-    position: absolute;
-    width: 200px;
-    height: 280px;
-    background: radial-gradient(ellipse, rgba(220,38,38,0.15) 0%, transparent 70%);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: pharisGlowPulse 2s ease-in-out infinite;
-}
-
-@keyframes pharisGlowPulse {
-    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-}
-
-/* Scattered Letters */
-.pharis-splash-name {
-    margin-top: 40px;
-    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
-    font-size: 48px;
-    font-weight: 900;
-    letter-spacing: 8px;
-    color: #fff;
-    display: flex;
-    gap: 4px;
-    position: relative;
-}
-
-.pharis-splash-name .pharis-letter {
-    display: inline-block;
-    opacity: 0;
-    text-shadow: 0 0 40px rgba(255,255,255,0.5), 0 4px 8px rgba(0,0,0,0.3);
-}
-
-.pharis-splash-name .pharis-letter:nth-child(1) { animation: pharisScatterIn 0.6s 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.pharis-splash-name .pharis-letter:nth-child(2) { animation: pharisScatterIn 0.6s 1.95s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.pharis-splash-name .pharis-letter:nth-child(3) { animation: pharisScatterIn 0.6s 2.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.pharis-splash-name .pharis-letter:nth-child(4) { animation: pharisScatterIn 0.6s 2.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.pharis-splash-name .pharis-letter:nth-child(5) { animation: pharisScatterIn 0.6s 2.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.pharis-splash-name .pharis-letter:nth-child(6) { animation: pharisScatterIn 0.6s 2.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-
-@keyframes pharisScatterIn {
-    0% {
-        opacity: 0;
-        transform: translateX(var(--scatter-x, 0)) translateY(var(--scatter-y, 0)) rotate(var(--scatter-r, 0deg)) scale(0);
-        filter: blur(10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0) translateY(0) rotate(0deg) scale(1);
-        filter: blur(0);
-    }
-}
-
-/* Subtitle */
-.pharis-splash-subtitle {
-    margin-top: 16px;
-    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
-    font-size: 14px;
-    font-weight: 400;
-    color: rgba(255,255,255,0.6);
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    opacity: 0;
-    animation: pharisFadeUp 0.8s 3s ease forwards;
-}
-
-@keyframes pharisFadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Progress Bar */
-.pharis-loading-bar {
-    position: absolute;
-    bottom: 60px;
-    width: 200px;
-    height: 3px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 3px;
-    overflow: hidden;
-    opacity: 0;
-    animation: pharisFadeUp 0.5s 1s ease forwards;
-}
-
-.pharis-loading-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #dc2626, #ef4444, #22c55e);
-    border-radius: 3px;
-    animation: pharisLoadFill 2.5s 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes pharisLoadFill {
-    0% { width: 0%; }
-    100% { width: 100%; }
-}
-
-/* Geo Status */
-.pharis-geo-status {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 8px 20px;
-    border-radius: 20px;
-    color: #fff;
-    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
-    font-size: 13px;
-    display: none;
-    align-items: center;
-    gap: 8px;
-    z-index: 1000000;
-}
-
-.pharis-geo-status.active { display: flex; }
-
-.pharis-geo-spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255,255,255,0.2);
-    border-top-color: #22c55e;
-    border-radius: 50%;
-    animation: pharisSpin 0.6s linear infinite;
-}
-
-@keyframes pharisSpin {
-    to { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-    .pharis-splash-name {
-        font-size: 36px;
-        letter-spacing: 4px;
-    }
-    .pharis-capsule-wrap {
-        width: 110px;
-        height: 170px;
-    }
-    .pharis-capsule-svg {
-        width: 110px;
-        height: 170px;
-    }
-}
-</style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+  </style>
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
-
-<!-- ===== PHARIS 3D SPLASH SCREEN ===== -->
-<div class="pharis-splash-overlay" id="pharis-splash">
-  <div class="pharis-capsule-glow"></div>
-
-  <div class="pharis-capsule-wrap">
-    <div class="pharis-capsule-3d">
-      <svg class="pharis-capsule-svg" viewBox="0 0 140 220" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#f8f8f8"/>
-            <stop offset="50%" style="stop-color:#ffffff"/>
-            <stop offset="100%" style="stop-color:#e8e8e8"/>
-          </linearGradient>
-          <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#dc2626"/>
-            <stop offset="50%" style="stop-color:#ef4444"/>
-            <stop offset="100%" style="stop-color:#b91c1c"/>
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-
-        <path d="M20 70 Q20 20 70 20 Q120 20 120 70 L120 110 L20 110 Z" fill="url(#capGrad)" stroke="#ddd" stroke-width="1"/>
-        <path d="M20 110 L120 110 L120 150 Q120 200 70 200 Q20 200 20 150 Z" fill="url(#redGrad)"/>
-
-        <g transform="translate(70, 155)" filter="url(#glow)">
-          <rect x="-12" y="-4" width="24" height="8" rx="2" fill="#fff"/>
-          <rect x="-4" y="-12" width="8" height="24" rx="2" fill="#fff"/>
-        </g>
-
-        <g transform="translate(70, 65)" filter="url(#glow)">
-          <path d="M0 -18 C-10 -18 -16 -10 -16 0 C-16 12 0 26 0 26 C0 26 16 12 16 0 C16 -10 10 -18 0 -18 Z" fill="#22c55e"/>
-          <circle cx="0" cy="-2" r="6" fill="#fff"/>
-        </g>
-
-        <ellipse cx="50" cy="65" rx="15" ry="25" fill="rgba(255,255,255,0.3)" transform="rotate(-15 50 65)"/>
-        <ellipse cx="50" cy="155" rx="12" ry="20" fill="rgba(255,255,255,0.15)" transform="rotate(-15 50 155)"/>
-      </svg>
-    </div>
-  </div>
-
-  <div class="pharis-splash-name">
-    <span class="pharis-letter">P</span>
-    <span class="pharis-letter">h</span>
-    <span class="pharis-letter">a</span>
-    <span class="pharis-letter">r</span>
-    <span class="pharis-letter">i</span>
-    <span class="pharis-letter">s</span>
-  </div>
-
-  <div class="pharis-splash-subtitle">Find Your Pharmacy</div>
-
-  <div class="pharis-loading-bar">
-    <div class="pharis-loading-bar-fill"></div>
-  </div>
-</div>
-<!-- ===== END SPLASH SCREEN ===== -->
-
-<script>
-(function() {
-  'use strict';
-
-  // Randomize letter scatter
-  var letters = document.querySelectorAll('#pharis-splash .pharis-letter');
-  letters.forEach(function(letter) {
-    var x = (Math.random() - 0.5) * 300;
-    var y = (Math.random() - 0.5) * 200;
-    var r = (Math.random() - 0.5) * 120;
-    letter.style.setProperty('--scatter-x', x + 'px');
-    letter.style.setProperty('--scatter-y', y + 'px');
-    letter.style.setProperty('--scatter-r', r + 'deg');
-  });
-
-  // Auto-hide splash after animation
-  setTimeout(function() {
-    var splash = document.getElementById('pharis-splash');
-    if (splash) {
-      splash.classList.add('pharis-hidden');
-      setTimeout(function() {
-        if (splash && splash.parentNode) {
-          splash.parentNode.removeChild(splash);
-        }
-      }, 800);
-    }
-  }, 3800);
-
-  // Fast geolocation helper
-  window.pharisFastGeo = function(successCallback, errorCallback, timeoutMs) {
-    timeoutMs = timeoutMs || 5000;
-    var geoStatus = document.getElementById('pharis-geo-status');
-    var geoText = document.getElementById('pharis-geo-text');
-
-    if (geoStatus) geoStatus.classList.add('active');
-    if (geoText) geoText.textContent = 'Detecting location...';
-
-    var finished = false;
-    var timeout = setTimeout(function() {
-      if (!finished) {
-        finished = true;
-        if (geoStatus) geoStatus.classList.remove('active');
-        if (errorCallback) errorCallback(new Error('Timeout'));
-      }
-    }, timeoutMs);
-
-    if (!navigator.geolocation) {
-      clearTimeout(timeout);
-      finished = true;
-      if (geoStatus) geoStatus.classList.remove('active');
-      if (errorCallback) errorCallback(new Error('Geolocation not supported'));
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        if (finished) return;
-        finished = true;
-        clearTimeout(timeout);
-        if (geoText) geoText.textContent = 'Location found! ✓';
-        setTimeout(function() { if (geoStatus) geoStatus.classList.remove('active'); }, 1000);
-        if (successCallback) successCallback(pos);
-      },
-      function(err) {
-        navigator.geolocation.getCurrentPosition(
-          function(pos) {
-            if (finished) return;
-            finished = true;
-            clearTimeout(timeout);
-            if (geoText) geoText.textContent = 'Location found! ✓';
-            setTimeout(function() { if (geoStatus) geoStatus.classList.remove('active'); }, 1000);
-            if (successCallback) successCallback(pos);
-          },
-          function(err2) {
-            if (finished) return;
-            finished = true;
-            clearTimeout(timeout);
-            if (geoStatus) geoStatus.classList.remove('active');
-            if (errorCallback) errorCallback(err2);
-          },
-          { enableHighAccuracy: false, timeout: 3000, maximumAge: 300000 }
-        );
-      },
-      { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 60000 }
-    );
-  };
-})();
-</script>
-
-  <div id="root">
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#065f46;direction:rtl;background:#ecfdf5">
-      <div style="text-align:center;padding:24px">
-        <img src="./icon-192.png" alt="Pharis" width="72" height="72" style="border-radius:18px;margin:0 auto 16px;display:block;box-shadow:0 8px 24px rgba(2,44,34,0.15)" />
-        <div style="width:36px;height:36px;border:3px solid #10b981;border-top-color:transparent;border-radius:50%;margin:0 auto 14px;animation:spin 0.8s linear infinite"></div>
-        <p style="font-size:14px;opacity:0.75;margin:0 0 20px">جاري تحميل Pharis...</p>
-        <p style="font-size:11px;color:#57534e;margin:0;font-weight:500">© 2026 Pharis — جميع الحقوق محفوظة</p>
-        <p style="font-size:10px;color:#a8a29e;margin:4px 0 0" dir="ltr">All rights reserved</p>
+      <!-- شاشة فتح فخمة -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.5s ease">
+    <div style="text-align:center;padding:28px 20px;max-width:360px">
+      <div style="width:180px;height:180px;margin:0 auto 22px">
+        <img src="./splash-icon-solid.png" alt="Pharis" width="180" height="180"
+          style="width:180px;height:180px;display:block;margin:0 auto;background:transparent;border:none;animation:pharisLogo3d 2.8s ease-in-out infinite" />
       </div>
+      <div id="pharis-boot-name" aria-label="Pharis" style="height:42px;display:flex;justify-content:center;align-items:center;gap:1px;direction:ltr">
+        <span class="pn" style="--i:0">P</span>
+        <span class="pn" style="--i:1">h</span>
+        <span class="pn" style="--i:2">a</span>
+        <span class="pn" style="--i:3">r</span>
+        <span class="pn" style="--i:4">i</span>
+        <span class="pn" style="--i:5">s</span>
+      </div>
+      <p style="font-size:12px;color:#6ee7b7;margin:14px 0 0;opacity:0;animation:pharisSubIn 0.6s ease 1.35s forwards">جاري التحميل...</p>
     </div>
   </div>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  <div id="root"></div>
+  <style>
+    #pharis-boot .pn{
+      display:inline-block;
+      font-size:34px;
+      font-weight:800;
+      color:#6ee7b7;
+      text-shadow:0 0 20px rgba(52,211,153,0.45);
+      opacity:0;
+      transform:translateY(22px) scale(0.6) rotate(-8deg);
+      animation:pharisLetterIn 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation-delay:calc(0.55s + var(--i) * 0.08s);
+    }
+    @keyframes pharisLetterIn{
+      0%{opacity:0;transform:translateY(16px);filter:blur(2px)}
+      100%{opacity:1;transform:translateY(0);filter:blur(0)}
+    }
+    @keyframes pharisLogo3d{
+      0%,100%{transform:translateY(0) scale(1);opacity:1}
+      50%{transform:translateY(-8px) scale(1.03);opacity:1}
+    }
+    @keyframes pharisGlow{
+      0%,100%{filter:none}
+      50%{filter:none}
+    }
+    @keyframes pharisSubIn{to{opacity:0.85}}
+  </style>
+  <script>
+    (function () {
+      var boot = document.getElementById("pharis-boot");
+      var minMs = 2600;
+      var started = Date.now();
+      var hidden = false;
+      window.__pharisHideBoot = function () {
+        if (hidden || !boot) return;
+        var wait = Math.max(0, minMs - (Date.now() - started));
+        setTimeout(function () {
+          if (hidden || !boot) return;
+          hidden = true;
+          boot.style.opacity = "0";
+          setTimeout(function () {
+            if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+          }, 520);
+        }, wait);
+      };
+      setTimeout(function () {
+        if (window.__pharisHideBoot) window.__pharisHideBoot();
+      }, 9000);
+    })();
+  </script>
 
   <script>
     // Firebase
@@ -597,6 +283,38 @@
         payPaypalForeign: "أجنبي؟ ادفع عبر PayPal (تفعيل فوري)",
         payAccountName: "باسم",
         payCcpCopied: "تم نسخ رقم الحساب",
+        onboardTitle: "مرحباً بك في Pharis",
+        onboardSub: "أقرب صيدلية مفتوحة… في ثوانٍ",
+        onboard1: "اعثر على الصيدليات المفتوحة والقريبة منك فوراً",
+        onboard2: "فلاتر: مفتوحة · مناوبة ليلية · طوارئ",
+        onboard3: "خريطة واتجاهات واتصال مباشر",
+        onboard4: "الجزائر وأي بلد في العالم",
+        onboard5: "أبحث عن دواء — اطلب دواءً ناقصاً وتواصل مع من يساعد",
+        onboardBtn: "ابدأ الآن",
+        onboardSkip: "تخطي",
+        medBtn: "أبحث عن دواء",
+        medTitle: "أبحث عن دواء",
+        medSub: "انشر طلباً ليراه الصيادلة والمتطوعون — صالح لمدة 30 يوماً",
+        medName: "اسم الدواء",
+        medNamePh: "مثال: باراسيتامول 1000",
+        medCity: "المدينة / الولاية",
+        medCityPh: "مثال: سيدي بلعباس",
+        medWa: "رقم واتساب",
+        medWaPh: "05xxxxxxxx",
+        medNote: "ملاحظة (اختياري)",
+        medNotePh: "الجرعة أو تفاصيل مفيدة",
+        medPublish: "نشر الطلب",
+        medList: "الطلبات الحالية",
+        medEmpty: "لا توجد طلبات حالياً",
+        medContact: "تواصل واتساب",
+        medDisclaimer: "منصة تواصل فقط. لا بيع داخل التطبيق. لا استشارة طبية. تجنّب الأدوية المراقبة. التواصل على مسؤولية الطرفين.",
+        medSuccess: "تم نشر طلبك لمدة 30 يوماً",
+        medError: "تعذّر النشر. تحقق من البيانات أو الاتصال.",
+        medNeedName: "اكتب اسم الدواء",
+        medNeedWa: "أدخل رقم واتساب صحيح",
+        medExpires: "ينتهي",
+        medClose: "إغلاق",
+        medLoading: "جاري التحميل…",
         activationHint: "بعد الدفع عبر CCP أو PayPal يصلك كود التفعيل على واتساب",
         adminLoginTitle: "دخول المسؤول",
         loginBtn: "دخول", loginError: "بيانات غير صحيحة",
@@ -717,6 +435,38 @@
         payPaypalForeign: "Étranger ? Payez via PayPal (activation immédiate)",
         payAccountName: "Au nom de",
         payCcpCopied: "Numéro copié",
+        onboardTitle: "Bienvenue sur Pharis",
+        onboardSub: "La pharmacie ouverte la plus proche… en secondes",
+        onboard1: "Trouvez les pharmacies ouvertes près de vous",
+        onboard2: "Filtres : ouvertes · de garde · urgence",
+        onboard3: "Carte, itinéraire et appel direct",
+        onboard4: "Algérie et le monde entier",
+        onboard5: "Je cherche un médicament — demandez un médicament manquant",
+        onboardBtn: "Commencer",
+        onboardSkip: "Passer",
+        medBtn: "Je cherche un médicament",
+        medTitle: "Je cherche un médicament",
+        medSub: "Publiez une demande visible 30 jours pour pharmacies et bénévoles",
+        medName: "Nom du médicament",
+        medNamePh: "Ex. : Paracétamol 1000",
+        medCity: "Ville / wilaya",
+        medCityPh: "Ex. : Sidi Bel Abbès",
+        medWa: "Numéro WhatsApp",
+        medWaPh: "05xxxxxxxx",
+        medNote: "Note (optionnel)",
+        medNotePh: "Dosage ou détails utiles",
+        medPublish: "Publier la demande",
+        medList: "Demandes en cours",
+        medEmpty: "Aucune demande pour le moment",
+        medContact: "Contacter WhatsApp",
+        medDisclaimer: "Mise en relation uniquement. Pas de vente dans l'app. Pas de conseil médical. Évitez les médicaments contrôlés. Contact à vos risques.",
+        medSuccess: "Demande publiée pour 30 jours",
+        medError: "Échec de la publication. Vérifiez les données ou la connexion.",
+        medNeedName: "Indiquez le nom du médicament",
+        medNeedWa: "Entrez un numéro WhatsApp valide",
+        medExpires: "Expire le",
+        medClose: "Fermer",
+        medLoading: "Chargement…",
         activationHint: "Après paiement CCP/PayPal vous recevez le code sur WhatsApp",
         adminLoginTitle: "Connexion admin",
         loginBtn: "Se connecter", loginError: "Identifiants incorrects",
@@ -837,6 +587,38 @@
         payPaypalForeign: "Outside Algeria? Pay with PayPal (instant activation)",
         payAccountName: "Account name",
         payCcpCopied: "Account number copied",
+        onboardTitle: "Welcome to Pharis",
+        onboardSub: "Nearest open pharmacy… in seconds",
+        onboard1: "Find open pharmacies near you instantly",
+        onboard2: "Filters: open · night duty · emergency",
+        onboard3: "Map, directions and direct call",
+        onboard4: "Algeria and worldwide",
+        onboard5: "Looking for a medicine — request a missing medicine and get help",
+        onboardBtn: "Get started",
+        onboardSkip: "Skip",
+        medBtn: "Looking for a medicine",
+        medTitle: "Looking for a medicine",
+        medSub: "Post a request visible for 30 days to pharmacies and helpers",
+        medName: "Medicine name",
+        medNamePh: "e.g. Paracetamol 1000",
+        medCity: "City / region",
+        medCityPh: "e.g. Sidi Bel Abbès",
+        medWa: "WhatsApp number",
+        medWaPh: "05xxxxxxxx",
+        medNote: "Note (optional)",
+        medNotePh: "Dose or useful details",
+        medPublish: "Publish request",
+        medList: "Current requests",
+        medEmpty: "No requests yet",
+        medContact: "Contact on WhatsApp",
+        medDisclaimer: "Contact board only. No in-app sales. Not medical advice. Avoid controlled medicines. Contact at your own risk.",
+        medSuccess: "Request published for 30 days",
+        medError: "Could not publish. Check data or connection.",
+        medNeedName: "Enter the medicine name",
+        medNeedWa: "Enter a valid WhatsApp number",
+        medExpires: "Expires",
+        medClose: "Close",
+        medLoading: "Loading…",
         activationHint: "After CCP/PayPal payment you receive the code on WhatsApp",
         adminLoginTitle: "Admin login",
         loginBtn: "Log in", loginError: "Incorrect credentials",
@@ -1962,6 +1744,12 @@ out center tags;`;
       });
       const [userCount, setUserCount] = useState(null);
       const [showPayModal, setShowPayModal] = useState(false);
+      const [showOnboard, setShowOnboard] = useState(true);
+      const [showMedSearch, setShowMedSearch] = useState(false);
+      const [medRequests, setMedRequests] = useState([]);
+      const [medLoading, setMedLoading] = useState(false);
+      const [medSubmitting, setMedSubmitting] = useState(false);
+      const [medForm, setMedForm] = useState({ name: "", city: "", whatsapp: "", note: "" });
 
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
@@ -1982,6 +1770,69 @@ out center tags;`;
       const [formLocStatus, setFormLocStatus] = useState(null);
       const [submitting, setSubmitting] = useState(false);
       const [lastSubmit, setLastSubmit] = useState(0);
+
+      
+      // طلبات البحث عن دواء — مدة 30 يوماً
+      useEffect(() => {
+        if (!showMedSearch || !firebaseReady || !db) return;
+        setMedLoading(true);
+        const unsub = db.collection("medicine_requests")
+          .orderBy("createdAt", "desc")
+          .limit(50)
+          .onSnapshot(
+            (snap) => {
+              const now = Date.now();
+              const list = [];
+              snap.forEach((doc) => {
+                const d = doc.data() || {};
+                const exp = d.expiresAt && d.expiresAt.toMillis ? d.expiresAt.toMillis() : (d.expiresAtMs || 0);
+                if (exp && exp < now) return;
+                if (d.active === false) return;
+                list.push({ id: doc.id, ...d });
+              });
+              setMedRequests(list);
+              setMedLoading(false);
+            },
+            () => { setMedLoading(false); }
+          );
+        return () => unsub();
+      }, [showMedSearch]);
+
+      const normalizeWa = (raw) => {
+        let s = String(raw || "").replace(/\D/g, "");
+        if (s.startsWith("00213")) s = s.slice(2);
+        if (s.startsWith("0") && s.length === 10) s = "213" + s.slice(1);
+        if (s.length === 9 && s[0] === "5") s = "213" + s;
+        return s;
+      };
+
+      const submitMedRequest = async () => {
+        const name = (medForm.name || "").trim();
+        const wa = normalizeWa(medForm.whatsapp);
+        if (name.length < 2) { alert(t("medNeedName")); return; }
+        if (wa.length < 10) { alert(t("medNeedWa")); return; }
+        if (!firebaseReady || !db) { alert(t("medError")); return; }
+        setMedSubmitting(true);
+        try {
+          const expiresAt = firebase.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          await db.collection("medicine_requests").add({
+            medicineName: name.slice(0, 80),
+            city: (medForm.city || "").trim().slice(0, 60),
+            whatsapp: wa,
+            note: (medForm.note || "").trim().slice(0, 200),
+            active: true,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            expiresAt,
+            expiresAtMs: Date.now() + 30 * 24 * 60 * 60 * 1000
+          });
+          setMedForm({ name: "", city: "", whatsapp: "", note: "" });
+          alert(t("medSuccess"));
+        } catch (e) {
+          console.warn(e);
+          alert(t("medError"));
+        }
+        setMedSubmitting(false);
+      };
 
       const t = useCallback((key, vars) => tr(lang, key, vars), [lang]);
       const dir = lang === "ar" ? "rtl" : "ltr";
@@ -2955,9 +2806,14 @@ out center tags;`;
             )}
 
 
-            {/* Pharmacy subscription CTA — الدفع من داخل التطبيق */}
+            {/* Pharmacy subscription CTA — مخفي مؤقتاً (الرابط المباشر pharmacy-owner.html ما زال يعمل) */}
+            {false && (
             <button type="button" onClick={() => setShowPayModal(true)} className="mt-2 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
               🏥 {t("aboutMoney")}
+            </button>
+            )}
+            <button type="button" onClick={() => setShowMedSearch(true)} className="mt-2 block w-full text-center bg-yellow-400 text-yellow-950 border-2 border-yellow-500 rounded-xl py-2.5 text-xs font-bold hover:bg-yellow-300 transition shadow-md shadow-yellow-500/20">
+              💊 {t("medBtn")}
             </button>
 
             {/* Stats */}
@@ -3152,6 +3008,122 @@ out center tags;`;
           </main>
 
 
+          {/* خاصية أبحث عن دواء — أصفر مميز · 30 يوماً */}
+          {showMedSearch && (
+            <div className="fixed inset-0 z-[85] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" onClick={() => !medSubmitting && setShowMedSearch(false)}>
+              <div className="w-full max-w-lg bg-yellow-50 dark:bg-brand-950 border-2 border-yellow-400 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} dir={lang === "ar" ? "rtl" : "ltr"}>
+                <div className="sticky top-0 bg-yellow-400 text-yellow-950 px-4 py-3 flex items-center justify-between z-10">
+                  <div>
+                    <h3 className="font-bold text-base">💊 {t("medTitle")}</h3>
+                    <p className="text-[11px] opacity-90">{t("medSub")}</p>
+                  </div>
+                  <button type="button" onClick={() => setShowMedSearch(false)} className="text-2xl leading-none px-2 font-bold">×</button>
+                </div>
+
+                <div className="p-4 space-y-4">
+                  <p className="text-[11px] text-amber-900 dark:text-yellow-200/90 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-xl px-3 py-2 leading-relaxed">
+                    {t("medDisclaimer")}
+                  </p>
+
+                  <div className="space-y-2 bg-white dark:bg-brand-900 border border-yellow-300 dark:border-yellow-700 rounded-xl p-3">
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medName")}</label>
+                    <input value={medForm.name} onChange={(e) => setMedForm(f => ({...f, name: e.target.value}))} placeholder={t("medNamePh")} className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-yellow-500" maxLength={80} />
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medCity")}</label>
+                    <input value={medForm.city} onChange={(e) => setMedForm(f => ({...f, city: e.target.value}))} placeholder={t("medCityPh")} className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-yellow-500" maxLength={60} />
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medWa")}</label>
+                    <input value={medForm.whatsapp} onChange={(e) => setMedForm(f => ({...f, whatsapp: e.target.value}))} placeholder={t("medWaPh")} dir="ltr" className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-yellow-500" maxLength={15} />
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medNote")}</label>
+                    <textarea value={medForm.note} onChange={(e) => setMedForm(f => ({...f, note: e.target.value}))} placeholder={t("medNotePh")} rows={2} className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-yellow-500" maxLength={200} />
+                    <button type="button" disabled={medSubmitting} onClick={submitMedRequest} className="w-full py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-yellow-950 font-bold text-sm">
+                      {medSubmitting ? "…" : t("medPublish")}
+                    </button>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 mb-2">{t("medList")}</h4>
+                    {medLoading && <p className="text-xs text-brand-300">{t("medLoading")}</p>}
+                    {!medLoading && medRequests.length === 0 && (
+                      <p className="text-xs text-brand-400 bg-brand-900/30 rounded-lg px-3 py-4 text-center">{t("medEmpty")}</p>
+                    )}
+                    <div className="space-y-2">
+                      {medRequests.map((r) => {
+                        const expDate = r.expiresAtMs ? new Date(r.expiresAtMs) : (r.expiresAt && r.expiresAt.toDate ? r.expiresAt.toDate() : null);
+                        const expStr = expDate ? expDate.toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB") : "";
+                        const waMsg = encodeURIComponent(
+                          (lang === "ar" ? "مرحبا، بخصوص طلب الدواء: " : lang === "fr" ? "Bonjour, concernant la demande : " : "Hello, about the medicine request: ") + (r.medicineName || "")
+                        );
+                        return (
+                          <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/80 dark:border-yellow-700 rounded-xl p-3">
+                            <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
+                            {r.city ? <p className="text-[11px] text-brand-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
+                            {r.note ? <p className="text-[11px] text-brand-600 dark:text-brand-200 mt-1">{r.note}</p> : null}
+                            {expStr ? <p className="text-[10px] text-brand-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
+                            <a
+                              href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-flex items-center justify-center w-full py-2 rounded-lg bg-[#25D366] text-white text-xs font-bold"
+                            >
+                              {t("medContact")}
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <button type="button" onClick={() => setShowMedSearch(false)} className="w-full py-2 text-xs text-brand-400 hover:text-brand-200">
+                    {t("medClose")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* شاشة توضيح فكرة التطبيق عند أول دخول */}
+          {showOnboard && (
+            <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
+              <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
+                <div className="mx-auto w-24 h-24 bg-transparent flex items-center justify-center">
+                  <img src="./splash-icon-solid.png" alt="Pharis" className="w-24 h-24 object-contain" style={{animation:"pharisLogo3d 2.8s ease-in-out infinite, pharisGlow 2.8s ease-in-out infinite", background:"transparent"}} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-brand-300" dir="ltr">Pharis</h2>
+                  <p className="text-sm text-brand-200 mt-1">{t("onboardTitle")}</p>
+                  <p className="text-xs text-emerald-400/90 mt-2 font-medium">{t("onboardSub")}</p>
+                </div>
+                <ul className="text-start text-sm text-brand-100 space-y-2.5">
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">📍</span><span>{t("onboard1")}</span></li>
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🌙</span><span>{t("onboard2")}</span></li>
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🗺️</span><span>{t("onboard3")}</span></li>
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🌍</span><span>{t("onboard4")}</span></li>
+                  <li className="flex gap-2 items-start bg-yellow-400/20 border border-yellow-500/40 rounded-xl px-3 py-2"><span className="text-yellow-400">💊</span><span className="text-yellow-100">{t("onboard5")}</span></li>
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setShowOnboard(false)}
+                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm"
+                >
+                  {t("onboardBtn")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowOnboard(false); setShowMedSearch(true); }}
+                  className="w-full py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-bold text-sm border-2 border-yellow-500"
+                >
+                  💊 {t("medBtn")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowOnboard(false)}
+                  className="text-xs text-brand-400 hover:text-brand-200"
+                >
+                  {t("onboardSkip")}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* نافذة الدفع بالبطاقة الذهبية من داخل التطبيق */}
           {showPayModal && (
             <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" onClick={() => setShowPayModal(false)}>
@@ -3238,7 +3210,8 @@ out center tags;`;
               </div>
             </div>
 
-<p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>
+{/* aboutMoney مخفي مؤقتاً */}
+            {false && <p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>}
             <div className="flex items-center justify-center gap-3 text-[11px]">
               <a href="./privacy.html" className="text-brand-700 dark:text-brand-300 underline underline-offset-2">{t("privacy")}</a>
               <span className="text-stone-300 dark:text-brand-700">·</span>
@@ -3491,8 +3464,13 @@ out center tags;`;
                       className="w-full bg-white dark:bg-black border border-violet-200 dark:border-violet-700 rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-violet-500"
                     />
                     <p className="text-[10px] text-violet-600 dark:text-violet-400 leading-relaxed">{t("activationHint")}</p>
+                    {/* اشتراك مميز — مخفي مؤقتاً */}
+                    {false && (
+                    <>
                     <button type="button" onClick={() => setShowPayModal(true)} className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline block text-start">⭐ {t("upgradeFeatured")} — {lang === "ar" ? "ادفع بالبطاقة الذهبية" : lang === "fr" ? "Payer par Edahabia" : "Pay with Golden Card"}</button>
                     <a href="./pharmacy-owner.html" className="text-[10px] text-blue-600 dark:text-blue-300 underline block mt-1">{t("payPaypalForeign")}</a>
+                    </>
+                    )}
                   </div>
 
                   <button
@@ -3683,6 +3661,10 @@ out center tags;`;
         <PharisApp />
       </ErrorBoundary>
     );
+    if (typeof window.__pharisHideBoot === "function") {
+      // انتظر قليلاً حتى يجهز التطبيق مع إبقاء الأنيميشن ظاهر ~2.8ث
+      setTimeout(function () { window.__pharisHideBoot(); }, 600);
+    }
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
@@ -3697,35 +3679,44 @@ out center tags;`;
 
       navigator.serviceWorker.addEventListener("message", function (event) {
         if (event.data && event.data.type === "SW_UPDATED") {
-          // نسخت جديدة فعّالة — أعد التحميل إن لم يكن الزر مضغوطاً بعد
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
         }
       });
 
       window.addEventListener("load", function () {
         navigator.serviceWorker
-          .register("./service-worker.js")
+          .register("./service-worker.js", { updateViaCache: "none" })
           .then(function (reg) {
-            const promptUpdate = function (worker) {
-              if (worker) showUpdateBanner(worker);
-              else showUpdateBanner(null);
+            // تحديث فوري وتلقائي
+            const applyUpdate = function (worker) {
+              if (worker) {
+                try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+              }
+              setTimeout(function () {
+                if (!refreshing) {
+                  refreshing = true;
+                  window.location.reload();
+                }
+              }, 400);
             };
 
-            if (reg.waiting) {
-              promptUpdate(reg.waiting);
-            }
+            if (reg.waiting) applyUpdate(reg.waiting);
 
             reg.addEventListener("updatefound", function () {
               const newWorker = reg.installing;
               if (!newWorker) return;
               newWorker.addEventListener("statechange", function () {
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                  promptUpdate(newWorker);
+                if (newWorker.state === "installed") {
+                  applyUpdate(newWorker);
                 }
               });
             });
 
-            // فحص دوري + عند العودة للتطبيق
-            setInterval(function () { reg.update().catch(function () {}); }, 20 * 1000);
+            // فحص سريع جداً كل 5 ثوان + عند العودة للتطبيق
+            setInterval(function () { reg.update().catch(function () {}); }, 5 * 1000);
             document.addEventListener("visibilitychange", function () {
               if (document.visibilityState === "visible") reg.update().catch(function () {});
             });
@@ -3869,11 +3860,5 @@ out center tags;`;
       window.dispatchEvent(new Event("pharis-installable"));
     });
   </script>
-
-<!-- Geo Status Indicator -->
-<div class="pharis-geo-status" id="pharis-geo-status">
-  <div class="pharis-geo-spinner"></div>
-  <span id="pharis-geo-text">Detecting location...</span>
-</div>
 </body>
 </html>
