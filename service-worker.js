@@ -1,5 +1,5 @@
 // Pharis Service Worker — ultra-fast auto update
-const CACHE_NAME = "pharis-v49-fast-update";
+const CACHE_NAME = "pharis-v50-smooth";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png", "./splash-icon-solid.png", "./splash-logo.mp4"];
 
 const EXTERNAL = [
