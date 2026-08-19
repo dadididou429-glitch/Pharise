@@ -2750,10 +2750,12 @@ out center tags;`;
             )}
 
 
-            {/* Pharmacy subscription CTA — الدفع من داخل التطبيق */}
+            {/* Pharmacy subscription CTA — مخفي مؤقتاً (الرابط المباشر pharmacy-owner.html ما زال يعمل) */}
+            {false && (
             <button type="button" onClick={() => setShowPayModal(true)} className="mt-2 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
               🏥 {t("aboutMoney")}
             </button>
+            )}
             <button type="button" onClick={() => setShowMedSearch(true)} className="mt-2 block w-full text-center bg-yellow-400 text-yellow-950 border-2 border-yellow-500 rounded-xl py-2.5 text-xs font-bold hover:bg-yellow-300 transition shadow-md shadow-yellow-500/20">
               💊 {t("medBtn")}
             </button>
@@ -3152,7 +3154,8 @@ out center tags;`;
               </div>
             </div>
 
-<p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>
+{/* aboutMoney مخفي مؤقتاً */}
+            {false && <p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>}
             <div className="flex items-center justify-center gap-3 text-[11px]">
               <a href="./privacy.html" className="text-brand-700 dark:text-brand-300 underline underline-offset-2">{t("privacy")}</a>
               <span className="text-stone-300 dark:text-brand-700">·</span>
@@ -3405,8 +3408,13 @@ out center tags;`;
                       className="w-full bg-white dark:bg-black border border-violet-200 dark:border-violet-700 rounded-xl px-3 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-violet-500"
                     />
                     <p className="text-[10px] text-violet-600 dark:text-violet-400 leading-relaxed">{t("activationHint")}</p>
+                    {/* اشتراك مميز — مخفي مؤقتاً */}
+                    {false && (
+                    <>
                     <button type="button" onClick={() => setShowPayModal(true)} className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline block text-start">⭐ {t("upgradeFeatured")} — {lang === "ar" ? "ادفع بالبطاقة الذهبية" : lang === "fr" ? "Payer par Edahabia" : "Pay with Golden Card"}</button>
                     <a href="./pharmacy-owner.html" className="text-[10px] text-blue-600 dark:text-blue-300 underline block mt-1">{t("payPaypalForeign")}</a>
+                    </>
+                    )}
                   </div>
 
                   <button
