@@ -188,10 +188,55 @@
       100%{width:100%}
     }
   </style>
+  <!-- Sound Effects -->
   <script>
+  (function(){
+    var ctx=null;
+    function initAudio(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();}
+    function playTone(freq,duration,type,vol,delay){
+      setTimeout(function(){
+        if(!ctx)initAudio();
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.type=type||'sine';o.frequency.setValueAtTime(freq,ctx.currentTime);
+        g.gain.setValueAtTime(vol||0.08,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+duration);
+        o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+duration);
+      },delay||0);
+    }
+    function playNoise(duration,vol,delay){
+      setTimeout(function(){
+        if(!ctx)initAudio();
+        var bufSize=ctx.sampleRate*duration,buffer=ctx.createBuffer(1,bufSize,ctx.sampleRate),
+            data=buffer.getChannelData(0),g=ctx.createGain();
+        for(var i=0;i<bufSize;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/bufSize,2);
+        var src=ctx.createBufferSource();src.buffer=buffer;
+        g.gain.setValueAtTime(vol||0.03,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+duration);
+        src.connect(g);g.connect(ctx.destination);src.start();
+      },delay||0);
+    }
+    // Capsule orbit whoosh
+    playNoise(0.6,0.04,300);
+    playNoise(0.5,0.03,1200);
+    // Letter pops
+    playTone(880,0.15,'sine',0.06,2200);
+    playTone(1100,0.15,'sine',0.06,2350);
+    playTone(1320,0.15,'sine',0.06,2500);
+    playTone(880,0.15,'sine',0.06,2650);
+    playTone(1100,0.15,'sine',0.06,2800);
+    playTone(1320,0.2,'sine',0.08,2950);
+    // Final chime
+    playTone(523,0.4,'sine',0.06,3400);
+    playTone(659,0.4,'sine',0.06,3500);
+    playTone(784,0.5,'sine',0.07,3600);
+    // Subtle ambient hum during pin tilt
+    playTone(120,2,'triangle',0.02,0);
+  })();
+  </script>
+    <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var minMs = 4200;
+      var minMs = 6500;
       var started = Date.now();
       var hidden = false;
       window.__pharisHideBoot = function () {
@@ -209,7 +254,7 @@
       };
       setTimeout(function () {
         if (window.__pharisHideBoot) window.__pharisHideBoot();
-      }, 9000);
+      }, 13000);
     })();
   </script>
 
@@ -3965,6 +4010,33 @@ out center tags;`;
       {enableHighAccuracy:true,timeout:timeout,maximumAge:30000}
     );
   };
+  </script>
+
+  <!-- Auto-Update Client -->
+  <script>
+  (function(){
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('service-worker.js').then(function(reg){
+        // Check for updates every 15 seconds
+        setInterval(function(){reg.update();},15000);
+        // Listen for new service worker
+        reg.addEventListener('updatefound',function(){
+          var newWorker=reg.installing;
+          newWorker.addEventListener('statechange',function(){
+            if(newWorker.state==='installed'&&navigator.serviceWorker.controller){
+              // New version available - reload immediately
+              newWorker.postMessage('skipWaiting');
+              window.location.reload();
+            }
+          });
+        });
+      });
+      // Also reload when controller changes
+      navigator.serviceWorker.addEventListener('controllerchange',function(){
+        window.location.reload();
+      });
+    }
+  })();
   </script>
 </body>
 </html>

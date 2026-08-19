@@ -119,3 +119,25 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+
+// ===== AUTO-UPDATE: Check every 30 seconds =====
+self.addEventListener('message', function(event) {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
+
+// Check for updates periodically
+setInterval(function() {
+  self.registration.update();
+}, 30000); // Every 30 seconds
+
+// Auto-claim clients on install
+self.addEventListener('install', function(event) {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(self.clients.claim());
+});
