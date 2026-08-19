@@ -68,7 +68,12 @@
   <div id="pharis-boot" aria-label="Pharis" role="status">
     <div class="pharis-boot-stage">
       <div class="pharis-boot-card" aria-hidden="true">
-        <img id="pharis-boot-icon" class="pharis-boot-icon" src="./splash-icon.png" alt="" width="220" height="220" />
+        <div class="pharis-boot-assembly">
+          <img id="pharis-boot-icon" class="pharis-boot-icon pharis-boot-icon-base" src="./splash-icon.png" alt="" width="220" height="220" />
+          <img class="pharis-boot-piece pharis-boot-piece-top" src="./splash-icon.png" alt="" width="220" height="220" />
+          <img class="pharis-boot-piece pharis-boot-piece-middle" src="./splash-icon.png" alt="" width="220" height="220" />
+          <img class="pharis-boot-piece pharis-boot-piece-bottom" src="./splash-icon.png" alt="" width="220" height="220" />
+        </div>
       </div>
       <div class="pharis-boot-wordmark" id="pharis-boot-name" aria-label="Pharis" dir="ltr">
         <span class="pn" style="--i:0">P</span>
@@ -138,14 +143,51 @@
       opacity:0;
       animation:pharisReferenceCardIn .92s cubic-bezier(.22,1,.36,1) .12s forwards, pharisReferenceFloat 3.8s ease-in-out 1.2s infinite;
     }
-    .pharis-boot-icon{
+    .pharis-boot-assembly{
+      position:relative;
+      width:100%;
+      height:100%;
+      perspective:850px;
+      transform-style:preserve-3d;
+    }
+    .pharis-boot-icon,
+    .pharis-boot-piece{
       display:block;
       width:100%;
       height:100%;
       object-fit:contain;
       border-radius:17%;
       background:#fff;
+    }
+    .pharis-boot-icon-base{
+      position:relative;
+      z-index:1;
+      opacity:0;
       transform:scale(1.28);
+      animation:pharisIconBaseIn .7s ease-out .78s forwards;
+    }
+    .pharis-boot-piece{
+      position:absolute;
+      inset:0;
+      z-index:2;
+      opacity:.98;
+      pointer-events:none;
+      transform-origin:50% 50%;
+    }
+    .pharis-boot-piece-top{
+      clip-path:polygon(0 0,100% 0,100% 38%,0 42%);
+      transform:translate3d(-28px,-22px,26px) rotate(-7deg) scale(.94);
+      animation:pharisPieceTop .9s cubic-bezier(.22,1,.36,1) .08s forwards;
+    }
+    .pharis-boot-piece-middle{
+      clip-path:polygon(0 31%,100% 28%,100% 74%,0 76%);
+      transform:translate3d(31px,12px,38px) rotate(5deg) scale(.92);
+      animation:pharisPieceMiddle .88s cubic-bezier(.22,1,.36,1) .16s forwards;
+    }
+    .pharis-boot-piece-bottom{
+      clip-path:polygon(0 68%,100% 64%,100% 100%,0 100%);
+      transform:translate3d(-22px,27px,18px) rotate(-4deg) scale(.96);
+      animation:pharisPieceBottom .82s cubic-bezier(.22,1,.36,1) .22s forwards;
     }
     .pharis-boot-wordmark{
       display:flex;
@@ -178,6 +220,25 @@
       opacity:0;
       animation:pharisReferenceSubtitle .45s ease-out 1.1s forwards;
     }
+    @keyframes pharisIconBaseIn{
+      from{opacity:0;transform:scale(1.36)}
+      to{opacity:1;transform:scale(1.28)}
+    }
+    @keyframes pharisPieceTop{
+      0%{opacity:.98;transform:translate3d(-28px,-22px,26px) rotate(-7deg) scale(.94)}
+      72%{opacity:1;transform:translate3d(2px,-1px,4px) rotate(.6deg) scale(1.015)}
+      100%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
+    }
+    @keyframes pharisPieceMiddle{
+      0%{opacity:.98;transform:translate3d(31px,12px,38px) rotate(5deg) scale(.92)}
+      72%{opacity:1;transform:translate3d(-1px,1px,4px) rotate(-.5deg) scale(1.015)}
+      100%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
+    }
+    @keyframes pharisPieceBottom{
+      0%{opacity:.98;transform:translate3d(-22px,27px,18px) rotate(-4deg) scale(.96)}
+      72%{opacity:1;transform:translate3d(1px,0,4px) rotate(.4deg) scale(1.015)}
+      100%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
+    }
     @keyframes pharisReferenceCardIn{
       0%{opacity:0;transform:translateY(10px) scale(.86);filter:brightness(.78)}
       65%{opacity:1;transform:translateY(-2px) scale(1.025);filter:brightness(1.04)}
@@ -209,9 +270,10 @@
       50%{filter:drop-shadow(0 10px 22px rgba(16,185,129,.30))}
     }
     @media (prefers-reduced-motion:reduce){
-      #pharis-boot::before,.pharis-boot-card,#pharis-boot .pn,.pharis-boot-subtitle{animation:none!important}
+      #pharis-boot::before,.pharis-boot-card,#pharis-boot .pn,.pharis-boot-subtitle,.pharis-boot-piece,.pharis-boot-icon-base{animation:none!important}
       .pharis-boot-card{opacity:1;transform:none}
-      .pharis-boot-icon{transform:scale(1.28)}
+      .pharis-boot-icon-base{opacity:1;transform:scale(1.28)}
+      .pharis-boot-piece{display:none}
       #pharis-boot .pn{opacity:1;transform:none;filter:none}
       .pharis-boot-subtitle{opacity:.82}
     }
