@@ -233,6 +233,7 @@
         onboard2: "فلاتر: مفتوحة · مناوبة ليلية · طوارئ",
         onboard3: "خريطة واتجاهات واتصال مباشر",
         onboard4: "الجزائر وأي بلد في العالم",
+        onboard5: "أبحث عن دواء — اطلب دواءً ناقصاً وتواصل مع من يساعد",
         onboardBtn: "ابدأ الآن",
         onboardSkip: "تخطي",
         medBtn: "أبحث عن دواء",
@@ -384,6 +385,7 @@
         onboard2: "Filtres : ouvertes · de garde · urgence",
         onboard3: "Carte, itinéraire et appel direct",
         onboard4: "Algérie et le monde entier",
+        onboard5: "Je cherche un médicament — demandez un médicament manquant",
         onboardBtn: "Commencer",
         onboardSkip: "Passer",
         medBtn: "Je cherche un médicament",
@@ -535,6 +537,7 @@
         onboard2: "Filters: open · night duty · emergency",
         onboard3: "Map, directions and direct call",
         onboard4: "Algeria and worldwide",
+        onboard5: "Looking for a medicine — request a missing medicine and get help",
         onboardBtn: "Get started",
         onboardSkip: "Skip",
         medBtn: "Looking for a medicine",
@@ -3036,6 +3039,7 @@ out center tags;`;
                   <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🌙</span><span>{t("onboard2")}</span></li>
                   <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🗺️</span><span>{t("onboard3")}</span></li>
                   <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🌍</span><span>{t("onboard4")}</span></li>
+                  <li className="flex gap-2 items-start bg-yellow-400/20 border border-yellow-500/40 rounded-xl px-3 py-2"><span className="text-yellow-400">💊</span><span className="text-yellow-100">{t("onboard5")}</span></li>
                 </ul>
                 <button
                   type="button"
@@ -3043,6 +3047,13 @@ out center tags;`;
                   className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm"
                 >
                   {t("onboardBtn")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowOnboard(false); setShowMedSearch(true); }}
+                  className="w-full py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-bold text-sm border-2 border-yellow-500"
+                >
+                  💊 {t("medBtn")}
                 </button>
                 <button
                   type="button"
