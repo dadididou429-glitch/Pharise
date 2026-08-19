@@ -211,25 +211,25 @@
     <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var minMs = 3200;
-      var started = Date.now();
-      var hidden = false;
-      window.__pharisHideBoot = function () {
-        if (hidden || !boot) return;
-        var wait = Math.max(0, minMs - (Date.now() - started));
-        setTimeout(function () {
-          if (hidden || !boot) return;
-          hidden = true;
-          boot.style.opacity = "0";
-          boot.style.transform = "scale(1.2)";
-          setTimeout(function () {
-            if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-          }, 900);
-        }, wait);
-      };
+      if (!boot) return;
+
+      // Hide splash after animation completes (3.5s)
       setTimeout(function () {
-        if (window.__pharisHideBoot) window.__pharisHideBoot();
-      }, 7000);
+        boot.style.opacity = "0";
+        boot.style.transform = "scale(1.15)";
+        setTimeout(function () {
+          boot.style.display = "none";
+        }, 800);
+      }, 3500);
+
+      // Also expose function for React to call early if ready
+      window.__pharisHideBoot = function () {
+        boot.style.opacity = "0";
+        boot.style.transform = "scale(1.15)";
+        setTimeout(function () {
+          boot.style.display = "none";
+        }, 800);
+      };
     })();
   </script>
 
@@ -3761,10 +3761,7 @@ out center tags;`;
         <PharisApp />
       </ErrorBoundary>
     );
-    if (typeof window.__pharisHideBoot === "function") {
-      // انتظر قليلاً حتى يجهز التطبيق مع إبقاء الأنيميشن ظاهر ~2.8ث
-      setTimeout(function () { window.__pharisHideBoot(); }, 600);
-    }
+    // Splash auto-hides after 3.5s, no need to call manually
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
