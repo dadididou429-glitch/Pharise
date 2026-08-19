@@ -1616,9 +1616,7 @@ out center tags;`;
       });
       const [userCount, setUserCount] = useState(null);
       const [showPayModal, setShowPayModal] = useState(false);
-      const [showOnboard, setShowOnboard] = useState(() => {
-        try { return localStorage.getItem("pharis_onboard_v1") !== "1"; } catch (e) { return true; }
-      });
+      const [showOnboard, setShowOnboard] = useState(true);
 
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
@@ -2829,20 +2827,14 @@ out center tags;`;
                 </ul>
                 <button
                   type="button"
-                  onClick={() => {
-                    try { localStorage.setItem("pharis_onboard_v1", "1"); } catch (e) {}
-                    setShowOnboard(false);
-                  }}
+                  onClick={() => setShowOnboard(false)}
                   className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm"
                 >
                   {t("onboardBtn")}
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    try { localStorage.setItem("pharis_onboard_v1", "1"); } catch (e) {}
-                    setShowOnboard(false);
-                  }}
+                  onClick={() => setShowOnboard(false)}
                   className="text-xs text-brand-400 hover:text-brand-200"
                 >
                   {t("onboardSkip")}
