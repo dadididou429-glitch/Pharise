@@ -64,39 +64,70 @@
   </style>
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
-    <div id="root">
-    <div id="pharis-boot" style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:rtl;background:#022c22;overflow:hidden">
-      <div style="text-align:center;padding:24px 20px;max-width:320px">
-        <div style="width:220px;height:220px;margin:0 auto 16px;background:transparent">
-          <video
-            src="./splash-logo.mp4"
-            autoplay
-            muted
-            loop
-            playsinline
-            webkit-playsinline
-            style="width:220px;height:220px;object-fit:contain;display:block;margin:0 auto;background:transparent;border:none;outline:none;mix-blend-mode:multiply;filter:contrast(1.05)"
-          ></video>
-        </div>
-        <h1 dir="ltr" style="margin:0 0 8px;font-size:32px;font-weight:800;color:#6ee7b7;letter-spacing:0.08em;animation:pharisTitle 2.2s ease-in-out infinite">Pharis</h1>
-        <p style="font-size:13px;color:#a7f3d0;margin:0 0 16px;animation:pharisFade 2.2s ease-in-out infinite">جاري التحميل...</p>
-        <div style="width:34px;height:34px;border:3px solid rgba(110,231,183,0.25);border-top-color:#34d399;border-radius:50%;margin:0 auto 20px;animation:spin 0.75s linear infinite"></div>
-        <p style="font-size:11px;color:#6b7280;margin:0;font-weight:500">© 2026 Pharis — جميع الحقوق محفوظة</p>
-        <p style="font-size:10px;color:#4b5563;margin:4px 0 0" dir="ltr">All rights reserved</p>
+      <!-- شاشة فتح متحركة خارج root حتى لا يمحوها React فوراً -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:rtl;background:#022c22;overflow:hidden;transition:opacity 0.45s ease">
+    <div style="text-align:center;padding:24px 20px;max-width:340px">
+      <div style="width:240px;height:240px;margin:0 auto 14px;background:transparent">
+        <video
+          id="pharis-boot-video"
+          src="./splash-logo.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          webkit-playsinline
+          preload="auto"
+          style="width:240px;height:240px;object-fit:contain;display:block;margin:0 auto;background:transparent;border:none;outline:none;mix-blend-mode:multiply;filter:contrast(1.05)"
+        ></video>
       </div>
+      <h1 dir="ltr" style="margin:0 0 8px;font-size:34px;font-weight:800;color:#6ee7b7;letter-spacing:0.1em;animation:pharisTitle 2.2s ease-in-out infinite">Pharis</h1>
+      <p style="font-size:13px;color:#a7f3d0;margin:0;animation:pharisFade 2.2s ease-in-out infinite">جاري التحميل...</p>
     </div>
   </div>
+  <div id="root"></div>
   <style>
-    @keyframes spin{to{transform:rotate(360deg)}}
     @keyframes pharisTitle{
-      0%,100%{opacity:0.88;transform:translateY(0);letter-spacing:0.06em;text-shadow:0 0 18px rgba(16,185,129,0.35)}
-      50%{opacity:1;transform:translateY(-4px);letter-spacing:0.14em;text-shadow:0 0 28px rgba(52,211,153,0.75)}
+      0%,100%{opacity:0.88;transform:translateY(0);letter-spacing:0.08em;text-shadow:0 0 18px rgba(16,185,129,0.35)}
+      50%{opacity:1;transform:translateY(-4px);letter-spacing:0.16em;text-shadow:0 0 28px rgba(52,211,153,0.75)}
     }
     @keyframes pharisFade{
       0%,100%{opacity:0.5}
       50%{opacity:1}
     }
   </style>
+  <script>
+    (function () {
+      var boot = document.getElementById("pharis-boot");
+      var vid = document.getElementById("pharis-boot-video");
+      var minMs = 2800;
+      var started = Date.now();
+      var hidden = false;
+      function tryPlay() {
+        if (!vid) return;
+        var p = vid.play();
+        if (p && p.catch) p.catch(function () {});
+      }
+      tryPlay();
+      document.addEventListener("DOMContentLoaded", tryPlay);
+      window.addEventListener("load", tryPlay);
+      window.__pharisHideBoot = function () {
+        if (hidden || !boot) return;
+        var wait = Math.max(0, minMs - (Date.now() - started));
+        setTimeout(function () {
+          if (hidden || !boot) return;
+          hidden = true;
+          boot.style.opacity = "0";
+          setTimeout(function () {
+            if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+          }, 480);
+        }, wait);
+      };
+      // أمان: أخفِ بعد 8 ثوانٍ حتى لو تأخر React
+      setTimeout(function () {
+        if (window.__pharisHideBoot) window.__pharisHideBoot();
+      }, 8000);
+    })();
+  </script>
 
   <script>
     // Firebase
@@ -3049,8 +3080,8 @@ out center tags;`;
           {showOnboard && (
             <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
               <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-brand-800 border border-brand-600 flex items-center justify-center overflow-hidden">
-                  <img src="icon-192.png" alt="Pharis" className="w-16 h-16" width="64" height="64" />
+                <div className="mx-auto w-28 h-28 rounded-2xl overflow-hidden bg-transparent flex items-center justify-center">
+                  <video src="./splash-logo.mp4" autoPlay muted loop playsInline className="w-28 h-28 object-contain" style={{mixBlendMode:"multiply"}} />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-brand-300" dir="ltr">Pharis</h2>
@@ -3626,6 +3657,10 @@ out center tags;`;
         <PharisApp />
       </ErrorBoundary>
     );
+    if (typeof window.__pharisHideBoot === "function") {
+      // انتظر قليلاً حتى يجهز التطبيق مع إبقاء الأنيميشن ظاهر ~2.8ث
+      setTimeout(function () { window.__pharisHideBoot(); }, 600);
+    }
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
