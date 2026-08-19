@@ -227,6 +227,14 @@
         payPaypalForeign: "أجنبي؟ ادفع عبر PayPal (تفعيل فوري)",
         payAccountName: "باسم",
         payCcpCopied: "تم نسخ رقم الحساب",
+        onboardTitle: "مرحباً بك في Pharis",
+        onboardSub: "أقرب صيدلية مفتوحة… في ثوانٍ",
+        onboard1: "اعثر على الصيدليات المفتوحة والقريبة منك فوراً",
+        onboard2: "فلاتر: مفتوحة · مناوبة ليلية · طوارئ",
+        onboard3: "خريطة واتجاهات واتصال مباشر",
+        onboard4: "الجزائر وأي بلد في العالم",
+        onboardBtn: "ابدأ الآن",
+        onboardSkip: "تخطي",
         activationHint: "بعد الدفع عبر CCP أو PayPal يصلك كود التفعيل على واتساب",
         adminLoginTitle: "دخول المسؤول",
         loginBtn: "دخول", loginError: "بيانات غير صحيحة",
@@ -347,6 +355,14 @@
         payPaypalForeign: "Étranger ? Payez via PayPal (activation immédiate)",
         payAccountName: "Au nom de",
         payCcpCopied: "Numéro copié",
+        onboardTitle: "Bienvenue sur Pharis",
+        onboardSub: "La pharmacie ouverte la plus proche… en secondes",
+        onboard1: "Trouvez les pharmacies ouvertes près de vous",
+        onboard2: "Filtres : ouvertes · de garde · urgence",
+        onboard3: "Carte, itinéraire et appel direct",
+        onboard4: "Algérie et le monde entier",
+        onboardBtn: "Commencer",
+        onboardSkip: "Passer",
         activationHint: "Après paiement CCP/PayPal vous recevez le code sur WhatsApp",
         adminLoginTitle: "Connexion admin",
         loginBtn: "Se connecter", loginError: "Identifiants incorrects",
@@ -467,6 +483,14 @@
         payPaypalForeign: "Outside Algeria? Pay with PayPal (instant activation)",
         payAccountName: "Account name",
         payCcpCopied: "Account number copied",
+        onboardTitle: "Welcome to Pharis",
+        onboardSub: "Nearest open pharmacy… in seconds",
+        onboard1: "Find open pharmacies near you instantly",
+        onboard2: "Filters: open · night duty · emergency",
+        onboard3: "Map, directions and direct call",
+        onboard4: "Algeria and worldwide",
+        onboardBtn: "Get started",
+        onboardSkip: "Skip",
         activationHint: "After CCP/PayPal payment you receive the code on WhatsApp",
         adminLoginTitle: "Admin login",
         loginBtn: "Log in", loginError: "Incorrect credentials",
@@ -1592,6 +1616,9 @@ out center tags;`;
       });
       const [userCount, setUserCount] = useState(null);
       const [showPayModal, setShowPayModal] = useState(false);
+      const [showOnboard, setShowOnboard] = useState(() => {
+        try { return localStorage.getItem("pharis_onboard_v1") !== "1"; } catch (e) { return true; }
+      });
 
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
@@ -2781,6 +2808,48 @@ out center tags;`;
             )}
           </main>
 
+
+          {/* شاشة توضيح فكرة التطبيق عند أول دخول */}
+          {showOnboard && (
+            <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
+              <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-brand-800 border border-brand-600 flex items-center justify-center overflow-hidden">
+                  <img src="icon-192.png" alt="Pharis" className="w-16 h-16" width="64" height="64" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-brand-300" dir="ltr">Pharis</h2>
+                  <p className="text-sm text-brand-200 mt-1">{t("onboardTitle")}</p>
+                  <p className="text-xs text-emerald-400/90 mt-2 font-medium">{t("onboardSub")}</p>
+                </div>
+                <ul className="text-start text-sm text-brand-100 space-y-2.5">
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">📍</span><span>{t("onboard1")}</span></li>
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🌙</span><span>{t("onboard2")}</span></li>
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🗺️</span><span>{t("onboard3")}</span></li>
+                  <li className="flex gap-2 items-start bg-brand-950/50 rounded-xl px-3 py-2"><span className="text-emerald-400">🌍</span><span>{t("onboard4")}</span></li>
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { localStorage.setItem("pharis_onboard_v1", "1"); } catch (e) {}
+                    setShowOnboard(false);
+                  }}
+                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm"
+                >
+                  {t("onboardBtn")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { localStorage.setItem("pharis_onboard_v1", "1"); } catch (e) {}
+                    setShowOnboard(false);
+                  }}
+                  className="text-xs text-brand-400 hover:text-brand-200"
+                >
+                  {t("onboardSkip")}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* نافذة الدفع بالبطاقة الذهبية من داخل التطبيق */}
           {showPayModal && (
