@@ -62,26 +62,65 @@
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
     .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
   </style>
-</head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+  </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
-      <!-- شاشة فتح فخمة -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.5s ease">
-    <div style="text-align:center;padding:28px 20px;max-width:360px">
-      <div style="width:180px;height:180px;margin:0 auto 22px">
-        <img src="./splash-icon-solid.png" alt="Pharis" width="180" height="180"
-          style="width:180px;height:180px;display:block;margin:0 auto;background:transparent;border:none;animation:pharisLogo3d 2.8s ease-in-out infinite" />
-      </div>
-      <div id="pharis-boot-name" aria-label="Pharis" style="height:42px;display:flex;justify-content:center;align-items:center;gap:1px;direction:ltr">
-        <span class="pn" style="--i:0">P</span>
-        <span class="pn" style="--i:1">h</span>
-        <span class="pn" style="--i:2">a</span>
-        <span class="pn" style="--i:3">r</span>
-        <span class="pn" style="--i:4">i</span>
-        <span class="pn" style="--i:5">s</span>
-      </div>
-      <p style="font-size:12px;color:#6ee7b7;margin:14px 0 0;opacity:0;animation:pharisSubIn 0.6s ease 1.35s forwards">جاري التحميل...</p>
+      <!-- شاشة فتح 3D فاخرة -->
+<div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0f23 0%,#1a1a2e 50%,#16213e 100%);overflow:hidden;perspective:1200px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1)">
+  <div style="position:absolute;width:200px;height:280px;background:radial-gradient(ellipse,rgba(220,38,38,0.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:pharisGlowPulse 2s ease-in-out infinite"></div>
+
+  <div style="width:140px;height:220px;position:relative;transform-style:preserve-3d;animation:pharisCapsuleFloat 3s ease-in-out infinite">
+    <div style="width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:pharisCapsuleSpin 2.5s cubic-bezier(0.4,0,0.2,1) forwards">
+      <svg style="width:140px;height:220px;filter:drop-shadow(0 20px 40px rgba(0,0,0,0.4)) drop-shadow(0 0 30px rgba(220,38,38,0.3))" viewBox="0 0 140 220" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#f8f8f8"/>
+            <stop offset="50%" style="stop-color:#ffffff"/>
+            <stop offset="100%" style="stop-color:#e8e8e8"/>
+          </linearGradient>
+          <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#dc2626"/>
+            <stop offset="50%" style="stop-color:#ef4444"/>
+            <stop offset="100%" style="stop-color:#b91c1c"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <path d="M20 70 Q20 20 70 20 Q120 20 120 70 L120 110 L20 110 Z" fill="url(#capGrad)" stroke="#ddd" stroke-width="1"/>
+        <path d="M20 110 L120 110 L120 150 Q120 200 70 200 Q20 200 20 150 Z" fill="url(#redGrad)"/>
+        <g transform="translate(70,155)" filter="url(#glow)">
+          <rect x="-12" y="-4" width="24" height="8" rx="2" fill="#fff"/>
+          <rect x="-4" y="-12" width="8" height="24" rx="2" fill="#fff"/>
+        </g>
+        <g transform="translate(70,65)" filter="url(#glow)">
+          <path d="M0 -18 C-10 -18 -16 -10 -16 0 C-16 12 0 26 0 26 C0 26 16 12 16 0 C16 -10 10 -18 0 -18 Z" fill="#22c55e"/>
+          <circle cx="0" cy="-2" r="6" fill="#fff"/>
+        </g>
+        <ellipse cx="50" cy="65" rx="15" ry="25" fill="rgba(255,255,255,0.3)" transform="rotate(-15 50 65)"/>
+        <ellipse cx="50" cy="155" rx="12" ry="20" fill="rgba(255,255,255,0.15)" transform="rotate(-15 50 155)"/>
+      </svg>
     </div>
   </div>
+
+  <div id="pharis-boot-name" style="margin-top:40px;font-family:'Poppins',system-ui,sans-serif;font-size:48px;font-weight:900;letter-spacing:8px;color:#fff;display:flex;gap:4px;direction:ltr">
+    <span class="pn" style="--i:0;opacity:0;animation:pharisScatterIn 0.6s 1.8s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">P</span>
+    <span class="pn" style="--i:1;opacity:0;animation:pharisScatterIn 0.6s 1.95s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">h</span>
+    <span class="pn" style="--i:2;opacity:0;animation:pharisScatterIn 0.6s 2.1s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">a</span>
+    <span class="pn" style="--i:3;opacity:0;animation:pharisScatterIn 0.6s 2.25s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">r</span>
+    <span class="pn" style="--i:4;opacity:0;animation:pharisScatterIn 0.6s 2.4s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">i</span>
+    <span class="pn" style="--i:5;opacity:0;animation:pharisScatterIn 0.6s 2.55s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">s</span>
+  </div>
+
+  <p style="font-size:14px;color:rgba(255,255,255,0.6);letter-spacing:6px;text-transform:uppercase;margin-top:16px;opacity:0;animation:pharisFadeUp 0.8s 3s ease forwards;font-family:'Poppins',system-ui,sans-serif">Find Your Pharmacy</p>
+
+  <div style="position:absolute;bottom:60px;width:200px;height:3px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;opacity:0;animation:pharisFadeUp 0.5s 1s ease forwards">
+    <div style="height:100%;width:0%;background:linear-gradient(90deg,#dc2626,#ef4444,#22c55e);border-radius:3px;animation:pharisLoadFill 2.5s 1s cubic-bezier(0.4,0,0.2,1) forwards"></div>
+  </div>
+</div>
   <div id="root"></div>
   <style>
     #pharis-boot .pn{
@@ -99,20 +138,46 @@
       0%{opacity:0;transform:translateY(16px);filter:blur(2px)}
       100%{opacity:1;transform:translateY(0);filter:blur(0)}
     }
-    @keyframes pharisLogo3d{
-      0%,100%{transform:translateY(0) scale(1);opacity:1}
-      50%{transform:translateY(-8px) scale(1.03);opacity:1}
+    @keyframes pharisCapsuleFloat{
+      0%,100%{transform:translateY(0) rotateX(10deg)}
+      50%{transform:translateY(-15px) rotateX(10deg)}
     }
-    @keyframes pharisGlow{
-      0%,100%{filter:none}
-      50%{filter:none}
+    @keyframes pharisCapsuleSpin{
+      0%{transform:rotateY(0deg) rotateX(0deg) scale(0.3);opacity:0}
+      30%{transform:rotateY(180deg) rotateX(20deg) scale(1.1);opacity:1}
+      60%{transform:rotateY(360deg) rotateX(0deg) scale(1);opacity:1}
+      100%{transform:rotateY(360deg) rotateX(0deg) scale(1);opacity:1}
     }
-    @keyframes pharisSubIn{to{opacity:0.85}}
+    @keyframes pharisGlowPulse{
+      0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}
+      50%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
+    }
+    @keyframes pharisScatterIn{
+      0%{opacity:0;transform:translateX(var(--scatter-x,0)) translateY(var(--scatter-y,0)) rotate(var(--scatter-r,0deg)) scale(0);filter:blur(10px)}
+      100%{opacity:1;transform:translateX(0) translateY(0) rotate(0deg) scale(1);filter:blur(0)}
+    }
+    @keyframes pharisFadeUp{
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes pharisLoadFill{
+      0%{width:0%}
+      100%{width:100%}
+    }
   </style>
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var minMs = 2600;
+      var letters = document.querySelectorAll('#pharis-boot .pn');
+      letters.forEach(function(letter) {
+        var x = (Math.random() - 0.5) * 300;
+        var y = (Math.random() - 0.5) * 200;
+        var r = (Math.random() - 0.5) * 120;
+        letter.style.setProperty('--scatter-x', x + 'px');
+        letter.style.setProperty('--scatter-y', y + 'px');
+        letter.style.setProperty('--scatter-r', r + 'deg');
+      });
+      var minMs = 3800;
       var started = Date.now();
       var hidden = false;
       window.__pharisHideBoot = function () {
@@ -122,9 +187,10 @@
           if (hidden || !boot) return;
           hidden = true;
           boot.style.opacity = "0";
+          boot.style.transform = "scale(1.15)";
           setTimeout(function () {
             if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-          }, 520);
+          }, 800);
         }, wait);
       };
       setTimeout(function () {
