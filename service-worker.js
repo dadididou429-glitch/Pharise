@@ -1,6 +1,6 @@
-// Pharis Service Worker — ultra-fast auto update
-const CACHE_NAME = "pharis-v48-clean-icon";
-const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png", "./splash-icon-solid.png", "./splash-logo.mp4"];
+// Pharis Service Worker — fast update
+const CACHE_NAME = "pharis-v35-splash-3d";
+const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 const EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
@@ -29,9 +29,11 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)));
+      await Promise.all(
+        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+      );
       await self.clients.claim();
-      const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const clients = await self.clients.matchAll({ type: "window" });
       clients.forEach((client) => {
         client.postMessage({ type: "SW_UPDATED", version: CACHE_NAME });
       });
@@ -41,7 +43,9 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (!event.data) return;
-  if (event.data.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
   if (event.data.type === "CLEAR_CACHE") {
     event.waitUntil(
       caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
@@ -54,9 +58,6 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
-  // Never intercept the service worker script itself
-  if (url.pathname.endsWith("service-worker.js")) return;
-
   const isAPI =
     url.hostname.includes("overpass") ||
     url.hostname.includes("nominatim") ||
@@ -65,35 +66,29 @@ self.addEventListener("fetch", (event) => {
     url.hostname.includes("gstatic") ||
     url.hostname.includes("openstreetmap") ||
     url.hostname.includes("tile") ||
-    url.hostname.includes("ipapi") ||
-    url.hostname.includes("chargily");
+    url.hostname.includes("ipapi");
 
   if (isAPI) {
-    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
     return;
   }
 
-  // Same-origin app files: NETWORK FIRST (تحديث سريع)
-  const isAppFile =
+  // Network-first for HTML / app shell so updates apply quickly
+  const isNav =
     event.request.mode === "navigate" ||
     url.pathname.endsWith(".html") ||
     url.pathname.endsWith("/") ||
-    url.pathname.endsWith(".js") ||
-    url.pathname.endsWith(".json") ||
-    url.pathname.endsWith(".css") ||
-    url.pathname.endsWith(".mp4") ||
-    url.pathname.endsWith(".png") ||
-    url.pathname.endsWith(".svg") ||
-    url.pathname.endsWith(".webmanifest");
+    url.pathname.endsWith("/Pharise") ||
+    url.pathname.endsWith("/Pharise/");
 
-  if (isAppFile || url.origin === self.location.origin) {
+  if (isNav) {
     event.respondWith(
-      fetch(event.request, { cache: "no-store" })
+      fetch(event.request)
         .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((c) => c.put(event.request, copy)).catch(() => {});
-          }
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(event.request, copy));
           return res;
         })
         .catch(() =>
@@ -103,14 +98,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // CDN / external: cache-first, refresh in background
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetched = fetch(event.request)
         .then((res) => {
           if (res && res.ok) {
             const copy = res.clone();
-            caches.open(CACHE_NAME).then((c) => c.put(event.request, copy)).catch(() => {});
+            caches.open(CACHE_NAME).then((c) => c.put(event.request, copy));
           }
           return res;
         })
