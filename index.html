@@ -68,57 +68,64 @@
   </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح 3D فاخرة -->
-<div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0f23 0%,#1a1a2e 50%,#16213e 100%);overflow:hidden;perspective:1200px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1)">
-  <div style="position:absolute;width:200px;height:280px;background:radial-gradient(ellipse,rgba(220,38,38,0.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:pharisGlowPulse 2s ease-in-out infinite"></div>
+<div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#1a1a3e 0%,#0a0a1a 60%,#050510 100%);overflow:hidden;perspective:1200px;transition:opacity 0.9s cubic-bezier(0.4,0,0.2,1),transform 0.9s cubic-bezier(0.4,0,0.2,1)">
+  <div style="position:absolute;left:10%;width:4px;height:4px;border-radius:50%;background:rgba(34,197,94,0.15);animation:pharisParticle 4s linear infinite"></div>
+  <div style="position:absolute;left:25%;width:3px;height:3px;border-radius:50%;background:rgba(34,197,94,0.15);animation:pharisParticle 5s linear infinite 1s"></div>
+  <div style="position:absolute;left:70%;width:5px;height:5px;border-radius:50%;background:rgba(34,197,94,0.15);animation:pharisParticle 4.5s linear infinite 0.5s"></div>
+  <div style="position:absolute;left:85%;width:3px;height:3px;border-radius:50%;background:rgba(34,197,94,0.15);animation:pharisParticle 6s linear infinite 2s"></div>
+  <div style="position:absolute;left:45%;width:4px;height:4px;border-radius:50%;background:rgba(34,197,94,0.15);animation:pharisParticle 5.5s linear infinite 1.5s"></div>
 
-  <div style="width:140px;height:220px;position:relative;transform-style:preserve-3d;animation:pharisCapsuleFloat 3s ease-in-out infinite">
-    <div style="width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:pharisCapsuleSpin 2.5s cubic-bezier(0.4,0,0.2,1) forwards">
-      <svg style="width:140px;height:220px;filter:drop-shadow(0 20px 40px rgba(0,0,0,0.4)) drop-shadow(0 0 30px rgba(220,38,38,0.3))" viewBox="0 0 140 220" xmlns="http://www.w3.org/2000/svg">
+  <div style="position:relative;width:280px;height:320px;transform-style:preserve-3d">
+    <div style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:40px;height:20px;border:2px solid rgba(34,197,94,0.3);border-radius:50%;animation:pharisRipple 2s ease-out infinite"></div>
+    <div style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:40px;height:20px;border:2px solid rgba(34,197,94,0.3);border-radius:50%;animation:pharisRipple 2s ease-out infinite 0.4s"></div>
+    <div style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:40px;height:20px;border:2px solid rgba(34,197,94,0.3);border-radius:50%;animation:pharisRipple 2s ease-out infinite 0.8s"></div>
+
+    <div style="position:absolute;left:50%;bottom:25px;transform:translateX(-50%);width:120px;height:40px;background:radial-gradient(ellipse,rgba(34,197,94,0.4) 0%,transparent 70%);animation:pharisGlowPulse 2s ease-in-out infinite"></div>
+
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);transform-style:preserve-3d;animation:pharisPinTilt 3.5s ease-in-out infinite">
+      <svg width="200" height="240" viewBox="0 0 200 240" style="filter:drop-shadow(0 15px 35px rgba(0,0,0,0.5)) drop-shadow(0 0 25px rgba(34,197,94,0.2))">
         <defs>
-          <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#f8f8f8"/>
-            <stop offset="50%" style="stop-color:#ffffff"/>
-            <stop offset="100%" style="stop-color:#e8e8e8"/>
-          </linearGradient>
-          <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#dc2626"/>
-            <stop offset="50%" style="stop-color:#ef4444"/>
-            <stop offset="100%" style="stop-color:#b91c1c"/>
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
+          <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4ade80"/><stop offset="50%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#16a34a"/></linearGradient>
+          <linearGradient id="crossGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#86efac"/><stop offset="100%" style="stop-color:#22c55e"/></linearGradient>
+          <filter id="pinGlow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-        <path d="M20 70 Q20 20 70 20 Q120 20 120 70 L120 110 L20 110 Z" fill="url(#capGrad)" stroke="#ddd" stroke-width="1"/>
-        <path d="M20 110 L120 110 L120 150 Q120 200 70 200 Q20 200 20 150 Z" fill="url(#redGrad)"/>
-        <g transform="translate(70,155)" filter="url(#glow)">
-          <rect x="-12" y="-4" width="24" height="8" rx="2" fill="#fff"/>
-          <rect x="-4" y="-12" width="8" height="24" rx="2" fill="#fff"/>
-        </g>
-        <g transform="translate(70,65)" filter="url(#glow)">
-          <path d="M0 -18 C-10 -18 -16 -10 -16 0 C-16 12 0 26 0 26 C0 26 16 12 16 0 C16 -10 10 -18 0 -18 Z" fill="#22c55e"/>
-          <circle cx="0" cy="-2" r="6" fill="#fff"/>
-        </g>
-        <ellipse cx="50" cy="65" rx="15" ry="25" fill="rgba(255,255,255,0.3)" transform="rotate(-15 50 65)"/>
-        <ellipse cx="50" cy="155" rx="12" ry="20" fill="rgba(255,255,255,0.15)" transform="rotate(-15 50 155)"/>
+        <path d="M100 20 C60 20 30 50 30 90 C30 130 100 220 100 220 C100 220 170 130 170 90 C170 50 140 20 100 20 Z" fill="url(#pinGrad)" stroke="#16a34a" stroke-width="2"/>
+        <circle cx="100" cy="85" r="42" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
+        <g filter="url(#pinGlow)"><rect x="88" y="55" width="24" height="60" rx="4" fill="url(#crossGrad)"/><rect x="70" y="73" width="60" height="24" rx="4" fill="url(#crossGrad)"/></g>
+        <ellipse cx="75" cy="60" rx="20" ry="30" fill="rgba(255,255,255,0.25)" transform="rotate(-20 75 60)"/>
+        <ellipse cx="100" cy="218" rx="15" ry="4" fill="rgba(0,0,0,0.2)"/>
       </svg>
+      <div style="position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.4) 50%,transparent 60%);animation:pharisShine 2.5s ease-in-out infinite;border-radius:50%;pointer-events:none"></div>
+    </div>
+
+    <div style="position:absolute;left:50%;top:35%;width:200px;height:200px;transform:translate(-50%,-50%);animation:pharisOrbit 3s cubic-bezier(0.4,0,0.2,1) forwards;pointer-events:none">
+      <div style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:50px;height:80px">
+        <svg width="50" height="80" viewBox="0 0 50 80" style="filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4))">
+          <defs>
+            <linearGradient id="capWhite" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f8f8f8"/><stop offset="50%" style="stop-color:#fff"/><stop offset="100%" style="stop-color:#e8e8e8"/></linearGradient>
+            <linearGradient id="capRed" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#dc2626"/><stop offset="50%" style="stop-color:#ef4444"/><stop offset="100%" style="stop-color:#b91c1c"/></linearGradient>
+          </defs>
+          <path d="M5 25 Q5 5 25 5 Q45 5 45 25 L45 40 L5 40 Z" fill="url(#capWhite)" stroke="#ddd" stroke-width="0.5"/>
+          <path d="M5 40 L45 40 L45 55 Q45 75 25 75 Q5 75 5 55 Z" fill="url(#capRed)"/>
+          <ellipse cx="18" cy="25" rx="8" ry="12" fill="rgba(255,255,255,0.3)" transform="rotate(-15 18 25)"/>
+          <ellipse cx="18" cy="55" rx="6" ry="10" fill="rgba(255,255,255,0.15)" transform="rotate(-15 18 55)"/>
+        </svg>
+      </div>
     </div>
   </div>
 
-  <div id="pharis-boot-name" style="margin-top:40px;font-family:'Poppins',system-ui,sans-serif;font-size:48px;font-weight:900;letter-spacing:8px;color:#fff;display:flex;gap:4px;direction:ltr">
-    <span class="pn" style="--i:0;opacity:0;animation:pharisScatterIn 0.6s 1.8s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">P</span>
-    <span class="pn" style="--i:1;opacity:0;animation:pharisScatterIn 0.6s 1.95s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">h</span>
-    <span class="pn" style="--i:2;opacity:0;animation:pharisScatterIn 0.6s 2.1s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">a</span>
-    <span class="pn" style="--i:3;opacity:0;animation:pharisScatterIn 0.6s 2.25s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">r</span>
-    <span class="pn" style="--i:4;opacity:0;animation:pharisScatterIn 0.6s 2.4s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">i</span>
-    <span class="pn" style="--i:5;opacity:0;animation:pharisScatterIn 0.6s 2.55s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 40px rgba(255,255,255,0.5),0 4px 8px rgba(0,0,0,0.3)">s</span>
+  <div id="pharis-boot-name" style="margin-top:30px;font-family:'Poppins',system-ui,sans-serif;font-size:52px;font-weight:900;letter-spacing:10px;color:#fff;display:flex;gap:6px;direction:ltr">
+    <span class="pn" style="--i:0;opacity:0;animation:pharisLetterPop 0.5s 2.2s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 50px rgba(34,197,94,0.4),0 4px 12px rgba(0,0,0,0.5)">P</span>
+    <span class="pn" style="--i:1;opacity:0;animation:pharisLetterPop 0.5s 2.35s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 50px rgba(34,197,94,0.4),0 4px 12px rgba(0,0,0,0.5)">h</span>
+    <span class="pn" style="--i:2;opacity:0;animation:pharisLetterPop 0.5s 2.5s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 50px rgba(34,197,94,0.4),0 4px 12px rgba(0,0,0,0.5)">a</span>
+    <span class="pn" style="--i:3;opacity:0;animation:pharisLetterPop 0.5s 2.65s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 50px rgba(34,197,94,0.4),0 4px 12px rgba(0,0,0,0.5)">r</span>
+    <span class="pn" style="--i:4;opacity:0;animation:pharisLetterPop 0.5s 2.8s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 50px rgba(34,197,94,0.4),0 4px 12px rgba(0,0,0,0.5)">i</span>
+    <span class="pn" style="--i:5;opacity:0;animation:pharisLetterPop 0.5s 2.95s cubic-bezier(0.34,1.56,0.64,1) forwards;text-shadow:0 0 50px rgba(34,197,94,0.4),0 4px 12px rgba(0,0,0,0.5)">s</span>
   </div>
+  <p style="font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:8px;text-transform:uppercase;margin-top:12px;opacity:0;animation:pharisFadeUp 0.6s 3.4s ease forwards;font-family:'Poppins',system-ui,sans-serif">Find Your Pharmacy</p>
 
-  <p style="font-size:14px;color:rgba(255,255,255,0.6);letter-spacing:6px;text-transform:uppercase;margin-top:16px;opacity:0;animation:pharisFadeUp 0.8s 3s ease forwards;font-family:'Poppins',system-ui,sans-serif">Find Your Pharmacy</p>
-
-  <div style="position:absolute;bottom:60px;width:200px;height:3px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;opacity:0;animation:pharisFadeUp 0.5s 1s ease forwards">
-    <div style="height:100%;width:0%;background:linear-gradient(90deg,#dc2626,#ef4444,#22c55e);border-radius:3px;animation:pharisLoadFill 2.5s 1s cubic-bezier(0.4,0,0.2,1) forwards"></div>
+  <div style="position:absolute;bottom:50px;width:180px;height:3px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden">
+    <div style="height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#4ade80,#22c55e);border-radius:3px;animation:pharisFastLoad 1.8s 0.3s cubic-bezier(0.4,0,0.2,1) forwards;box-shadow:0 0 10px rgba(34,197,94,0.5)"></div>
   </div>
 </div>
   <div id="root"></div>
@@ -138,29 +145,45 @@
       0%{opacity:0;transform:translateY(16px);filter:blur(2px)}
       100%{opacity:1;transform:translateY(0);filter:blur(0)}
     }
-    @keyframes pharisCapsuleFloat{
-      0%,100%{transform:translateY(0) rotateX(10deg)}
-      50%{transform:translateY(-15px) rotateX(10deg)}
+    @keyframes pharisParticle{
+      0%{transform:translateY(100vh) scale(0);opacity:0}
+      10%{opacity:1}
+      90%{opacity:1}
+      100%{transform:translateY(-20vh) scale(1);opacity:0}
     }
-    @keyframes pharisCapsuleSpin{
-      0%{transform:rotateY(0deg) rotateX(0deg) scale(0.3);opacity:0}
-      30%{transform:rotateY(180deg) rotateX(20deg) scale(1.1);opacity:1}
-      60%{transform:rotateY(360deg) rotateX(0deg) scale(1);opacity:1}
-      100%{transform:rotateY(360deg) rotateX(0deg) scale(1);opacity:1}
+    @keyframes pharisPinTilt{
+      0%,100%{transform:translate(-50%,-50%) rotateY(-15deg) rotateX(5deg)}
+      25%{transform:translate(-50%,-50%) rotateY(15deg) rotateX(-3deg)}
+      50%{transform:translate(-50%,-50%) rotateY(0deg) rotateX(8deg)}
+      75%{transform:translate(-50%,-50%) rotateY(-10deg) rotateX(0deg)}
+    }
+    @keyframes pharisRipple{
+      0%{width:40px;height:20px;opacity:0.8}
+      100%{width:200px;height:100px;opacity:0}
     }
     @keyframes pharisGlowPulse{
-      0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}
-      50%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
+      0%,100%{opacity:0.5;transform:translateX(-50%) scale(1)}
+      50%{opacity:1;transform:translateX(-50%) scale(1.3)}
     }
-    @keyframes pharisScatterIn{
-      0%{opacity:0;transform:translateX(var(--scatter-x,0)) translateY(var(--scatter-y,0)) rotate(var(--scatter-r,0deg)) scale(0);filter:blur(10px)}
-      100%{opacity:1;transform:translateX(0) translateY(0) rotate(0deg) scale(1);filter:blur(0)}
+    @keyframes pharisOrbit{
+      0%{transform:translate(-50%,-50%) rotate(0deg) scale(0);opacity:0}
+      20%{transform:translate(-50%,-50%) rotate(180deg) scale(1.2);opacity:1}
+      60%{transform:translate(-50%,-50%) rotate(540deg) scale(1);opacity:1}
+      100%{transform:translate(-50%,-50%) rotate(720deg) scale(1);opacity:1}
+    }
+    @keyframes pharisShine{
+      0%{transform:translateX(-100%)}
+      100%{transform:translateX(100%)}
+    }
+    @keyframes pharisLetterPop{
+      0%{opacity:0;transform:translateY(40px) scale(0.3) rotate(-20deg);filter:blur(8px)}
+      100%{opacity:1;transform:translateY(0) scale(1) rotate(0);filter:blur(0)}
     }
     @keyframes pharisFadeUp{
-      from{opacity:0;transform:translateY(20px)}
+      from{opacity:0;transform:translateY(15px)}
       to{opacity:1;transform:translateY(0)}
     }
-    @keyframes pharisLoadFill{
+    @keyframes pharisFastLoad{
       0%{width:0%}
       100%{width:100%}
     }
@@ -168,16 +191,7 @@
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var letters = document.querySelectorAll('#pharis-boot .pn');
-      letters.forEach(function(letter) {
-        var x = (Math.random() - 0.5) * 300;
-        var y = (Math.random() - 0.5) * 200;
-        var r = (Math.random() - 0.5) * 120;
-        letter.style.setProperty('--scatter-x', x + 'px');
-        letter.style.setProperty('--scatter-y', y + 'px');
-        letter.style.setProperty('--scatter-r', r + 'deg');
-      });
-      var minMs = 3800;
+      var minMs = 4200;
       var started = Date.now();
       var hidden = false;
       window.__pharisHideBoot = function () {
@@ -187,10 +201,10 @@
           if (hidden || !boot) return;
           hidden = true;
           boot.style.opacity = "0";
-          boot.style.transform = "scale(1.15)";
+          boot.style.transform = "scale(1.2)";
           setTimeout(function () {
             if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-          }, 800);
+          }, 900);
         }, wait);
       };
       setTimeout(function () {
@@ -3925,6 +3939,32 @@ out center tags;`;
       window.__pharisInstallPrompt = e;
       window.dispatchEvent(new Event("pharis-installable"));
     });
+  </script>
+
+  <!-- Ultra-Fast Geolocation -->
+  <div id="pharis-geo-status" style="position:fixed;top:16px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:8px 18px;border-radius:20px;color:#fff;font-family:'Poppins',system-ui,sans-serif;font-size:12px;display:none;align-items:center;gap:8px;z-index:1000000;border:1px solid rgba(255,255,255,0.1)">
+    <div style="width:12px;height:12px;border:2px solid rgba(255,255,255,0.15);border-top-color:#22c55e;border-radius:50%;animation:pharisSpin 0.5s linear infinite"></div>
+    <span id="pharis-geo-text">Detecting...</span>
+  </div>
+  <style>@keyframes pharisSpin{to{transform:rotate(360deg)}}</style>
+  <script>
+  window.pharisFastGeo=function(success,error,timeout){
+    timeout=timeout||3000;
+    var g=document.getElementById('pharis-geo-status'),t=document.getElementById('pharis-geo-text');
+    if(g)g.classList.add('active');if(t)t.textContent='Detecting...';
+    var done=false;
+    var to=setTimeout(function(){if(!done){done=true;if(g)g.classList.remove('active');if(error)error(new Error('Timeout'));}},timeout);
+    if(!navigator.geolocation){clearTimeout(to);done=true;if(g)g.classList.remove('active');if(error)error(new Error('No GPS'));return;}
+    navigator.geolocation.getCurrentPosition(
+      function(p){if(done)return;done=true;clearTimeout(to);if(t)t.textContent='Found!';setTimeout(function(){if(g)g.classList.remove('active');},600);if(success)success(p);},
+      function(e){navigator.geolocation.getCurrentPosition(
+        function(p){if(done)return;done=true;clearTimeout(to);if(t)t.textContent='Found!';setTimeout(function(){if(g)g.classList.remove('active');},600);if(success)success(p);},
+        function(e2){if(done)return;done=true;clearTimeout(to);if(g)g.classList.remove('active');if(error)error(e2);},
+        {enableHighAccuracy:false,timeout:2000,maximumAge:600000}
+      );},
+      {enableHighAccuracy:true,timeout:timeout,maximumAge:30000}
+    );
+  };
   </script>
 </body>
 </html>
