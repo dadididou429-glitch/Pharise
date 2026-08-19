@@ -235,6 +235,29 @@
         onboard4: "الجزائر وأي بلد في العالم",
         onboardBtn: "ابدأ الآن",
         onboardSkip: "تخطي",
+        medBtn: "أبحث عن دواء",
+        medTitle: "أبحث عن دواء",
+        medSub: "انشر طلباً ليراه الصيادلة والمتطوعون — صالح لمدة 30 يوماً",
+        medName: "اسم الدواء",
+        medNamePh: "مثال: باراسيتامول 1000",
+        medCity: "المدينة / الولاية",
+        medCityPh: "مثال: سيدي بلعباس",
+        medWa: "رقم واتساب",
+        medWaPh: "05xxxxxxxx",
+        medNote: "ملاحظة (اختياري)",
+        medNotePh: "الجرعة أو تفاصيل مفيدة",
+        medPublish: "نشر الطلب",
+        medList: "الطلبات الحالية",
+        medEmpty: "لا توجد طلبات حالياً",
+        medContact: "تواصل واتساب",
+        medDisclaimer: "منصة تواصل فقط. لا بيع داخل التطبيق. لا استشارة طبية. تجنّب الأدوية المراقبة. التواصل على مسؤولية الطرفين.",
+        medSuccess: "تم نشر طلبك لمدة 30 يوماً",
+        medError: "تعذّر النشر. تحقق من البيانات أو الاتصال.",
+        medNeedName: "اكتب اسم الدواء",
+        medNeedWa: "أدخل رقم واتساب صحيح",
+        medExpires: "ينتهي",
+        medClose: "إغلاق",
+        medLoading: "جاري التحميل…",
         activationHint: "بعد الدفع عبر CCP أو PayPal يصلك كود التفعيل على واتساب",
         adminLoginTitle: "دخول المسؤول",
         loginBtn: "دخول", loginError: "بيانات غير صحيحة",
@@ -363,6 +386,29 @@
         onboard4: "Algérie et le monde entier",
         onboardBtn: "Commencer",
         onboardSkip: "Passer",
+        medBtn: "Je cherche un médicament",
+        medTitle: "Je cherche un médicament",
+        medSub: "Publiez une demande visible 30 jours pour pharmacies et bénévoles",
+        medName: "Nom du médicament",
+        medNamePh: "Ex. : Paracétamol 1000",
+        medCity: "Ville / wilaya",
+        medCityPh: "Ex. : Sidi Bel Abbès",
+        medWa: "Numéro WhatsApp",
+        medWaPh: "05xxxxxxxx",
+        medNote: "Note (optionnel)",
+        medNotePh: "Dosage ou détails utiles",
+        medPublish: "Publier la demande",
+        medList: "Demandes en cours",
+        medEmpty: "Aucune demande pour le moment",
+        medContact: "Contacter WhatsApp",
+        medDisclaimer: "Mise en relation uniquement. Pas de vente dans l'app. Pas de conseil médical. Évitez les médicaments contrôlés. Contact à vos risques.",
+        medSuccess: "Demande publiée pour 30 jours",
+        medError: "Échec de la publication. Vérifiez les données ou la connexion.",
+        medNeedName: "Indiquez le nom du médicament",
+        medNeedWa: "Entrez un numéro WhatsApp valide",
+        medExpires: "Expire le",
+        medClose: "Fermer",
+        medLoading: "Chargement…",
         activationHint: "Après paiement CCP/PayPal vous recevez le code sur WhatsApp",
         adminLoginTitle: "Connexion admin",
         loginBtn: "Se connecter", loginError: "Identifiants incorrects",
@@ -491,6 +537,29 @@
         onboard4: "Algeria and worldwide",
         onboardBtn: "Get started",
         onboardSkip: "Skip",
+        medBtn: "Looking for a medicine",
+        medTitle: "Looking for a medicine",
+        medSub: "Post a request visible for 30 days to pharmacies and helpers",
+        medName: "Medicine name",
+        medNamePh: "e.g. Paracetamol 1000",
+        medCity: "City / region",
+        medCityPh: "e.g. Sidi Bel Abbès",
+        medWa: "WhatsApp number",
+        medWaPh: "05xxxxxxxx",
+        medNote: "Note (optional)",
+        medNotePh: "Dose or useful details",
+        medPublish: "Publish request",
+        medList: "Current requests",
+        medEmpty: "No requests yet",
+        medContact: "Contact on WhatsApp",
+        medDisclaimer: "Contact board only. No in-app sales. Not medical advice. Avoid controlled medicines. Contact at your own risk.",
+        medSuccess: "Request published for 30 days",
+        medError: "Could not publish. Check data or connection.",
+        medNeedName: "Enter the medicine name",
+        medNeedWa: "Enter a valid WhatsApp number",
+        medExpires: "Expires",
+        medClose: "Close",
+        medLoading: "Loading…",
         activationHint: "After CCP/PayPal payment you receive the code on WhatsApp",
         adminLoginTitle: "Admin login",
         loginBtn: "Log in", loginError: "Incorrect credentials",
@@ -1617,6 +1686,11 @@ out center tags;`;
       const [userCount, setUserCount] = useState(null);
       const [showPayModal, setShowPayModal] = useState(false);
       const [showOnboard, setShowOnboard] = useState(true);
+      const [showMedSearch, setShowMedSearch] = useState(false);
+      const [medRequests, setMedRequests] = useState([]);
+      const [medLoading, setMedLoading] = useState(false);
+      const [medSubmitting, setMedSubmitting] = useState(false);
+      const [medForm, setMedForm] = useState({ name: "", city: "", whatsapp: "", note: "" });
 
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
@@ -1637,6 +1711,69 @@ out center tags;`;
       const [formLocStatus, setFormLocStatus] = useState(null);
       const [submitting, setSubmitting] = useState(false);
       const [lastSubmit, setLastSubmit] = useState(0);
+
+      
+      // طلبات البحث عن دواء — مدة 30 يوماً
+      useEffect(() => {
+        if (!showMedSearch || !firebaseReady || !db) return;
+        setMedLoading(true);
+        const unsub = db.collection("medicine_requests")
+          .orderBy("createdAt", "desc")
+          .limit(50)
+          .onSnapshot(
+            (snap) => {
+              const now = Date.now();
+              const list = [];
+              snap.forEach((doc) => {
+                const d = doc.data() || {};
+                const exp = d.expiresAt && d.expiresAt.toMillis ? d.expiresAt.toMillis() : (d.expiresAtMs || 0);
+                if (exp && exp < now) return;
+                if (d.active === false) return;
+                list.push({ id: doc.id, ...d });
+              });
+              setMedRequests(list);
+              setMedLoading(false);
+            },
+            () => { setMedLoading(false); }
+          );
+        return () => unsub();
+      }, [showMedSearch]);
+
+      const normalizeWa = (raw) => {
+        let s = String(raw || "").replace(/\D/g, "");
+        if (s.startsWith("00213")) s = s.slice(2);
+        if (s.startsWith("0") && s.length === 10) s = "213" + s.slice(1);
+        if (s.length === 9 && s[0] === "5") s = "213" + s;
+        return s;
+      };
+
+      const submitMedRequest = async () => {
+        const name = (medForm.name || "").trim();
+        const wa = normalizeWa(medForm.whatsapp);
+        if (name.length < 2) { alert(t("medNeedName")); return; }
+        if (wa.length < 10) { alert(t("medNeedWa")); return; }
+        if (!firebaseReady || !db) { alert(t("medError")); return; }
+        setMedSubmitting(true);
+        try {
+          const expiresAt = firebase.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          await db.collection("medicine_requests").add({
+            medicineName: name.slice(0, 80),
+            city: (medForm.city || "").trim().slice(0, 60),
+            whatsapp: wa,
+            note: (medForm.note || "").trim().slice(0, 200),
+            active: true,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            expiresAt,
+            expiresAtMs: Date.now() + 30 * 24 * 60 * 60 * 1000
+          });
+          setMedForm({ name: "", city: "", whatsapp: "", note: "" });
+          alert(t("medSuccess"));
+        } catch (e) {
+          console.warn(e);
+          alert(t("medError"));
+        }
+        setMedSubmitting(false);
+      };
 
       const t = useCallback((key, vars) => tr(lang, key, vars), [lang]);
       const dir = lang === "ar" ? "rtl" : "ltr";
@@ -2614,6 +2751,9 @@ out center tags;`;
             <button type="button" onClick={() => setShowPayModal(true)} className="mt-2 block w-full text-center bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-xl py-2 text-xs font-bold hover:bg-amber-500/30 transition">
               🏥 {t("aboutMoney")}
             </button>
+            <button type="button" onClick={() => setShowMedSearch(true)} className="mt-2 block w-full text-center bg-yellow-400 text-yellow-950 border-2 border-yellow-500 rounded-xl py-2.5 text-xs font-bold hover:bg-yellow-300 transition shadow-md shadow-yellow-500/20">
+              💊 {t("medBtn")}
+            </button>
 
             {/* Stats */}
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -2806,6 +2946,78 @@ out center tags;`;
             )}
           </main>
 
+
+          {/* خاصية أبحث عن دواء — أصفر مميز · 30 يوماً */}
+          {showMedSearch && (
+            <div className="fixed inset-0 z-[85] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" onClick={() => !medSubmitting && setShowMedSearch(false)}>
+              <div className="w-full max-w-lg bg-yellow-50 dark:bg-brand-950 border-2 border-yellow-400 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} dir={lang === "ar" ? "rtl" : "ltr"}>
+                <div className="sticky top-0 bg-yellow-400 text-yellow-950 px-4 py-3 flex items-center justify-between z-10">
+                  <div>
+                    <h3 className="font-bold text-base">💊 {t("medTitle")}</h3>
+                    <p className="text-[11px] opacity-90">{t("medSub")}</p>
+                  </div>
+                  <button type="button" onClick={() => setShowMedSearch(false)} className="text-2xl leading-none px-2 font-bold">×</button>
+                </div>
+
+                <div className="p-4 space-y-4">
+                  <p className="text-[11px] text-amber-900 dark:text-yellow-200/90 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-xl px-3 py-2 leading-relaxed">
+                    {t("medDisclaimer")}
+                  </p>
+
+                  <div className="space-y-2 bg-white dark:bg-brand-900 border border-yellow-300 dark:border-yellow-700 rounded-xl p-3">
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medName")}</label>
+                    <input value={medForm.name} onChange={(e) => setMedForm(f => ({...f, name: e.target.value}))} placeholder={t("medNamePh")} className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-yellow-500" maxLength={80} />
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medCity")}</label>
+                    <input value={medForm.city} onChange={(e) => setMedForm(f => ({...f, city: e.target.value}))} placeholder={t("medCityPh")} className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-yellow-500" maxLength={60} />
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medWa")}</label>
+                    <input value={medForm.whatsapp} onChange={(e) => setMedForm(f => ({...f, whatsapp: e.target.value}))} placeholder={t("medWaPh")} dir="ltr" className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-yellow-500" maxLength={15} />
+                    <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medNote")}</label>
+                    <textarea value={medForm.note} onChange={(e) => setMedForm(f => ({...f, note: e.target.value}))} placeholder={t("medNotePh")} rows={2} className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-yellow-500" maxLength={200} />
+                    <button type="button" disabled={medSubmitting} onClick={submitMedRequest} className="w-full py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-yellow-950 font-bold text-sm">
+                      {medSubmitting ? "…" : t("medPublish")}
+                    </button>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 mb-2">{t("medList")}</h4>
+                    {medLoading && <p className="text-xs text-brand-300">{t("medLoading")}</p>}
+                    {!medLoading && medRequests.length === 0 && (
+                      <p className="text-xs text-brand-400 bg-brand-900/30 rounded-lg px-3 py-4 text-center">{t("medEmpty")}</p>
+                    )}
+                    <div className="space-y-2">
+                      {medRequests.map((r) => {
+                        const expDate = r.expiresAtMs ? new Date(r.expiresAtMs) : (r.expiresAt && r.expiresAt.toDate ? r.expiresAt.toDate() : null);
+                        const expStr = expDate ? expDate.toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB") : "";
+                        const waMsg = encodeURIComponent(
+                          (lang === "ar" ? "مرحبا، بخصوص طلب الدواء: " : lang === "fr" ? "Bonjour, concernant la demande : " : "Hello, about the medicine request: ") + (r.medicineName || "")
+                        );
+                        return (
+                          <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/80 dark:border-yellow-700 rounded-xl p-3">
+                            <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
+                            {r.city ? <p className="text-[11px] text-brand-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
+                            {r.note ? <p className="text-[11px] text-brand-600 dark:text-brand-200 mt-1">{r.note}</p> : null}
+                            {expStr ? <p className="text-[10px] text-brand-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
+                            <a
+                              href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-flex items-center justify-center w-full py-2 rounded-lg bg-[#25D366] text-white text-xs font-bold"
+                            >
+                              {t("medContact")}
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <button type="button" onClick={() => setShowMedSearch(false)} className="w-full py-2 text-xs text-brand-400 hover:text-brand-200">
+                    {t("medClose")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* شاشة توضيح فكرة التطبيق عند أول دخول */}
           {showOnboard && (

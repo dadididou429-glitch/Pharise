@@ -68,6 +68,21 @@ service cloud.firestore {
       }
     }
   
+
+    // طلبات البحث عن دواء (30 يوماً)
+    match /medicine_requests/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.medicineName is string
+        && request.resource.data.medicineName.size() >= 2
+        && request.resource.data.medicineName.size() <= 80
+        && request.resource.data.whatsapp is string
+        && request.resource.data.whatsapp.size() >= 10
+        && request.resource.data.whatsapp.size() <= 15
+        && request.resource.data.active == true
+        && request.resource.data.expiresAtMs is number;
+      allow update, delete: if isAdmin();
+    }
+
     // عدّاد المستخدمين العام
     match /stats/{docId} {
       allow read: if true;

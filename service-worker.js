@@ -1,5 +1,5 @@
 // Pharis Service Worker — fast update
-const CACHE_NAME = "pharis-v36-onboard-always";
+const CACHE_NAME = "pharis-v37-med-search";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 const EXTERNAL = [
