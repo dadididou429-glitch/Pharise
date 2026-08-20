@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <style id="pharis-early-bg">html,body{margin:0;background:#022c22!important;}</style>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
   <title>Pharis — Open Pharmacies Near You · auto-geo-v15</title>
@@ -62,22 +64,22 @@
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
     .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
   </style>
+  <link rel="preload" href="./icon-192.png" as="image" />
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-      <!-- افتتاحية احترافية — إيقاع أطول + استقرار الاسم -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#022c22;overflow:hidden;opacity:0;animation:pbIn 0.5s ease forwards">
+      <!-- افتتاحية فورية + استقرار الاسم -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#022c22;overflow:hidden">
     <div style="position:relative;width:min(100vw,380px);height:min(100vh,520px);display:flex;flex-direction:column;align-items:center;justify-content:center">
       <div class="pb-ring" style="--d:0s"></div>
-      <div class="pb-ring" style="--d:0.4s"></div>
-      <div class="pb-ring" style="--d:0.8s"></div>
+      <div class="pb-ring" style="--d:0.35s"></div>
       <div class="pb-symbols">
         <span class="pb-sym" style="--a:0">📍</span>
         <span class="pb-sym" style="--a:1">✚</span>
         <span class="pb-sym" style="--a:2">💊</span>
       </div>
       <div class="pb-icon-wrap">
-        <img src="./icon-192.png" alt="Pharis" width="132" height="132" class="pb-icon" />
+        <img src="./icon-192.png" alt="Pharis" width="132" height="132" class="pb-icon" fetchpriority="high" />
       </div>
       <div class="pb-name" dir="ltr">
         <span style="--i:0">P</span><span style="--i:1">h</span><span style="--i:2">a</span><span style="--i:3">r</span><span style="--i:4">i</span><span style="--i:5">s</span>
@@ -87,11 +89,10 @@
   </div>
   <div id="root"></div>
   <style>
-    @keyframes pbIn{from{opacity:0}to{opacity:1}}
     .pb-ring{
       position:absolute;left:50%;top:40%;width:168px;height:168px;margin:-84px 0 0 -84px;
       border:1.5px solid rgba(110,231,183,0.22);border-radius:50%;
-      animation:pbRing 3.2s ease-out var(--d) both;
+      animation:pbRing 2.8s ease-out var(--d) both;
       pointer-events:none;
     }
     @keyframes pbRing{
@@ -99,12 +100,10 @@
       25%{opacity:0.65}
       100%{transform:scale(2.35);opacity:0}
     }
-    .pb-symbols{
-      position:absolute;left:50%;top:40%;width:0;height:0;z-index:2;
-    }
+    .pb-symbols{position:absolute;left:50%;top:40%;width:0;height:0;z-index:2}
     .pb-sym{
       position:absolute;font-size:30px;left:0;top:0;opacity:0;
-      animation:pbSym 1.85s cubic-bezier(0.22,1,0.36,1) calc(0.25s + var(--a)*0.18s) both;
+      animation:pbSym 1.6s cubic-bezier(0.22,1,0.36,1) calc(0.05s + var(--a)*0.14s) both;
       filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
     @keyframes pbSym{
@@ -117,7 +116,7 @@
       position:relative;z-index:3;width:132px;height:132px;border-radius:32px;
       box-shadow:0 18px 44px rgba(0,0,0,0.38),0 0 0 1px rgba(110,231,183,0.22);
       opacity:0;transform:scale(0.55);
-      animation:pbIcon 0.95s cubic-bezier(0.22,1,0.36,1) 1.85s forwards;
+      animation:pbIcon 0.85s cubic-bezier(0.22,1,0.36,1) 1.45s forwards;
       overflow:hidden;background:#fff;
     }
     .pb-icon{width:132px;height:132px;display:block;border-radius:32px}
@@ -131,10 +130,9 @@
     }
     .pb-name span{
       display:inline-block;font-size:38px;font-weight:800;color:#6ee7b7;
-      letter-spacing:0.05em;
-      text-shadow:0 0 26px rgba(52,211,153,0.5);
+      letter-spacing:0.05em;text-shadow:0 0 26px rgba(52,211,153,0.5);
       opacity:0;transform:translateY(14px);
-      animation:pbLetter 0.55s cubic-bezier(0.22,1,0.36,1) calc(2.55s + var(--i)*0.11s) forwards;
+      animation:pbLetter 0.5s cubic-bezier(0.22,1,0.36,1) calc(2.15s + var(--i)*0.1s) forwards;
       font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
     }
     @keyframes pbLetter{
@@ -143,7 +141,7 @@
     }
     .pb-tag{
       margin:14px 0 0;font-size:12px;color:#a7f3d0;opacity:0;
-      animation:pbLetter 0.6s ease 3.4s forwards;
+      animation:pbLetter 0.55s ease 2.95s forwards;
       font-family:system-ui,sans-serif;
     }
   </style>
@@ -151,10 +149,10 @@
     (function () {
       var boot = document.getElementById("pharis-boot");
       var hidden = false;
-      // آخر حرف يظهر ~2.55 + 5*0.11 + 0.55 ≈ 3.65ث — ثم استقرار الاسم ثم الخروج
-      var NAME_DONE_MS = 3800;
-      var HOLD_NAME_MS = 1400;
-      var FADE_MS = 480;
+      // آخر حرف ~2.15+0.5+0.5=3.15 — استقرار ثم خروج
+      var NAME_DONE_MS = 3300;
+      var HOLD_NAME_MS = 1500;
+      var FADE_MS = 450;
       var audioCtx = null;
 
       function music() {
@@ -164,16 +162,16 @@
           var t0 = audioCtx.currentTime + 0.05;
           var master = audioCtx.createGain();
           master.gain.setValueAtTime(0.0001, t0);
-          master.gain.exponentialRampToValueAtTime(0.09, t0 + 0.4);
-          master.gain.setValueAtTime(0.09, t0 + 4.0);
-          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 5.3);
+          master.gain.exponentialRampToValueAtTime(0.09, t0 + 0.35);
+          master.gain.setValueAtTime(0.09, t0 + 3.6);
+          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 4.8);
           master.connect(audioCtx.destination);
           function pad(f, s, d) {
             var o = audioCtx.createOscillator();
             var g = audioCtx.createGain();
             o.type = "sine"; o.frequency.value = f;
             g.gain.setValueAtTime(0.0001, t0 + s);
-            g.gain.exponentialRampToValueAtTime(0.035, t0 + s + 0.25);
+            g.gain.exponentialRampToValueAtTime(0.035, t0 + s + 0.2);
             g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
             o.connect(g); g.connect(master);
             o.start(t0 + s); o.stop(t0 + s + d);
@@ -188,10 +186,9 @@
             o.connect(g); g.connect(master);
             o.start(t0 + s); o.stop(t0 + s + d);
           }
-          pad(261.63, 0, 4.8); pad(329.63, 0.15, 4.6); pad(392, 0.3, 4.4);
-          note(392, 0.5, 0.4); note(440, 0.9, 0.4); note(523.25, 1.35, 0.45);
-          note(494, 2.0, 0.35); note(523.25, 2.4, 0.4); note(659.25, 2.95, 0.5);
-          note(523.25, 3.6, 0.4); note(783.99, 4.15, 0.55, 0.07);
+          pad(261.63, 0, 4.2); pad(329.63, 0.12, 4.0); pad(392, 0.22, 3.9);
+          note(392, 0.35, 0.35); note(523.25, 0.85, 0.4); note(659.25, 1.5, 0.45);
+          note(523.25, 2.2, 0.35); note(783.99, 2.85, 0.5, 0.07);
         } catch (e) {}
       }
       music();
@@ -203,17 +200,14 @@
       function hideBoot() {
         if (hidden || !boot) return;
         hidden = true;
-        boot.style.animation = "none";
         boot.style.transition = "opacity " + (FADE_MS / 1000) + "s ease";
         boot.style.opacity = "0";
-        try { if (audioCtx) setTimeout(function () { try { audioCtx.close(); } catch (e) {} }, 350); } catch (e) {}
+        try { if (audioCtx) setTimeout(function () { try { audioCtx.close(); } catch (e) {} }, 300); } catch (e) {}
         setTimeout(function () {
           if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
         }, FADE_MS + 40);
       }
-
       window.__pharisHideBoot = function () {};
-      // انتظر اكتمال الاسم + استقرار واضح ثم الانتقال
       setTimeout(hideBoot, NAME_DONE_MS + HOLD_NAME_MS);
     })();
   </script>
