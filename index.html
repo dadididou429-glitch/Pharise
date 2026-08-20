@@ -65,23 +65,20 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-      <!-- افتتاحية احترافية — أيقونة + رموز + اسم -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#022c22;overflow:hidden;opacity:0;animation:pbIn 0.4s ease forwards">
+      <!-- افتتاحية احترافية — إيقاع أطول + استقرار الاسم -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#022c22;overflow:hidden;opacity:0;animation:pbIn 0.5s ease forwards">
     <div style="position:relative;width:min(100vw,380px);height:min(100vh,520px);display:flex;flex-direction:column;align-items:center;justify-content:center">
-      <!-- حلقات ضوئية -->
       <div class="pb-ring" style="--d:0s"></div>
-      <div class="pb-ring" style="--d:0.25s"></div>
-      <!-- الرموز تدور ثم تختفي -->
+      <div class="pb-ring" style="--d:0.4s"></div>
+      <div class="pb-ring" style="--d:0.8s"></div>
       <div class="pb-symbols">
         <span class="pb-sym" style="--a:0">📍</span>
         <span class="pb-sym" style="--a:1">✚</span>
         <span class="pb-sym" style="--a:2">💊</span>
       </div>
-      <!-- الأيقونة -->
       <div class="pb-icon-wrap">
-        <img src="./icon-192.png" alt="Pharis" width="128" height="128" class="pb-icon" />
+        <img src="./icon-192.png" alt="Pharis" width="132" height="132" class="pb-icon" />
       </div>
-      <!-- الاسم -->
       <div class="pb-name" dir="ltr">
         <span style="--i:0">P</span><span style="--i:1">h</span><span style="--i:2">a</span><span style="--i:3">r</span><span style="--i:4">i</span><span style="--i:5">s</span>
       </div>
@@ -91,64 +88,62 @@
   <div id="root"></div>
   <style>
     @keyframes pbIn{from{opacity:0}to{opacity:1}}
-    @keyframes pbOut{from{opacity:1}to{opacity:0}}
     .pb-ring{
-      position:absolute;left:50%;top:42%;width:160px;height:160px;margin:-80px 0 0 -80px;
-      border:1.5px solid rgba(110,231,183,0.25);border-radius:50%;
-      animation:pbRing 2.4s ease-out var(--d) both;
+      position:absolute;left:50%;top:40%;width:168px;height:168px;margin:-84px 0 0 -84px;
+      border:1.5px solid rgba(110,231,183,0.22);border-radius:50%;
+      animation:pbRing 3.2s ease-out var(--d) both;
       pointer-events:none;
     }
     @keyframes pbRing{
-      0%{transform:scale(0.4);opacity:0}
-      30%{opacity:0.7}
-      100%{transform:scale(2.1);opacity:0}
+      0%{transform:scale(0.35);opacity:0}
+      25%{opacity:0.65}
+      100%{transform:scale(2.35);opacity:0}
     }
     .pb-symbols{
-      position:absolute;left:50%;top:42%;width:0;height:0;z-index:2;
+      position:absolute;left:50%;top:40%;width:0;height:0;z-index:2;
     }
     .pb-sym{
-      position:absolute;font-size:28px;left:0;top:0;
-      opacity:0;
-      animation:pbSym 1.35s cubic-bezier(0.22,1,0.36,1) calc(0.15s + var(--a)*0.12s) both;
+      position:absolute;font-size:30px;left:0;top:0;opacity:0;
+      animation:pbSym 1.85s cubic-bezier(0.22,1,0.36,1) calc(0.25s + var(--a)*0.18s) both;
       filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
     @keyframes pbSym{
-      0%{opacity:0;transform:rotate(calc(var(--a)*120deg)) translateY(-70px) scale(0.5)}
-      45%{opacity:1;transform:rotate(calc(var(--a)*120deg)) translateY(-54px) scale(1.05)}
-      75%{opacity:1;transform:rotate(0deg) translateY(0) scale(0.85)}
-      100%{opacity:0;transform:rotate(0deg) translateY(0) scale(0.3)}
+      0%{opacity:0;transform:rotate(calc(var(--a)*120deg)) translateY(-78px) scale(0.45)}
+      40%{opacity:1;transform:rotate(calc(var(--a)*120deg)) translateY(-58px) scale(1.06)}
+      72%{opacity:1;transform:rotate(0deg) translateY(0) scale(0.9)}
+      100%{opacity:0;transform:rotate(0deg) translateY(0) scale(0.25)}
     }
     .pb-icon-wrap{
-      position:relative;z-index:3;width:128px;height:128px;border-radius:30px;
-      box-shadow:0 16px 40px rgba(0,0,0,0.35),0 0 0 1px rgba(110,231,183,0.2);
-      opacity:0;transform:scale(0.6);
-      animation:pbIcon 0.75s cubic-bezier(0.22,1,0.36,1) 1.15s forwards;
+      position:relative;z-index:3;width:132px;height:132px;border-radius:32px;
+      box-shadow:0 18px 44px rgba(0,0,0,0.38),0 0 0 1px rgba(110,231,183,0.22);
+      opacity:0;transform:scale(0.55);
+      animation:pbIcon 0.95s cubic-bezier(0.22,1,0.36,1) 1.85s forwards;
       overflow:hidden;background:#fff;
     }
-    .pb-icon{width:128px;height:128px;display:block;border-radius:30px}
+    .pb-icon{width:132px;height:132px;display:block;border-radius:32px}
     @keyframes pbIcon{
-      0%{opacity:0;transform:scale(0.55)}
-      70%{opacity:1;transform:scale(1.06)}
+      0%{opacity:0;transform:scale(0.5)}
+      65%{opacity:1;transform:scale(1.07)}
       100%{opacity:1;transform:scale(1)}
     }
     .pb-name{
-      margin-top:22px;display:flex;gap:1px;justify-content:center;direction:ltr;z-index:3;
+      margin-top:24px;display:flex;gap:2px;justify-content:center;direction:ltr;z-index:3;
     }
     .pb-name span{
-      display:inline-block;font-size:36px;font-weight:800;color:#6ee7b7;
-      letter-spacing:0.04em;
-      text-shadow:0 0 24px rgba(52,211,153,0.45);
-      opacity:0;transform:translateY(12px);
-      animation:pbLetter 0.45s cubic-bezier(0.22,1,0.36,1) calc(1.55s + var(--i)*0.06s) forwards;
+      display:inline-block;font-size:38px;font-weight:800;color:#6ee7b7;
+      letter-spacing:0.05em;
+      text-shadow:0 0 26px rgba(52,211,153,0.5);
+      opacity:0;transform:translateY(14px);
+      animation:pbLetter 0.55s cubic-bezier(0.22,1,0.36,1) calc(2.55s + var(--i)*0.11s) forwards;
       font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
     }
     @keyframes pbLetter{
-      from{opacity:0;transform:translateY(12px);filter:blur(4px)}
+      from{opacity:0;transform:translateY(14px);filter:blur(5px)}
       to{opacity:1;transform:translateY(0);filter:blur(0)}
     }
     .pb-tag{
-      margin:12px 0 0;font-size:12px;color:#a7f3d0;opacity:0;
-      animation:pbLetter 0.5s ease 2.05s forwards;
+      margin:14px 0 0;font-size:12px;color:#a7f3d0;opacity:0;
+      animation:pbLetter 0.6s ease 3.4s forwards;
       font-family:system-ui,sans-serif;
     }
   </style>
@@ -156,8 +151,10 @@
     (function () {
       var boot = document.getElementById("pharis-boot");
       var hidden = false;
-      var TOTAL_MS = 3200;
-      var FADE_MS = 400;
+      // آخر حرف يظهر ~2.55 + 5*0.11 + 0.55 ≈ 3.65ث — ثم استقرار الاسم ثم الخروج
+      var NAME_DONE_MS = 3800;
+      var HOLD_NAME_MS = 1400;
+      var FADE_MS = 480;
       var audioCtx = null;
 
       function music() {
@@ -167,16 +164,16 @@
           var t0 = audioCtx.currentTime + 0.05;
           var master = audioCtx.createGain();
           master.gain.setValueAtTime(0.0001, t0);
-          master.gain.exponentialRampToValueAtTime(0.09, t0 + 0.3);
-          master.gain.setValueAtTime(0.09, t0 + 2.2);
-          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 3.1);
+          master.gain.exponentialRampToValueAtTime(0.09, t0 + 0.4);
+          master.gain.setValueAtTime(0.09, t0 + 4.0);
+          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 5.3);
           master.connect(audioCtx.destination);
           function pad(f, s, d) {
             var o = audioCtx.createOscillator();
             var g = audioCtx.createGain();
             o.type = "sine"; o.frequency.value = f;
             g.gain.setValueAtTime(0.0001, t0 + s);
-            g.gain.exponentialRampToValueAtTime(0.035, t0 + s + 0.2);
+            g.gain.exponentialRampToValueAtTime(0.035, t0 + s + 0.25);
             g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
             o.connect(g); g.connect(master);
             o.start(t0 + s); o.stop(t0 + s + d);
@@ -191,9 +188,10 @@
             o.connect(g); g.connect(master);
             o.start(t0 + s); o.stop(t0 + s + d);
           }
-          pad(261.63, 0, 2.8); pad(329.63, 0.1, 2.7); pad(392, 0.2, 2.6);
-          note(392, 0.4, 0.35); note(523.25, 0.7, 0.4); note(659.25, 1.15, 0.45);
-          note(523.25, 1.7, 0.35); note(783.99, 2.1, 0.5, 0.07);
+          pad(261.63, 0, 4.8); pad(329.63, 0.15, 4.6); pad(392, 0.3, 4.4);
+          note(392, 0.5, 0.4); note(440, 0.9, 0.4); note(523.25, 1.35, 0.45);
+          note(494, 2.0, 0.35); note(523.25, 2.4, 0.4); note(659.25, 2.95, 0.5);
+          note(523.25, 3.6, 0.4); note(783.99, 4.15, 0.55, 0.07);
         } catch (e) {}
       }
       music();
@@ -208,14 +206,15 @@
         boot.style.animation = "none";
         boot.style.transition = "opacity " + (FADE_MS / 1000) + "s ease";
         boot.style.opacity = "0";
-        try { if (audioCtx) setTimeout(function () { try { audioCtx.close(); } catch (e) {} }, 300); } catch (e) {}
+        try { if (audioCtx) setTimeout(function () { try { audioCtx.close(); } catch (e) {} }, 350); } catch (e) {}
         setTimeout(function () {
           if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-        }, FADE_MS + 30);
+        }, FADE_MS + 40);
       }
 
       window.__pharisHideBoot = function () {};
-      setTimeout(hideBoot, TOTAL_MS);
+      // انتظر اكتمال الاسم + استقرار واضح ثم الانتقال
+      setTimeout(hideBoot, NAME_DONE_MS + HOLD_NAME_MS);
     })();
   </script>
 
