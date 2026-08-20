@@ -1,5 +1,5 @@
 // Pharis Service Worker — fast update ≤5s
-const CACHE_NAME = "pharis-v58-instant-boot";
+const CACHE_NAME = "pharis-v60-loc-fix";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./splash-intro.mp4"];
 
 const EXTERNAL = [
