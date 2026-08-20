@@ -1,5 +1,34 @@
-const CACHE_NAME='pharis-pro-v2';
-const urlsToCache=['./','./index.html','./pharmacies.js','./manifest.json','./icon.svg','./icon-192.png','./icon-512.png'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)));self.skipWaiting()});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(names=>Promise.all(names.filter(n=>n!==CACHE_NAME).map(n=>caches.delete(n)))));self.clients.claim()});
-self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(r2=>{if(!r2||r2.status!==200||r2.type!=='basic')return r2;var rc=r2.clone();caches.open(CACHE_NAME).then(c=>c.put(e.request,rc));return r2})))});
+const CACHE_NAME = 'pharis-v54-clean';
+const urlsToCache = ['./','./index.html','./pharmacies.js','./manifest.json','./icon.svg','./icon-192.png','./icon-512.png'];
+
+self.addEventListener('install', function(event) {
+  event.waitUntil(caches.open(CACHE_NAME).then(function(cache) {
+    return cache.addAll(urlsToCache);
+  }));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(caches.keys().then(function(cacheNames) {
+    return Promise.all(cacheNames.filter(function(name) {
+      return name !== CACHE_NAME;
+    }).map(function(name) {
+      return caches.delete(name);
+    }));
+  }));
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', function(event) {
+  event.respondWith(caches.match(event.request).then(function(response) {
+    if (response) return response;
+    return fetch(event.request).then(function(response) {
+      if (!response || response.status !== 200 || response.type !== 'basic') return response;
+      var responseToCache = response.clone();
+      caches.open(CACHE_NAME).then(function(cache) {
+        cache.put(event.request, responseToCache);
+      });
+      return response;
+    });
+  }));
+});

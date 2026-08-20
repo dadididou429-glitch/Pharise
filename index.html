@@ -11,7 +11,6 @@
   <meta name="apple-mobile-web-app-title" content="Pharis" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png" type="image/png" />
-  <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
@@ -62,80 +61,15 @@
     .scrollbar-thin::-webkit-scrollbar { width: 4px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
     .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-      /* Splash Screen — 3D Premium */
-@keyframes raysSpin{to{transform:rotate(360deg)}}
-    @keyframes floorIn{from{opacity:0;transform:translateX(-50%) rotateX(72deg) scale(.6)}to{opacity:1;transform:translateX(-50%) rotateX(72deg) scale(1)}}
-100%{width:190px;height:95px;opacity:0}}
-50%{opacity:.85;transform:translateX(-50%) scale(1.35)}}
-55%{opacity:1;transform:translate(-50%,-50%) translateZ(30px) rotateX(8deg) rotateY(-10deg) scale(1.08)}100%{opacity:1;transform:translate(-50%,-50%) translateZ(0) rotateX(0) rotateY(0) scale(1)}}
-50%{transform:translate(-50%,-50%) translateZ(14px) rotateY(8deg) translateY(-7px)}}
-}
-100%{transform:translateX(120%) rotate(0deg)}}
-15%{opacity:1}55%{opacity:1;transform:translate(-50%,-50%) rotateY(340deg) rotateX(18deg) translateZ(40px) scale(1.15)}100%{opacity:1;transform:translate(-50%,-50%) rotateY(700deg) rotateX(0deg) translateZ(0) scale(1)}}
-100%{opacity:1;transform:translateY(0) translateZ(0) rotateX(0) scale(1);filter:blur(0)}}
-to{opacity:1;transform:translateY(0)}}
-to{width:100%}}
-    @keyframes flashPop{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
-    @media (prefers-reduced-motion: reduce){
-}
-    /* ===== PREMIUM SPLASH SCREEN ===== */
-    #pharis-splash{position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#0d2b1a 0%,#06140c 50%,#030a06 100%);overflow:hidden}
-    #pharis-splash.vanish{opacity:0;pointer-events:none;transition:opacity 1s cubic-bezier(.4,0,.2,1)}
-
-    /* Floating particles */
-    .p-s{position:absolute;border-radius:50%;background:rgba(34,197,94,.12);pointer-events:none}
-    .p-s:nth-child(1){width:3px;height:3px;left:15%;animation:psFloat 6s linear infinite}
-    .p-s:nth-child(2){width:2px;height:2px;left:30%;animation:psFloat 8s linear infinite 1s}
-    .p-s:nth-child(3){width:4px;height:4px;left:70%;animation:psFloat 7s linear infinite .5s}
-    .p-s:nth-child(4){width:2px;height:2px;left:85%;animation:psFloat 9s linear infinite 2s}
-    .p-s:nth-child(5){width:3px;height:3px;left:50%;animation:psFloat 5s linear infinite 1.5s}
-    @keyframes psFloat{0%{transform:translateY(100vh);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-20vh);opacity:0}}
-
-    /* Stage */
-    .p-stage{position:relative;width:280px;height:300px;perspective:800px}
-
-    /* Ripple rings */
-    .p-ripple{position:absolute;left:50%;bottom:45px;transform:translateX(-50%);border:1.5px solid rgba(34,197,94,.2);border-radius:50%;animation:pRipple 2.2s ease-out infinite}
-    .p-ripple:nth-child(2){animation-delay:.5s}
-    .p-ripple:nth-child(3){animation-delay:1s}
-    @keyframes pRipple{0%{width:30px;height:15px;opacity:.6}100%{width:200px;height:100px;opacity:0}}
-
-    /* Ground glow */
-    .p-glow{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);width:100px;height:30px;background:radial-gradient(ellipse,rgba(34,197,94,.35) 0%,transparent 70%);animation:pGlow 2s ease-in-out infinite}
-    @keyframes pGlow{0%,100%{opacity:.4;transform:translateX(-50%) scale(1)}50%{opacity:.8;transform:translateX(-50%) scale(1.4)}}
-
-    /* The Pin - 3D entrance */
-    .p-pin{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);transform-style:preserve-3d;animation:pPinIn .9s cubic-bezier(.34,1.56,.64,1) forwards,pPinFloat 3.5s ease-in-out infinite .9s;opacity:0}
-    @keyframes pPinIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotateY(-45deg) translateY(40px)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotateY(0deg) translateY(0)}}
-    @keyframes pPinFloat{0%,100%{transform:translate(-50%,-50%) translateY(0) rotateY(-8deg) rotateX(3deg)}25%{transform:translate(-50%,-50%) translateY(-5px) rotateY(8deg) rotateX(-2deg)}50%{transform:translate(-50%,-50%) translateY(-2px) rotateY(0deg) rotateX(5deg)}75%{transform:translate(-50%,-50%) translateY(-6px) rotateY(-5deg) rotateX(0deg)}}
-
-    /* Shine sweep on pin */
-    .p-shine{position:absolute;inset:-15px;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);animation:pShine 3s ease-in-out infinite;border-radius:50%;pointer-events:none}
-    @keyframes pShine{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
-
-    /* Orbiting Capsule */
-    .p-cap{position:absolute;left:50%;top:38%;width:180px;height:180px;transform:translate(-50%,-50%);animation:pOrbit 2.8s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
-    @keyframes pOrbit{0%{transform:translate(-50%,-50%) rotate(0deg) scale(0);opacity:0}15%{transform:translate(-50%,-50%) rotate(90deg) scale(1.15);opacity:1}50%{transform:translate(-50%,-50%) rotate(360deg) scale(1);opacity:1}100%{transform:translate(-50%,-50%) rotate(720deg) scale(1);opacity:1}}
-
-    /* Name */
-    .p-name{margin-top:32px;font-family:Poppins,system-ui,sans-serif;font-size:50px;font-weight:900;letter-spacing:12px;color:#fff;display:flex;gap:6px;direction:ltr}
-    .p-name span{display:inline-block;opacity:0;text-shadow:0 0 40px rgba(34,197,94,.3)}
-    .p-name span:nth-child(1){animation:pLet .55s 1.8s cubic-bezier(.34,1.56,.64,1) forwards}
-    .p-name span:nth-child(2){animation:pLet .55s 1.95s cubic-bezier(.34,1.56,.64,1) forwards}
-    .p-name span:nth-child(3){animation:pLet .55s 2.1s cubic-bezier(.34,1.56,.64,1) forwards}
-    .p-name span:nth-child(4){animation:pLet .55s 2.25s cubic-bezier(.34,1.56,.64,1) forwards}
-    .p-name span:nth-child(5){animation:pLet .55s 2.4s cubic-bezier(.34,1.56,.64,1) forwards}
-    .p-name span:nth-child(6){animation:pLet .55s 2.55s cubic-bezier(.34,1.56,.64,1) forwards}
-    @keyframes pLet{0%{opacity:0;transform:translateY(35px) scale(.3) rotate(-18deg);filter:blur(8px)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0);filter:blur(0)}}
-
-    /* Subtitle */
-    .p-sub{margin-top:14px;font-size:13px;color:rgba(255,255,255,.45);letter-spacing:7px;text-transform:uppercase;font-family:Poppins,system-ui,sans-serif;opacity:0;animation:pFade .6s 3s ease forwards}
-    @keyframes pFade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-
-    /* Progress bar */
-    .p-bar{position:absolute;bottom:55px;width:160px;height:2px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;opacity:0;animation:pFade .3s .3s ease forwards}
-    .p-bar div{height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:2px;animation:pLoad 2.2s .3s cubic-bezier(.4,0,.2,1) forwards;box-shadow:0 0 8px rgba(34,197,94,.4)}
-    @keyframes pLoad{from{width:0%}to{width:100%}}
+      /* Splash */
+    #pharis-boot{position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1f15}
+    #pharis-boot.hide{opacity:0;pointer-events:none;transition:opacity .6s ease}
+    #pharis-boot svg{animation:bootIn .7s ease forwards;opacity:0}
+    #pharis-boot .boot-name{margin-top:20px;font-family:Poppins,system-ui,sans-serif;font-size:40px;font-weight:900;letter-spacing:8px;color:#fff;opacity:0;animation:bootIn .5s .4s ease forwards}
+    #pharis-boot .boot-bar{position:absolute;bottom:60px;width:130px;height:2px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;opacity:0;animation:bootIn .3s .2s ease forwards}
+    #pharis-boot .boot-bar div{height:100%;width:0%;background:#22c55e;border-radius:2px;animation:barLoad 1.4s .2s ease forwards}
+    @keyframes bootIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes barLoad{from{width:0%}to{width:100%}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -145,225 +79,49 @@ to{width:100%}}
   </head>
 <body class="bg-brand-50 text-stone-900 antialiased" style="background:#0a0a1a;margin:0">
 
-<!-- Premium Splash -->
-<div id="pharis-splash">
-  <div class="p-s" style="left:15%"></div>
-  <div class="p-s" style="left:30%"></div>
-  <div class="p-s" style="left:70%"></div>
-  <div class="p-s" style="left:85%"></div>
-  <div class="p-s" style="left:50%"></div>
-
-  <div class="p-stage">
-    <div class="p-ripple" style="width:30px;height:15px"></div>
-    <div class="p-ripple" style="width:30px;height:15px"></div>
-    <div class="p-ripple" style="width:30px;height:15px"></div>
-    <div class="p-glow"></div>
-
-    <div class="p-pin">
-      <svg width="180" height="200" viewBox="0 0 180 200" style="filter:drop-shadow(0 14px 32px rgba(0,0,0,.5)) drop-shadow(0 0 20px rgba(34,197,94,.15))">
-        <defs>
-          <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4ade80"/><stop offset="50%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#16a34a"/></linearGradient>
-          <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#86efac"/><stop offset="100%" style="stop-color:#22c55e"/></linearGradient>
-        </defs>
-        <path d="M90 15 C58 15 32 42 32 78 C32 115 90 185 90 185 C90 185 148 115 148 78 C148 42 122 15 90 15 Z" fill="url(#pg)" stroke="#16a34a" stroke-width="1.5"/>
-        <circle cx="90" cy="75" r="36" fill="#fff" stroke="#e5e7eb" stroke-width=".5"/>
-        <rect x="80" y="50" width="20" height="50" rx="3" fill="url(#cg)"/>
-        <rect x="65" y="65" width="50" height="20" rx="3" fill="url(#cg)"/>
-        <ellipse cx="70" cy="58" rx="15" ry="22" fill="rgba(255,255,255,.2)" transform="rotate(-18 70 58)"/>
-      </svg>
-      <div class="p-shine"></div>
-    </div>
-
-    <div class="p-cap">
-      <div style="position:absolute;left:50%;top:0;transform:translateX(-50%)">
-        <svg width="44" height="70" viewBox="0 0 44 70" style="filter:drop-shadow(0 6px 18px rgba(0,0,0,.4))">
-          <defs>
-            <linearGradient id="cw" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f8f8f8"/><stop offset="50%" style="stop-color:#fff"/><stop offset="100%" style="stop-color:#e8e8e8"/></linearGradient>
-            <linearGradient id="cr" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#dc2626"/><stop offset="50%" style="stop-color:#ef4444"/><stop offset="100%" style="stop-color:#b91c1c"/></linearGradient>
-          </defs>
-          <path d="M4 22 Q4 4 22 4 Q40 4 40 22 L40 34 L4 34 Z" fill="url(#cw)" stroke="#ddd" stroke-width=".5"/>
-          <path d="M4 34 L40 34 L40 46 Q40 66 22 66 Q4 66 4 46 Z" fill="url(#cr)"/>
-          <ellipse cx="16" cy="22" rx="7" ry="11" fill="rgba(255,255,255,.25)" transform="rotate(-15 16 22)"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-
-  <div class="p-name"><span>P</span><span>h</span><span>a</span><span>r</span><span>i</span><span>s</span></div>
-  <div class="p-sub">Find Your Pharmacy</div>
-  <div class="p-bar"><div></div></div>
+<div id="pharis-boot">
+  <svg width="110" height="110" viewBox="0 0 200 200">
+    <defs>
+      <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4ade80"/><stop offset="50%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#16a34a"/></linearGradient>
+      <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#86efac"/><stop offset="100%" style="stop-color:#22c55e"/></linearGradient>
+    </defs>
+    <rect width="200" height="200" rx="40" fill="#fff"/>
+    <path d="M100 30 C65 30 38 57 38 93 C38 128 100 180 100 180 C100 180 162 128 162 93 C162 57 135 30 100 30 Z" fill="url(#pg)"/>
+    <circle cx="100" cy="88" r="32" fill="#fff"/>
+    <rect x="89" y="62" width="22" height="52" rx="3" fill="url(#cg)"/>
+    <rect x="74" y="77" width="52" height="22" rx="3" fill="url(#cg)"/>
+    <ellipse cx="76" cy="68" rx="14" ry="20" fill="rgba(255,255,255,0.2)" transform="rotate(-18 76 68)"/>
+  </svg>
+  <div class="boot-name">Pharis</div>
+  <div class="boot-bar"><div></div></div>
 </div>
-<script>
-(function(){
-  var s=document.getElementById('pharis-splash');
-  if(!s)return;
-  // Sound effects
-  var ctx=null;
-  function tone(f,d,t,v,dl){setTimeout(function(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();var o=ctx.createOscillator(),g=ctx.createGain();o.type=t||'sine';o.frequency.setValueAtTime(f,ctx.currentTime);g.gain.setValueAtTime(v||.05,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d);},dl||0);}
-  function noise(d,v,dl){setTimeout(function(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();var bs=ctx.sampleRate*d,b=ctx.createBuffer(1,bs,ctx.sampleRate),data=b.getChannelData(0),g=ctx.createGain();for(var i=0;i<bs;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/bs,2);var src=ctx.createBufferSource();src.buffer=b;g.gain.setValueAtTime(v||.025,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);src.connect(g);g.connect(ctx.destination);src.start();},dl||0);}
-  // Water drop sounds
-  noise(.35,.035,200);noise(.28,.025,950);
-  // Letter pops
-  tone(880,.1,'sine',.045,1800);tone(1100,.1,'sine',.045,1950);tone(1320,.1,'sine',.045,2100);
-  tone(880,.1,'sine',.045,2250);tone(1100,.1,'sine',.045,2400);tone(1320,.13,'sine',.055,2550);
-  // Final chime
-  tone(523,.4,'sine',.045,3000);tone(659,.4,'sine',.045,3100);tone(784,.5,'sine',.055,3200);
-  // Auto hide after 5 seconds
-  setTimeout(function(){s.classList.add('vanish');},5000);
-})();
-</script>
-
-
-<div id="pharis-splash">
-  <div class="bgrays"></div>
-  <div class="grain"></div>
-  <div class="flash"></div>
-  <div class="stage">
-    <div class="floor"></div>
-    <div class="ripple" style="width:30px;height:15px"></div>
-    <div class="ripple" style="width:30px;height:15px"></div>
-    <div class="ripple" style="width:30px;height:15px"></div>
-    <div class="glow"></div>
-    <div class="pin-wrap">
-      <svg width="180" height="200" viewBox="0 0 180 200" style="filter:drop-shadow(0 12px 30px rgba(0,0,0,.5))">
-        <defs>
-          <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4ade80"/><stop offset="50%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#16a34a"/></linearGradient>
-          <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#86efac"/><stop offset="100%" style="stop-color:#22c55e"/></linearGradient>
-        </defs>
-        <path d="M90 15 C58 15 32 40 32 75 C32 110 90 180 90 180 C90 180 148 110 148 75 C148 40 122 15 90 15 Z" fill="url(#pg)" stroke="#16a34a" stroke-width="1.5"/>
-        <circle cx="90" cy="72" r="34" fill="#fff" stroke="#e5e7eb" stroke-width=".5"/>
-        <rect x="80" y="48" width="20" height="48" rx="3" fill="url(#cg)"/>
-        <rect x="66" y="62" width="48" height="20" rx="3" fill="url(#cg)"/>
-        <ellipse cx="70" cy="55" rx="14" ry="22" fill="rgba(255,255,255,.2)" transform="rotate(-18 70 55)"/>
-      </svg>
-      <div class="shine"></div>
-    </div>
-    <div class="capsule-wrap">
-      <div style="position:absolute;left:50%;top:0;transform:translateX(-50%)">
-        <svg width="40" height="64" viewBox="0 0 40 64" style="filter:drop-shadow(0 6px 16px rgba(0,0,0,.4))">
-          <defs>
-            <linearGradient id="cw" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f8f8f8"/><stop offset="50%" style="stop-color:#fff"/><stop offset="100%" style="stop-color:#e8e8e8"/></linearGradient>
-            <linearGradient id="cr" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#dc2626"/><stop offset="50%" style="stop-color:#ef4444"/><stop offset="100%" style="stop-color:#b91c1c"/></linearGradient>
-          </defs>
-          <path d="M4 20 Q4 4 20 4 Q36 4 36 20 L36 32 L4 32 Z" fill="url(#cw)" stroke="#ddd" stroke-width=".5"/>
-          <path d="M4 32 L36 32 L36 44 Q36 60 20 60 Q4 60 4 44 Z" fill="url(#cr)"/>
-          <ellipse cx="15" cy="20" rx="6" ry="10" fill="rgba(255,255,255,.25)" transform="rotate(-15 15 20)"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-  <div class="name"><span>P</span><span>h</span><span>a</span><span>r</span><span>i</span><span>s</span></div>
-  <div class="subtitle">Find Your Pharmacy</div>
-  <div class="bar"><div></div></div>
-</div>
-<script>
-(function(){
-  var s=document.getElementById('pharis-splash');
-  if(!s)return;
-  var audioCtx=null;
-  function ctx(){ if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
-
-  // نغمة بسيطة (اختياري: عبر فلتر ونوع موجة)
-  function playSound(freq,dur,type,vol,delay,filterFreq){
-    setTimeout(function(){
-      var c=ctx();
-      var osc=c.createOscillator(),gain=c.createGain();
-      osc.type=type||'sine';osc.frequency.setValueAtTime(freq,c.currentTime);
-      var node=osc;
-      if(filterFreq){
-        var f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=filterFreq;
-        osc.connect(f);node=f;
-      }
-      gain.gain.setValueAtTime(0.0001,c.currentTime);
-      gain.gain.linearRampToValueAtTime(vol||0.06,c.currentTime+0.015);
-      gain.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
-      node.connect(gain);gain.connect(c.destination);osc.start();osc.stop(c.currentTime+dur+0.02);
-    },delay||0);
-  }
-  // نغمة مع صدى خفيف (تكرار متلاشي) لإحساس "قاعة" فخم
-  function playSoundEcho(freq,dur,type,vol,delay,echoes){
-    playSound(freq,dur,type,vol,delay);
-    echoes=echoes||2;
-    for(var i=1;i<=echoes;i++){
-      playSound(freq,dur*0.8,type,vol*Math.pow(.35,i),delay+i*90);
-    }
-  }
-  function playNoise(dur,vol,delay,filterFreq){
-    setTimeout(function(){
-      var c=ctx();
-      var bufSize=c.sampleRate*dur,buffer=c.createBuffer(1,bufSize,c.sampleRate),data=buffer.getChannelData(0),gain=c.createGain();
-      for(var i=0;i<bufSize;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/bufSize,2);
-      var src=c.createBufferSource();src.buffer=buffer;
-      var node=src;
-      if(filterFreq){
-        var f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=filterFreq;f.Q.value=0.9;
-        src.connect(f);node=f;
-      }
-      gain.gain.setValueAtTime(vol||0.03,c.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
-      node.connect(gain);gain.connect(c.destination);src.start();
-    },delay||0);
-  }
-  // Whoosh: تردد متصاعد يرافق دخول الدبوس 3D
-  function playWhoosh(delay){
-    setTimeout(function(){
-      var c=ctx();
-      var osc=c.createOscillator(),gain=c.createGain(),f=c.createBiquadFilter();
-      osc.type='sawtooth';
-      osc.frequency.setValueAtTime(80,c.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(420,c.currentTime+.5);
-      f.type='lowpass';f.frequency.setValueAtTime(200,c.currentTime);f.frequency.exponentialRampToValueAtTime(2200,c.currentTime+.5);
-      gain.gain.setValueAtTime(0.0001,c.currentTime);
-      gain.gain.linearRampToValueAtTime(0.05,c.currentTime+.15);
-      gain.gain.exponentialRampToValueAtTime(0.001,c.currentTime+.55);
-      osc.connect(f);f.connect(gain);gain.connect(c.destination);osc.start();osc.stop(c.currentTime+.6);
-    },delay||0);
-  }
-  // باص خافت يبني التوتر من البداية
-  function playSubSwell(delay,dur){
-    setTimeout(function(){
-      var c=ctx();
-      var osc=c.createOscillator(),gain=c.createGain();
-      osc.type='sine';osc.frequency.setValueAtTime(55,c.currentTime);osc.frequency.linearRampToValueAtTime(70,c.currentTime+dur);
-      gain.gain.setValueAtTime(0.0001,c.currentTime);
-      gain.gain.linearRampToValueAtTime(0.045,c.currentTime+dur*0.6);
-      gain.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
-      osc.connect(gain);gain.connect(c.destination);osc.start();osc.stop(c.currentTime+dur+0.05);
-    },delay||0);
-  }
-
-  // ── تسلسل الصوت الفخم ──
-  playSubSwell(0,900);                       // باص تمهيدي
-  playWhoosh(120);                            // اندفاع مع دخول الدبوس 3D
-  playNoise(.35,.05,550,900);                 // ارتطام خفيف عند استقرار الدبوس
-  playNoise(.3,.035,650,1400);                // قطرة/لمعان
-  playSoundEcho(660,.5,'sine',.05,550,2);      // رنّة الوميض (flash)
-  // مدار الكبسولة الدوّار
-  playSound(1400,.2,'sine',.03,650,3200);
-  playSound(1760,.2,'sine',.03,1150,3600);
-  // فرقعات موسيقية مع ظهور الحروف (بصدى خفيف)
-  playSoundEcho(880,.15,'sine',.055,1550,1);
-  playSoundEcho(1046,.15,'sine',.055,1680,1);
-  playSoundEcho(1318,.15,'sine',.055,1810,1);
-  playSoundEcho(880,.15,'sine',.055,1940,1);
-  playSoundEcho(1046,.15,'sine',.055,2070,1);
-  playSoundEcho(1568,.18,'sine',.065,2200,1);
-  // الجرس الختامي الغني (ثلاثي هارموني + صدى)
-  playSoundEcho(523.25,.55,'sine',.055,2650,2);
-  playSoundEcho(659.25,.55,'sine',.05,2760,2);
-  playSoundEcho(784,.7,'sine',.06,2870,3);
-  playSoundEcho(1046.5,.6,'sine',.04,2950,2);
-
-  // إخفاء تلقائي بعد اكتمال الأنيميشن
-  setTimeout(function(){s.classList.add('done');},4400);
-})();
-</script>
-
-
-
+<script>(function(){var b=document.getElementById('pharis-boot');if(!b)return;setTimeout(function(){b.classList.add('hide');},2200);setTimeout(function(){if(b)b.style.display='none';},2900);})();</script>
 
       
-    
+    <script>
+    (function () {
+      var boot = document.getElementById("pharis-boot");
+      var minMs = 6500;
+      var started = Date.now();
+      var hidden = false;
+      window.__pharisHideBoot = function () {
+        if (hidden || !boot) return;
+        var wait = Math.max(0, minMs - (Date.now() - started));
+        setTimeout(function () {
+          if (hidden || !boot) return;
+          hidden = true;
+          boot.style.opacity = "0";
+          boot.style.transform = "scale(1.2)";
+          setTimeout(function () {
+            if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+          }, 900);
+        }, wait);
+      };
+      setTimeout(function () {
+        if (window.__pharisHideBoot) window.__pharisHideBoot();
+      }, 13000);
+    })();
+  </script>
 
   <script>
     // Firebase
@@ -3900,43 +3658,55 @@ out center tags;`;
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
-    // نظام التحديث — يسأل المستخدم عبر بانر بدل reload مفاجئ صامت
+    // نظام التحديث التلقائي المحسّن
     if ("serviceWorker" in navigator) {
       let refreshing = false;
-      const doReload = function () {
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
         if (refreshing) return;
         refreshing = true;
-        window.__pharisReloaded = true;
         window.location.reload();
-      };
-      // يُطلق فقط بعد ما المستخدم يوافق ويرسل SKIP_WAITING (انظر doUpdate بالأسفل)
-      navigator.serviceWorker.addEventListener("controllerchange", doReload);
+      });
+
       navigator.serviceWorker.addEventListener("message", function (event) {
-        if (event.data && event.data.type === "SW_UPDATED") doReload();
+        if (event.data && event.data.type === "SW_UPDATED") {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        }
       });
 
       window.addEventListener("load", function () {
         navigator.serviceWorker
           .register("./service-worker.js", { updateViaCache: "none" })
           .then(function (reg) {
-            // نسخة جديدة جاهزة ومنتظرة فعلاً؟ اعرض البانر مباشرة
-            if (reg.waiting && navigator.serviceWorker.controller) {
-              showUpdateBanner(reg.waiting);
-            }
+            // تحديث فوري وتلقائي
+            const applyUpdate = function (worker) {
+              if (worker) {
+                try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+              }
+              setTimeout(function () {
+                if (!refreshing) {
+                  refreshing = true;
+                  window.location.reload();
+                }
+              }, 400);
+            };
+
+            if (reg.waiting) applyUpdate(reg.waiting);
 
             reg.addEventListener("updatefound", function () {
               const newWorker = reg.installing;
               if (!newWorker) return;
               newWorker.addEventListener("statechange", function () {
-                // "installed" + وجود controller يعني هذا تحديث لصفحة موجودة أصلاً (مش أول تثبيت)
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                  showUpdateBanner(newWorker);
+                if (newWorker.state === "installed") {
+                  applyUpdate(newWorker);
                 }
               });
             });
 
-            // فحص دوري لوجود تحديث (بدون فرضه) كل 10 ثوان + عند العودة للتطبيق
-            setInterval(function () { reg.update().catch(function () {}); }, 10 * 1000);
+            // فحص سريع جداً كل 5 ثوان + عند العودة للتطبيق
+            setInterval(function () { reg.update().catch(function () {}); }, 5 * 1000);
             document.addEventListener("visibilitychange", function () {
               if (document.visibilityState === "visible") reg.update().catch(function () {});
             });
@@ -4034,18 +3804,30 @@ out center tags;`;
         const btn = document.getElementById("pharis-update-btn");
         if (btn) {
           btn.disabled = true;
-          btn.textContent = "...";
+          btn.textContent = lang === "fr" ? "..." : lang === "en" ? "..." : "...";
         }
-        // أخبر الـ SW الجديد بأخذ التحكم — الـ reload سيصير تلقائيًا عبر controllerchange بالأعلى
-        try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
-        try { worker.postMessage("skipWaiting"); } catch (e) {}
-        // أمان: إعادة تحميل يدويًا لو controllerchange ما اشتغل خلال ثانيتين
-        setTimeout(function () {
-          if (!window.__pharisReloaded) {
-            window.__pharisReloaded = true;
-            window.location.reload();
+        // 1) أخبر الـ SW بالتخطي
+        try {
+          if (worker) worker.postMessage({ type: "SKIP_WAITING" });
+        } catch (e) {}
+        try {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: "SKIP_WAITING" });
+            navigator.serviceWorker.controller.postMessage({ type: "CLEAR_CACHE" });
           }
-        }, 2000);
+        } catch (e) {}
+        // 2) امسح الكاش من الصفحة
+        if (window.caches && caches.keys) {
+          caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+          }).catch(function () {}).finally(function () {
+            window.location.reload();
+          });
+        } else {
+          window.location.reload();
+        }
+        // أمان: إعادة تحميل بعد ثانيتين حتى لو علق الكاش
+        setTimeout(function () { window.location.reload(); }, 2000);
       };
 
       document.getElementById("pharis-update-btn").addEventListener("click", function (e) {
@@ -4066,7 +3848,6 @@ out center tags;`;
       e.preventDefault();
       window.__pharisInstallPrompt = e;
       window.dispatchEvent(new Event("pharis-installable"));
-
     });
   </script>
 
@@ -4096,6 +3877,31 @@ out center tags;`;
   };
   </script>
 
-<div id="root"></div>
+  <!-- Auto-Update Client -->
+  <script>
+  (function(){
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('service-worker.js').then(function(reg){
+        // Check for updates every 15 seconds
+        setInterval(function(){reg.update();},15000);
+        // Listen for new service worker
+        reg.addEventListener('updatefound',function(){
+          var newWorker=reg.installing;
+          newWorker.addEventListener('statechange',function(){
+            if(newWorker.state==='installed'&&navigator.serviceWorker.controller){
+              // New version available - reload immediately
+              newWorker.postMessage('skipWaiting');
+              window.location.reload();
+            }
+          });
+        });
+      });
+      // Also reload when controller changes
+      navigator.serviceWorker.addEventListener('controllerchange',function(){
+        window.location.reload();
+      });
+    }
+  })();
+  </script>
 </body>
 </html>
