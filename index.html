@@ -65,171 +65,157 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-      <!-- افتتاحية فيديو + موسيقى — سريعة وسلسة -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#0a1f1a;overflow:hidden;opacity:0;animation:pharisBootFadeIn 0.35s ease forwards">
-    <video
-      id="pharis-boot-video"
-      src="./splash-intro.mp4"
-      autoplay
-      muted
-      playsinline
-      webkit-playsinline
-      preload="auto"
-      style="width:100%;height:100%;object-fit:cover;display:block;background:#0a1f1a"
-    ></video>
+      <!-- افتتاحية احترافية — أيقونة + رموز + اسم -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#022c22;overflow:hidden;opacity:0;animation:pbIn 0.4s ease forwards">
+    <div style="position:relative;width:min(100vw,380px);height:min(100vh,520px);display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <!-- حلقات ضوئية -->
+      <div class="pb-ring" style="--d:0s"></div>
+      <div class="pb-ring" style="--d:0.25s"></div>
+      <!-- الرموز تدور ثم تختفي -->
+      <div class="pb-symbols">
+        <span class="pb-sym" style="--a:0">📍</span>
+        <span class="pb-sym" style="--a:1">✚</span>
+        <span class="pb-sym" style="--a:2">💊</span>
+      </div>
+      <!-- الأيقونة -->
+      <div class="pb-icon-wrap">
+        <img src="./icon-192.png" alt="Pharis" width="128" height="128" class="pb-icon" />
+      </div>
+      <!-- الاسم -->
+      <div class="pb-name" dir="ltr">
+        <span style="--i:0">P</span><span style="--i:1">h</span><span style="--i:2">a</span><span style="--i:3">r</span><span style="--i:4">i</span><span style="--i:5">s</span>
+      </div>
+      <p class="pb-tag">صيدليات مفتوحة · قريبة منك</p>
+    </div>
   </div>
   <div id="root"></div>
   <style>
-    @keyframes pharisBootFadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes pharisBootFadeOut{from{opacity:1}to{opacity:0}}
+    @keyframes pbIn{from{opacity:0}to{opacity:1}}
+    @keyframes pbOut{from{opacity:1}to{opacity:0}}
+    .pb-ring{
+      position:absolute;left:50%;top:42%;width:160px;height:160px;margin:-80px 0 0 -80px;
+      border:1.5px solid rgba(110,231,183,0.25);border-radius:50%;
+      animation:pbRing 2.4s ease-out var(--d) both;
+      pointer-events:none;
+    }
+    @keyframes pbRing{
+      0%{transform:scale(0.4);opacity:0}
+      30%{opacity:0.7}
+      100%{transform:scale(2.1);opacity:0}
+    }
+    .pb-symbols{
+      position:absolute;left:50%;top:42%;width:0;height:0;z-index:2;
+    }
+    .pb-sym{
+      position:absolute;font-size:28px;left:0;top:0;
+      opacity:0;
+      animation:pbSym 1.35s cubic-bezier(0.22,1,0.36,1) calc(0.15s + var(--a)*0.12s) both;
+      filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+    @keyframes pbSym{
+      0%{opacity:0;transform:rotate(calc(var(--a)*120deg)) translateY(-70px) scale(0.5)}
+      45%{opacity:1;transform:rotate(calc(var(--a)*120deg)) translateY(-54px) scale(1.05)}
+      75%{opacity:1;transform:rotate(0deg) translateY(0) scale(0.85)}
+      100%{opacity:0;transform:rotate(0deg) translateY(0) scale(0.3)}
+    }
+    .pb-icon-wrap{
+      position:relative;z-index:3;width:128px;height:128px;border-radius:30px;
+      box-shadow:0 16px 40px rgba(0,0,0,0.35),0 0 0 1px rgba(110,231,183,0.2);
+      opacity:0;transform:scale(0.6);
+      animation:pbIcon 0.75s cubic-bezier(0.22,1,0.36,1) 1.15s forwards;
+      overflow:hidden;background:#fff;
+    }
+    .pb-icon{width:128px;height:128px;display:block;border-radius:30px}
+    @keyframes pbIcon{
+      0%{opacity:0;transform:scale(0.55)}
+      70%{opacity:1;transform:scale(1.06)}
+      100%{opacity:1;transform:scale(1)}
+    }
+    .pb-name{
+      margin-top:22px;display:flex;gap:1px;justify-content:center;direction:ltr;z-index:3;
+    }
+    .pb-name span{
+      display:inline-block;font-size:36px;font-weight:800;color:#6ee7b7;
+      letter-spacing:0.04em;
+      text-shadow:0 0 24px rgba(52,211,153,0.45);
+      opacity:0;transform:translateY(12px);
+      animation:pbLetter 0.45s cubic-bezier(0.22,1,0.36,1) calc(1.55s + var(--i)*0.06s) forwards;
+      font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+    }
+    @keyframes pbLetter{
+      from{opacity:0;transform:translateY(12px);filter:blur(4px)}
+      to{opacity:1;transform:translateY(0);filter:blur(0)}
+    }
+    .pb-tag{
+      margin:12px 0 0;font-size:12px;color:#a7f3d0;opacity:0;
+      animation:pbLetter 0.5s ease 2.05s forwards;
+      font-family:system-ui,sans-serif;
+    }
   </style>
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var vid = document.getElementById("pharis-boot-video");
       var hidden = false;
-      // تثبيت قصير بعد الاسم ثم انتقال سريع
-      var HOLD_AFTER_NAME_MS = 700;
-      var FADE_MS = 380;
-      var SAFETY_MS = 9000;
+      var TOTAL_MS = 3200;
+      var FADE_MS = 400;
       var audioCtx = null;
 
-      function getCtx() {
-        if (!audioCtx) {
-          try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
-        }
-        return audioCtx;
-      }
-
-      function playIntroMusic() {
-        var c = getCtx();
-        if (!c) return;
+      function music() {
         try {
-          if (c.state === "suspended") c.resume();
-          var t0 = c.currentTime + 0.03;
-          var master = c.createGain();
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          var t0 = audioCtx.currentTime + 0.05;
+          var master = audioCtx.createGain();
           master.gain.setValueAtTime(0.0001, t0);
-          master.gain.exponentialRampToValueAtTime(0.1, t0 + 0.25);
-          master.gain.setValueAtTime(0.1, t0 + 3.6);
-          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 5.0);
-          master.connect(c.destination);
-
-          function pad(freq, start, dur) {
-            var o = c.createOscillator();
-            var g = c.createGain();
-            o.type = "sine";
-            o.frequency.setValueAtTime(freq, t0 + start);
-            g.gain.setValueAtTime(0.0001, t0 + start);
-            g.gain.exponentialRampToValueAtTime(0.04, t0 + start + 0.25);
-            g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
+          master.gain.exponentialRampToValueAtTime(0.09, t0 + 0.3);
+          master.gain.setValueAtTime(0.09, t0 + 2.2);
+          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 3.1);
+          master.connect(audioCtx.destination);
+          function pad(f, s, d) {
+            var o = audioCtx.createOscillator();
+            var g = audioCtx.createGain();
+            o.type = "sine"; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t0 + s);
+            g.gain.exponentialRampToValueAtTime(0.035, t0 + s + 0.2);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
             o.connect(g); g.connect(master);
-            o.start(t0 + start);
-            o.stop(t0 + start + dur + 0.05);
+            o.start(t0 + s); o.stop(t0 + s + d);
           }
-          pad(261.63, 0.0, 4.5);
-          pad(329.63, 0.1, 4.4);
-          pad(392.00, 0.2, 4.2);
-          pad(523.25, 0.9, 3.4);
-
-          function pluck(freq, start, dur, vol) {
-            var o = c.createOscillator();
-            var g = c.createGain();
-            o.type = "triangle";
-            o.frequency.setValueAtTime(freq, t0 + start);
-            g.gain.setValueAtTime(0.0001, t0 + start);
-            g.gain.exponentialRampToValueAtTime(vol || 0.06, t0 + start + 0.025);
-            g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
+          function note(f, s, d, v) {
+            var o = audioCtx.createOscillator();
+            var g = audioCtx.createGain();
+            o.type = "triangle"; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t0 + s);
+            g.gain.exponentialRampToValueAtTime(v || 0.06, t0 + s + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
             o.connect(g); g.connect(master);
-            o.start(t0 + start);
-            o.stop(t0 + start + dur + 0.02);
+            o.start(t0 + s); o.stop(t0 + s + d);
           }
-          var notes = [
-            [0.35, 392.0], [0.55, 440.0], [0.75, 523.25],
-            [1.2, 494.0], [1.45, 523.25], [1.75, 587.33],
-            [2.3, 523.25], [2.6, 659.25], [2.95, 783.99],
-            [3.5, 523.25], [3.8, 659.25], [4.15, 783.99]
-          ];
-          for (var i = 0; i < notes.length; i++) {
-            pluck(notes[i][1], notes[i][0], 0.38, 0.06);
-          }
+          pad(261.63, 0, 2.8); pad(329.63, 0.1, 2.7); pad(392, 0.2, 2.6);
+          note(392, 0.4, 0.35); note(523.25, 0.7, 0.4); note(659.25, 1.15, 0.45);
+          note(523.25, 1.7, 0.35); note(783.99, 2.1, 0.5, 0.07);
         } catch (e) {}
       }
-
-      function stopMusic() {
-        try {
-          setTimeout(function () {
-            try { if (audioCtx) audioCtx.close(); } catch (e2) {}
-            audioCtx = null;
-          }, 200);
-        } catch (e) {}
-      }
-
-      function tryPlayVideo() {
-        if (!vid) return;
-        // تسريع طفيف للفيديو ليكون أسرع دون تشويه كبير
-        try { vid.playbackRate = 1.15; } catch (e) {}
-        var p = vid.play();
-        if (p && p.catch) p.catch(function () {});
-      }
-      tryPlayVideo();
-      playIntroMusic();
-      document.addEventListener("DOMContentLoaded", function () {
-        tryPlayVideo();
-        playIntroMusic();
-      });
-      window.addEventListener("load", function () {
-        tryPlayVideo();
-        playIntroMusic();
-      });
+      music();
       document.addEventListener("pointerdown", function once() {
-        playIntroMusic();
+        try { if (audioCtx && audioCtx.state === "suspended") audioCtx.resume(); music(); } catch (e) {}
         document.removeEventListener("pointerdown", once);
       }, { once: true });
 
       function hideBoot() {
         if (hidden || !boot) return;
         hidden = true;
-        stopMusic();
         boot.style.animation = "none";
         boot.style.transition = "opacity " + (FADE_MS / 1000) + "s ease";
         boot.style.opacity = "0";
+        try { if (audioCtx) setTimeout(function () { try { audioCtx.close(); } catch (e) {} }, 300); } catch (e) {}
         setTimeout(function () {
           if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-        }, FADE_MS + 20);
+        }, FADE_MS + 30);
       }
 
-      function settleThenLeave() {
-        if (hidden) return;
-        try {
-          if (vid && vid.duration && isFinite(vid.duration)) {
-            vid.pause();
-            if (vid.currentTime < vid.duration - 0.05) {
-              vid.currentTime = Math.max(0, vid.duration - 0.05);
-            }
-          }
-        } catch (e) {}
-        setTimeout(hideBoot, HOLD_AFTER_NAME_MS);
-      }
-
-      if (vid) {
-        vid.addEventListener("ended", function () { settleThenLeave(); });
-        vid.addEventListener("timeupdate", function onTu() {
-          if (!vid.duration || !isFinite(vid.duration)) return;
-          // ابدأ التثبيت مبكراً قليلاً عند ظهور الاسم
-          if (vid.currentTime >= vid.duration * 0.88) {
-            vid.removeEventListener("timeupdate", onTu);
-            settleThenLeave();
-          }
-        });
-      }
-
-      window.__pharisHideBoot = function () {
-        // لا تقطع الفيديو مبكراً من React — اترك التسلسل
-      };
-
-      setTimeout(function () {
-        if (!hidden) settleThenLeave();
-      }, SAFETY_MS);
+      window.__pharisHideBoot = function () {};
+      setTimeout(hideBoot, TOTAL_MS);
     })();
   </script>
 
