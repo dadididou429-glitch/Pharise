@@ -65,8 +65,8 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-      <!-- افتتاحية فيديو + موسيقى خفيفة -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#0a1f1a;overflow:hidden;transition:opacity 0.65s ease">
+      <!-- افتتاحية فيديو + موسيقى — سريعة وسلسة -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#0a1f1a;overflow:hidden;opacity:0;animation:pharisBootFadeIn 0.35s ease forwards">
     <video
       id="pharis-boot-video"
       src="./splash-intro.mp4"
@@ -79,15 +79,20 @@
     ></video>
   </div>
   <div id="root"></div>
+  <style>
+    @keyframes pharisBootFadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes pharisBootFadeOut{from{opacity:1}to{opacity:0}}
+  </style>
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
       var vid = document.getElementById("pharis-boot-video");
       var hidden = false;
-      var HOLD_AFTER_NAME_MS = 1600;
-      var SAFETY_MS = 12000;
+      // تثبيت قصير بعد الاسم ثم انتقال سريع
+      var HOLD_AFTER_NAME_MS = 700;
+      var FADE_MS = 380;
+      var SAFETY_MS = 9000;
       var audioCtx = null;
-      var musicNodes = [];
 
       function getCtx() {
         if (!audioCtx) {
@@ -101,78 +106,68 @@
         if (!c) return;
         try {
           if (c.state === "suspended") c.resume();
-          var t0 = c.currentTime + 0.05;
+          var t0 = c.currentTime + 0.03;
           var master = c.createGain();
           master.gain.setValueAtTime(0.0001, t0);
-          master.gain.exponentialRampToValueAtTime(0.11, t0 + 0.4);
-          master.gain.setValueAtTime(0.11, t0 + 4.2);
-          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 6.2);
+          master.gain.exponentialRampToValueAtTime(0.1, t0 + 0.25);
+          master.gain.setValueAtTime(0.1, t0 + 3.6);
+          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 5.0);
           master.connect(c.destination);
-          musicNodes.push(master);
 
-          // طبقة ناعمة (pad)
           function pad(freq, start, dur) {
             var o = c.createOscillator();
             var g = c.createGain();
             o.type = "sine";
             o.frequency.setValueAtTime(freq, t0 + start);
             g.gain.setValueAtTime(0.0001, t0 + start);
-            g.gain.exponentialRampToValueAtTime(0.045, t0 + start + 0.35);
+            g.gain.exponentialRampToValueAtTime(0.04, t0 + start + 0.25);
             g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
             o.connect(g); g.connect(master);
             o.start(t0 + start);
             o.stop(t0 + start + dur + 0.05);
-            musicNodes.push(o, g);
           }
-          // نغمات متفائلة هادئة (C major feeling)
-          pad(261.63, 0.0, 5.5);   // C4
-          pad(329.63, 0.15, 5.3);  // E4
-          pad(392.00, 0.3, 5.1);   // G4
-          pad(523.25, 1.2, 4.0);   // C5 soft
+          pad(261.63, 0.0, 4.5);
+          pad(329.63, 0.1, 4.4);
+          pad(392.00, 0.2, 4.2);
+          pad(523.25, 0.9, 3.4);
 
-          // لحن بسيط متصاعد
           function pluck(freq, start, dur, vol) {
             var o = c.createOscillator();
             var g = c.createGain();
             o.type = "triangle";
             o.frequency.setValueAtTime(freq, t0 + start);
             g.gain.setValueAtTime(0.0001, t0 + start);
-            g.gain.exponentialRampToValueAtTime(vol || 0.07, t0 + start + 0.03);
+            g.gain.exponentialRampToValueAtTime(vol || 0.06, t0 + start + 0.025);
             g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
             o.connect(g); g.connect(master);
             o.start(t0 + start);
             o.stop(t0 + start + dur + 0.02);
-            musicNodes.push(o, g);
           }
-          // موتيف: صعود خفيف يناسب الصحة/الثقة
           var notes = [
-            [0.5, 392.0], [0.75, 440.0], [1.0, 523.25],
-            [1.55, 494.0], [1.85, 523.25], [2.2, 587.33],
-            [2.9, 523.25], [3.25, 659.25], [3.7, 783.99],
-            [4.4, 523.25], [4.75, 659.25], [5.2, 783.99]
+            [0.35, 392.0], [0.55, 440.0], [0.75, 523.25],
+            [1.2, 494.0], [1.45, 523.25], [1.75, 587.33],
+            [2.3, 523.25], [2.6, 659.25], [2.95, 783.99],
+            [3.5, 523.25], [3.8, 659.25], [4.15, 783.99]
           ];
           for (var i = 0; i < notes.length; i++) {
-            pluck(notes[i][1], notes[i][0], 0.45, 0.065);
+            pluck(notes[i][1], notes[i][0], 0.38, 0.06);
           }
         } catch (e) {}
       }
 
       function stopMusic() {
         try {
-          if (audioCtx) {
-            var c = audioCtx;
-            var g = c.createGain();
-            // soft close
-            setTimeout(function () {
-              try { audioCtx.close(); } catch (e2) {}
-              audioCtx = null;
-            }, 400);
-          }
+          setTimeout(function () {
+            try { if (audioCtx) audioCtx.close(); } catch (e2) {}
+            audioCtx = null;
+          }, 200);
         } catch (e) {}
       }
 
       function tryPlayVideo() {
         if (!vid) return;
+        // تسريع طفيف للفيديو ليكون أسرع دون تشويه كبير
+        try { vid.playbackRate = 1.15; } catch (e) {}
         var p = vid.play();
         if (p && p.catch) p.catch(function () {});
       }
@@ -186,7 +181,6 @@
         tryPlayVideo();
         playIntroMusic();
       });
-      // إعادة محاولة الصوت عند أول لمس (قيود المتصفح)
       document.addEventListener("pointerdown", function once() {
         playIntroMusic();
         document.removeEventListener("pointerdown", once);
@@ -195,11 +189,13 @@
       function hideBoot() {
         if (hidden || !boot) return;
         hidden = true;
-        boot.style.opacity = "0";
         stopMusic();
+        boot.style.animation = "none";
+        boot.style.transition = "opacity " + (FADE_MS / 1000) + "s ease";
+        boot.style.opacity = "0";
         setTimeout(function () {
           if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-        }, 650);
+        }, FADE_MS + 20);
       }
 
       function settleThenLeave() {
@@ -219,7 +215,8 @@
         vid.addEventListener("ended", function () { settleThenLeave(); });
         vid.addEventListener("timeupdate", function onTu() {
           if (!vid.duration || !isFinite(vid.duration)) return;
-          if (vid.currentTime >= vid.duration * 0.92) {
+          // ابدأ التثبيت مبكراً قليلاً عند ظهور الاسم
+          if (vid.currentTime >= vid.duration * 0.88) {
             vid.removeEventListener("timeupdate", onTu);
             settleThenLeave();
           }
@@ -227,12 +224,7 @@
       }
 
       window.__pharisHideBoot = function () {
-        if (vid && vid.readyState >= 2 && vid.duration && isFinite(vid.duration)) {
-          var left = (vid.duration - vid.currentTime) * 1000 + HOLD_AFTER_NAME_MS;
-          setTimeout(function () {
-            if (!hidden) settleThenLeave();
-          }, Math.max(0, left));
-        }
+        // لا تقطع الفيديو مبكراً من React — اترك التسلسل
       };
 
       setTimeout(function () {
@@ -3769,10 +3761,8 @@ out center tags;`;
         <PharisApp />
       </ErrorBoundary>
     );
-    if (typeof window.__pharisHideBoot === "function") {
-      // انتظر قليلاً حتى يجهز التطبيق مع إبقاء الأنيميشن ظاهر ~2.8ث
-      setTimeout(function () { window.__pharisHideBoot(); }, 600);
-    }
+    // الافتتاحية تُغلق نفسها بعد الفيديو — لا إغلاق مبكر من React
+
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
