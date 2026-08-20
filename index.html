@@ -65,8 +65,8 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-      <!-- افتتاحية فيديو سينمائي -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#0a1f1a;overflow:hidden;transition:opacity 0.55s ease">
+      <!-- افتتاحية فيديو — تثبيت بعد ظهور الاسم ثم الترحيب -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#0a1f1a;overflow:hidden;transition:opacity 0.65s ease">
     <video
       id="pharis-boot-video"
       src="./splash-intro.mp4"
@@ -84,8 +84,9 @@
       var boot = document.getElementById("pharis-boot");
       var vid = document.getElementById("pharis-boot-video");
       var hidden = false;
-      var minMs = 5500;
-      var started = Date.now();
+      // ثبّت المشهد النهائي (الاسم بعد الدخان) قبل الانتقال
+      var HOLD_AFTER_NAME_MS = 1600;
+      var SAFETY_MS = 12000;
 
       function tryPlay() {
         if (!vid) return;
@@ -102,34 +103,51 @@
         boot.style.opacity = "0";
         setTimeout(function () {
           if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-        }, 560);
+        }, 650);
       }
 
-      window.__pharisHideBoot = function () {
-        var wait = Math.max(0, minMs - (Date.now() - started));
-        // إن انتهى الفيديو مبكراً انتظر قليلاً؛ إن تأخر أخفِ بعد انتهائه
-        setTimeout(function () {
-          if (vid && !vid.ended && !vid.paused && vid.currentTime > 0 && vid.duration && vid.currentTime < vid.duration - 0.15) {
-            // انتظر نهاية الفيديو بحد أقصى ثانيتين إضافيتين
-            var left = Math.min(2000, Math.max(0, (vid.duration - vid.currentTime) * 1000));
-            setTimeout(hideBoot, left);
-          } else {
-            hideBoot();
+      function settleThenLeave() {
+        if (hidden) return;
+        // أوقف على آخر إطار ليبقى الاسم واضحاً
+        try {
+          if (vid && vid.duration && isFinite(vid.duration)) {
+            vid.pause();
+            // اقترب من نهاية الفيديو لضمان ظهور الاسم
+            if (vid.currentTime < vid.duration - 0.05) {
+              vid.currentTime = Math.max(0, vid.duration - 0.05);
+            }
           }
-        }, wait);
-      };
+        } catch (e) {}
+        setTimeout(hideBoot, HOLD_AFTER_NAME_MS);
+      }
 
       if (vid) {
         vid.addEventListener("ended", function () {
-          // بعد نهاية الفيديو أخفِ مباشرة إن تجاوزنا الحد الأدنى
-          if (Date.now() - started >= minMs - 200) hideBoot();
+          settleThenLeave();
+        });
+        // إذا كان الاسم يظهر قرب الثانية 5 — عند الوصول لـ ~92% من المدة نثبّت
+        vid.addEventListener("timeupdate", function onTu() {
+          if (!vid.duration || !isFinite(vid.duration)) return;
+          if (vid.currentTime >= vid.duration * 0.92) {
+            vid.removeEventListener("timeupdate", onTu);
+            settleThenLeave();
+          }
         });
       }
 
-      // أمان
+      window.__pharisHideBoot = function () {
+        // لا تُخفِ مبكراً — انتظر تسلسل الفيديو + التثبيت
+        if (vid && vid.readyState >= 2 && vid.duration && isFinite(vid.duration)) {
+          var left = (vid.duration - vid.currentTime) * 1000 + HOLD_AFTER_NAME_MS;
+          setTimeout(function () {
+            if (!hidden) settleThenLeave();
+          }, Math.max(0, left));
+        }
+      };
+
       setTimeout(function () {
-        if (!hidden) hideBoot();
-      }, 10000);
+        if (!hidden) settleThenLeave();
+      }, SAFETY_MS);
     })();
   </script>
 
