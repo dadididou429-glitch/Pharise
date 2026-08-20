@@ -1,5 +1,5 @@
 // Pharis Service Worker — fast update ≤5s
-const CACHE_NAME = "pharis-v53-update-btn";
+const CACHE_NAME = "pharis-v54-intro-music";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./splash-intro.mp4"];
 
 const EXTERNAL = [

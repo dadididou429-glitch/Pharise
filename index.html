@@ -65,7 +65,7 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-      <!-- افتتاحية فيديو — تثبيت بعد ظهور الاسم ثم الترحيب -->
+      <!-- افتتاحية فيديو + موسيقى خفيفة -->
   <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#0a1f1a;overflow:hidden;transition:opacity 0.65s ease">
     <video
       id="pharis-boot-video"
@@ -84,23 +84,119 @@
       var boot = document.getElementById("pharis-boot");
       var vid = document.getElementById("pharis-boot-video");
       var hidden = false;
-      // ثبّت المشهد النهائي (الاسم بعد الدخان) قبل الانتقال
       var HOLD_AFTER_NAME_MS = 1600;
       var SAFETY_MS = 12000;
+      var audioCtx = null;
+      var musicNodes = [];
 
-      function tryPlay() {
+      function getCtx() {
+        if (!audioCtx) {
+          try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+        }
+        return audioCtx;
+      }
+
+      function playIntroMusic() {
+        var c = getCtx();
+        if (!c) return;
+        try {
+          if (c.state === "suspended") c.resume();
+          var t0 = c.currentTime + 0.05;
+          var master = c.createGain();
+          master.gain.setValueAtTime(0.0001, t0);
+          master.gain.exponentialRampToValueAtTime(0.11, t0 + 0.4);
+          master.gain.setValueAtTime(0.11, t0 + 4.2);
+          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 6.2);
+          master.connect(c.destination);
+          musicNodes.push(master);
+
+          // طبقة ناعمة (pad)
+          function pad(freq, start, dur) {
+            var o = c.createOscillator();
+            var g = c.createGain();
+            o.type = "sine";
+            o.frequency.setValueAtTime(freq, t0 + start);
+            g.gain.setValueAtTime(0.0001, t0 + start);
+            g.gain.exponentialRampToValueAtTime(0.045, t0 + start + 0.35);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
+            o.connect(g); g.connect(master);
+            o.start(t0 + start);
+            o.stop(t0 + start + dur + 0.05);
+            musicNodes.push(o, g);
+          }
+          // نغمات متفائلة هادئة (C major feeling)
+          pad(261.63, 0.0, 5.5);   // C4
+          pad(329.63, 0.15, 5.3);  // E4
+          pad(392.00, 0.3, 5.1);   // G4
+          pad(523.25, 1.2, 4.0);   // C5 soft
+
+          // لحن بسيط متصاعد
+          function pluck(freq, start, dur, vol) {
+            var o = c.createOscillator();
+            var g = c.createGain();
+            o.type = "triangle";
+            o.frequency.setValueAtTime(freq, t0 + start);
+            g.gain.setValueAtTime(0.0001, t0 + start);
+            g.gain.exponentialRampToValueAtTime(vol || 0.07, t0 + start + 0.03);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
+            o.connect(g); g.connect(master);
+            o.start(t0 + start);
+            o.stop(t0 + start + dur + 0.02);
+            musicNodes.push(o, g);
+          }
+          // موتيف: صعود خفيف يناسب الصحة/الثقة
+          var notes = [
+            [0.5, 392.0], [0.75, 440.0], [1.0, 523.25],
+            [1.55, 494.0], [1.85, 523.25], [2.2, 587.33],
+            [2.9, 523.25], [3.25, 659.25], [3.7, 783.99],
+            [4.4, 523.25], [4.75, 659.25], [5.2, 783.99]
+          ];
+          for (var i = 0; i < notes.length; i++) {
+            pluck(notes[i][1], notes[i][0], 0.45, 0.065);
+          }
+        } catch (e) {}
+      }
+
+      function stopMusic() {
+        try {
+          if (audioCtx) {
+            var c = audioCtx;
+            var g = c.createGain();
+            // soft close
+            setTimeout(function () {
+              try { audioCtx.close(); } catch (e2) {}
+              audioCtx = null;
+            }, 400);
+          }
+        } catch (e) {}
+      }
+
+      function tryPlayVideo() {
         if (!vid) return;
         var p = vid.play();
         if (p && p.catch) p.catch(function () {});
       }
-      tryPlay();
-      document.addEventListener("DOMContentLoaded", tryPlay);
-      window.addEventListener("load", tryPlay);
+      tryPlayVideo();
+      playIntroMusic();
+      document.addEventListener("DOMContentLoaded", function () {
+        tryPlayVideo();
+        playIntroMusic();
+      });
+      window.addEventListener("load", function () {
+        tryPlayVideo();
+        playIntroMusic();
+      });
+      // إعادة محاولة الصوت عند أول لمس (قيود المتصفح)
+      document.addEventListener("pointerdown", function once() {
+        playIntroMusic();
+        document.removeEventListener("pointerdown", once);
+      }, { once: true });
 
       function hideBoot() {
         if (hidden || !boot) return;
         hidden = true;
         boot.style.opacity = "0";
+        stopMusic();
         setTimeout(function () {
           if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
         }, 650);
@@ -108,11 +204,9 @@
 
       function settleThenLeave() {
         if (hidden) return;
-        // أوقف على آخر إطار ليبقى الاسم واضحاً
         try {
           if (vid && vid.duration && isFinite(vid.duration)) {
             vid.pause();
-            // اقترب من نهاية الفيديو لضمان ظهور الاسم
             if (vid.currentTime < vid.duration - 0.05) {
               vid.currentTime = Math.max(0, vid.duration - 0.05);
             }
@@ -122,10 +216,7 @@
       }
 
       if (vid) {
-        vid.addEventListener("ended", function () {
-          settleThenLeave();
-        });
-        // إذا كان الاسم يظهر قرب الثانية 5 — عند الوصول لـ ~92% من المدة نثبّت
+        vid.addEventListener("ended", function () { settleThenLeave(); });
         vid.addEventListener("timeupdate", function onTu() {
           if (!vid.duration || !isFinite(vid.duration)) return;
           if (vid.currentTime >= vid.duration * 0.92) {
@@ -136,7 +227,6 @@
       }
 
       window.__pharisHideBoot = function () {
-        // لا تُخفِ مبكراً — انتظر تسلسل الفيديو + التثبيت
         if (vid && vid.readyState >= 2 && vid.duration && isFinite(vid.duration)) {
           var left = (vid.duration - vid.currentTime) * 1000 + HOLD_AFTER_NAME_MS;
           setTimeout(function () {
