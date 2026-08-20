@@ -1,6 +1,6 @@
-// Pharis Service Worker — ultra-fast auto update
-const CACHE_NAME = "pharis-v48-clean-icon";
-const SHELL = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./splash-icon.png", "./splash-icon-solid.png", "./splash-logo.mp4"];
+// Pharis Service Worker — fast update ≤5s
+const CACHE_NAME = "pharis-v49-unified-icon";
+const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 const EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
@@ -43,18 +43,13 @@ self.addEventListener("message", (event) => {
   if (!event.data) return;
   if (event.data.type === "SKIP_WAITING") self.skipWaiting();
   if (event.data.type === "CLEAR_CACHE") {
-    event.waitUntil(
-      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
-    );
+    event.waitUntil(caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))));
   }
 });
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
-
   const url = new URL(event.request.url);
-
-  // Never intercept the service worker script itself
   if (url.pathname.endsWith("service-worker.js")) return;
 
   const isAPI =
@@ -65,28 +60,15 @@ self.addEventListener("fetch", (event) => {
     url.hostname.includes("gstatic") ||
     url.hostname.includes("openstreetmap") ||
     url.hostname.includes("tile") ||
-    url.hostname.includes("ipapi") ||
-    url.hostname.includes("chargily");
+    url.hostname.includes("ipapi");
 
   if (isAPI) {
     event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
     return;
   }
 
-  // Same-origin app files: NETWORK FIRST (تحديث سريع)
-  const isAppFile =
-    event.request.mode === "navigate" ||
-    url.pathname.endsWith(".html") ||
-    url.pathname.endsWith("/") ||
-    url.pathname.endsWith(".js") ||
-    url.pathname.endsWith(".json") ||
-    url.pathname.endsWith(".css") ||
-    url.pathname.endsWith(".mp4") ||
-    url.pathname.endsWith(".png") ||
-    url.pathname.endsWith(".svg") ||
-    url.pathname.endsWith(".webmanifest");
-
-  if (isAppFile || url.origin === self.location.origin) {
+  // Network-first for app files
+  if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(event.request, { cache: "no-store" })
         .then((res) => {
@@ -96,14 +78,11 @@ self.addEventListener("fetch", (event) => {
           }
           return res;
         })
-        .catch(() =>
-          caches.match(event.request).then((r) => r || caches.match("./index.html"))
-        )
+        .catch(() => caches.match(event.request).then((r) => r || caches.match("./index.html")))
     );
     return;
   }
 
-  // CDN / external: cache-first, refresh in background
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetched = fetch(event.request)

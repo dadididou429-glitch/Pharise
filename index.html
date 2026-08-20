@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Pharis" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png" type="image/png" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" href="./icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
@@ -65,13 +65,13 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.5s ease">
+    <!-- افتتاحية فخمة — أيقونة موحدة -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.55s ease">
     <div style="text-align:center;padding:28px 20px;max-width:360px">
-      <div style="width:180px;height:180px;margin:0 auto 22px">
-        <img src="./splash-icon-solid.png" alt="Pharis" width="180" height="180"
-          style="width:180px;height:180px;display:block;margin:0 auto;background:transparent;border:none;animation:pharisLogo3d 2.8s ease-in-out infinite" />
+      <div style="width:168px;height:168px;margin:0 auto 20px;border-radius:38px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.4),0 0 0 1px rgba(110,231,183,0.15);animation:pharisBootIn 0.9s cubic-bezier(0.22,1,0.36,1) both, pharisFloat 3s ease-in-out 0.9s infinite">
+        <img src="./icon-192.png" alt="Pharis" width="168" height="168" style="width:168px;height:168px;display:block;border:none;border-radius:38px;background:#fff" />
       </div>
-      <div id="pharis-boot-name" aria-label="Pharis" style="height:42px;display:flex;justify-content:center;align-items:center;gap:1px;direction:ltr">
+      <div id="pharis-boot-name" style="height:40px;display:flex;justify-content:center;align-items:center;gap:1px;direction:ltr">
         <span class="pn" style="--i:0">P</span>
         <span class="pn" style="--i:1">h</span>
         <span class="pn" style="--i:2">a</span>
@@ -79,40 +79,36 @@
         <span class="pn" style="--i:4">i</span>
         <span class="pn" style="--i:5">s</span>
       </div>
-      <p style="font-size:12px;color:#6ee7b7;margin:14px 0 0;opacity:0;animation:pharisSubIn 0.6s ease 1.35s forwards">جاري التحميل...</p>
+      <p style="font-size:12px;color:#6ee7b7;margin:12px 0 0;opacity:0;animation:pharisSubIn 0.5s ease 1.2s forwards">جاري التحميل...</p>
     </div>
   </div>
   <div id="root"></div>
   <style>
     #pharis-boot .pn{
-      display:inline-block;
-      font-size:34px;
-      font-weight:800;
-      color:#6ee7b7;
-      text-shadow:0 0 20px rgba(52,211,153,0.45);
-      opacity:0;
-      transform:translateY(22px) scale(0.6) rotate(-8deg);
-      animation:pharisLetterIn 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
-      animation-delay:calc(0.55s + var(--i) * 0.08s);
+      display:inline-block;font-size:32px;font-weight:800;color:#6ee7b7;
+      text-shadow:0 0 18px rgba(52,211,153,0.4);
+      opacity:0;transform:translateY(14px);
+      animation:pharisLetterIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation-delay:calc(0.65s + var(--i) * 0.07s);
     }
     @keyframes pharisLetterIn{
-      0%{opacity:0;transform:translateY(16px);filter:blur(2px)}
-      100%{opacity:1;transform:translateY(0);filter:blur(0)}
+      0%{opacity:0;transform:translateY(14px)}
+      100%{opacity:1;transform:translateY(0)}
     }
-    @keyframes pharisLogo3d{
-      0%,100%{transform:translateY(0) scale(1);opacity:1}
-      50%{transform:translateY(-8px) scale(1.03);opacity:1}
+    @keyframes pharisBootIn{
+      0%{opacity:0;transform:scale(0.82)}
+      100%{opacity:1;transform:scale(1)}
     }
-    @keyframes pharisGlow{
-      0%,100%{filter:none}
-      50%{filter:none}
+    @keyframes pharisFloat{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-8px)}
     }
     @keyframes pharisSubIn{to{opacity:0.85}}
   </style>
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var minMs = 2600;
+      var minMs = 2800;
       var started = Date.now();
       var hidden = false;
       window.__pharisHideBoot = function () {
@@ -124,12 +120,12 @@
           boot.style.opacity = "0";
           setTimeout(function () {
             if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-          }, 520);
+          }, 560);
         }, wait);
       };
       setTimeout(function () {
         if (window.__pharisHideBoot) window.__pharisHideBoot();
-      }, 9000);
+      }, 8000);
     })();
   </script>
 
@@ -2699,7 +2695,7 @@ out center tags;`;
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-800 flex items-center justify-center shadow-lg overflow-hidden border border-brand-700">
-                  <img src="icon-192.png" alt="Pharis" className="w-10 h-10" width="40" height="40" />
+                  <img src="./icon-192.png" alt="Pharis" className="w-10 h-10" width="40" height="40" />
                 </div>
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-brand-400 leading-tight" dir="ltr">Pharis</h1>
@@ -3085,7 +3081,7 @@ out center tags;`;
             <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
               <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
                 <div className="mx-auto w-24 h-24 bg-transparent flex items-center justify-center">
-                  <img src="./splash-icon-solid.png" alt="Pharis" className="w-24 h-24 object-contain" style={{animation:"pharisLogo3d 2.8s ease-in-out infinite, pharisGlow 2.8s ease-in-out infinite", background:"transparent"}} />
+                  <img src="./icon-192.png" alt="Pharis" className="w-24 h-24 object-contain rounded-2xl shadow-lg" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-brand-300" dir="ltr">Pharis</h2>
@@ -3690,7 +3686,6 @@ out center tags;`;
         navigator.serviceWorker
           .register("./service-worker.js", { updateViaCache: "none" })
           .then(function (reg) {
-            // تحديث فوري وتلقائي
             const applyUpdate = function (worker) {
               if (worker) {
                 try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
@@ -3700,7 +3695,7 @@ out center tags;`;
                   refreshing = true;
                   window.location.reload();
                 }
-              }, 400);
+              }, 300);
             };
 
             if (reg.waiting) applyUpdate(reg.waiting);
@@ -3715,8 +3710,48 @@ out center tags;`;
               });
             });
 
-            // فحص سريع جداً كل 5 ثوان + عند العودة للتطبيق
+            // فحص كل 5 ثوانٍ + عند العودة للتطبيق
             setInterval(function () { reg.update().catch(function () {}); }, 5 * 1000);
+
+            // زر تحديث يدوي للمستخدم
+            window.__pharisForceUpdate = function () {
+              var btn = document.getElementById("pharis-update-btn");
+              if (btn) {
+                btn.textContent = "⏳";
+                btn.disabled = true;
+              }
+              reg.update().then(function () {
+                if (reg.waiting) {
+                  applyUpdate(reg.waiting);
+                } else if (reg.installing) {
+                  reg.installing.addEventListener("statechange", function () {
+                    if (reg.installing && reg.installing.state === "installed") applyUpdate(reg.installing);
+                    if (reg.waiting) applyUpdate(reg.waiting);
+                  });
+                  setTimeout(function () {
+                    if (!refreshing) {
+                      try { caches.keys().then(function (keys) { return Promise.all(keys.map(function (k) { return caches.delete(k); })); }).then(function () { location.reload(); }); } catch (e) { location.reload(); }
+                    }
+                  }, 2500);
+                } else {
+                  // امسح الكاش وأعد التحميل لضمان النسخة الأحدث
+                  caches.keys().then(function (keys) {
+                    return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                  }).then(function () { location.reload(); }).catch(function () { location.reload(); });
+                }
+              }).catch(function () { location.reload(); });
+            };
+            if (!document.getElementById("pharis-update-btn")) {
+              var ub = document.createElement("button");
+              ub.id = "pharis-update-btn";
+              ub.type = "button";
+              ub.title = "تحديث التطبيق";
+              ub.setAttribute("aria-label", "تحديث التطبيق");
+              ub.innerHTML = "🔄";
+              ub.onclick = function () { window.__pharisForceUpdate(); };
+              ub.style.cssText = "position:fixed;bottom:18px;left:18px;z-index:99998;width:44px;height:44px;border-radius:50%;border:none;background:#064e3b;color:#fff;font-size:18px;box-shadow:0 6px 18px rgba(0,0,0,0.3);cursor:pointer;opacity:0.92";
+              document.body.appendChild(ub);
+            }
             document.addEventListener("visibilitychange", function () {
               if (document.visibilityState === "visible") reg.update().catch(function () {});
             });
