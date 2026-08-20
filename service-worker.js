@@ -1,4 +1,4 @@
-const CACHE_NAME='pharis-pro-v1';
+const CACHE_NAME='pharis-pro-v2';
 const urlsToCache=['./','./index.html','./pharmacies.js','./manifest.json','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(names=>Promise.all(names.filter(n=>n!==CACHE_NAME).map(n=>caches.delete(n)))));self.clients.claim()});
