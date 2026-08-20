@@ -1,7 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0f172a"/>
-  <circle cx="256" cy="256" r="160" fill="#1e293b"/>
-  <circle cx="256" cy="256" r="100" fill="#3b82f6"/>
-  <circle cx="256" cy="256" r="40" fill="#ffffff"/>
-  <path d="M256 120 L280 200 L360 200 L300 250 L320 330 L256 280 L192 330 L212 250 L152 200 L232 200 Z" fill="#60a5fa" opacity="0.9"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="50%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+    <linearGradient id="capWhite" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbfbfb"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e6e6e6"/>
+    </linearGradient>
+    <linearGradient id="capRed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="50%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#a91c1c"/>
+    </linearGradient>
+  </defs>
+
+  <g>
+    <path d="M256 88 C176 88 116 148 116 226 C116 320 256 448 256 448 C256 448 396 320 396 226 C396 148 336 88 256 88 Z"
+          fill="url(#pinGrad)" stroke="#14532d" stroke-width="4"/>
+    <circle cx="256" cy="220" r="96" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+    <g transform="rotate(45 256 220)">
+      <rect x="196" y="180" width="120" height="80" rx="40" fill="url(#capWhite)" stroke="#ddd" stroke-width="1.5"/>
+      <path d="M256 180 h20 a40 40 0 0 1 40 40 v0 a40 40 0 0 1 -40 40 h-20 z" fill="url(#capRed)"/>
+      <line x1="256" y1="182" x2="256" y2="258" stroke="#d1d5db" stroke-width="2"/>
+    </g>
+    <ellipse cx="210" cy="175" rx="34" ry="52" fill="rgba(255,255,255,.22)" transform="rotate(-18 210 175)"/>
+  </g>
 </svg>
