@@ -65,52 +65,181 @@
 </head>
 <body class="bg-brand-50 text-stone-900 antialiased">
       <!-- شاشة فتح فخمة -->
-    <!-- افتتاحية فخمة — أيقونة موحدة -->
-  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.55s ease">
-    <div style="text-align:center;padding:28px 20px;max-width:360px">
-      <div style="width:168px;height:168px;margin:0 auto 20px;border-radius:38px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.4),0 0 0 1px rgba(110,231,183,0.15);animation:pharisBootIn 0.9s cubic-bezier(0.22,1,0.36,1) both, pharisFloat 3s ease-in-out 0.9s infinite">
-        <img src="./icon-192.png" alt="Pharis" width="168" height="168" style="width:168px;height:168px;display:block;border:none;border-radius:38px;background:#fff" />
+    <!-- افتتاحية فخمة متعددة المراحل -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;color:#ecfdf5;direction:ltr;background:#022c22;overflow:hidden;transition:opacity 0.6s ease">
+    <div style="text-align:center;padding:24px 16px;width:100%;max-width:380px;position:relative">
+      <!-- مسرح الرموز -->
+      <div id="pharis-stage" style="position:relative;height:200px;margin:0 auto 8px;width:280px">
+        <!-- الصليب -->
+        <div class="pharis-part" id="part-cross" style="--from-x:-110px;--from-y:40px;--delay:0.15s">✚</div>
+        <!-- الكبسولة -->
+        <div class="pharis-part" id="part-pill" style="--from-x:120px;--from-y:30px;--delay:0.35s">💊</div>
+        <!-- الدبوس -->
+        <div class="pharis-part" id="part-pin" style="--from-x:0;--from-y:90px;--delay:0.55s">📍</div>
+        <!-- الأيقونة الكاملة بعد التجميع -->
+        <div id="part-full" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.3);opacity:0;width:150px;height:150px;border-radius:34px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,0.35)">
+          <img src="./icon-192.png" alt="Pharis" width="150" height="150" style="width:150px;height:150px;display:block;border-radius:34px;background:#fff" />
+        </div>
       </div>
-      <div id="pharis-boot-name" style="height:40px;display:flex;justify-content:center;align-items:center;gap:1px;direction:ltr">
-        <span class="pn" style="--i:0">P</span>
-        <span class="pn" style="--i:1">h</span>
-        <span class="pn" style="--i:2">a</span>
-        <span class="pn" style="--i:3">r</span>
-        <span class="pn" style="--i:4">i</span>
-        <span class="pn" style="--i:5">s</span>
+      <!-- دخان ثم الاسم -->
+      <div id="pharis-smoke-wrap" style="position:relative;height:56px;margin-top:6px">
+        <div id="pharis-smoke" aria-hidden="true"></div>
+        <div id="pharis-boot-name" style="position:relative;z-index:2;height:40px;display:flex;justify-content:center;align-items:center;gap:2px;opacity:0">
+          <span class="pn" style="--i:0">P</span>
+          <span class="pn" style="--i:1">h</span>
+          <span class="pn" style="--i:2">a</span>
+          <span class="pn" style="--i:3">r</span>
+          <span class="pn" style="--i:4">i</span>
+          <span class="pn" style="--i:5">s</span>
+        </div>
       </div>
-      <p style="font-size:12px;color:#6ee7b7;margin:12px 0 0;opacity:0;animation:pharisSubIn 0.5s ease 1.2s forwards">جاري التحميل...</p>
+      <p id="pharis-boot-sub" style="font-size:12px;color:#6ee7b7;margin:10px 0 0;opacity:0">جاري التحميل...</p>
     </div>
   </div>
   <div id="root"></div>
   <style>
-    #pharis-boot .pn{
-      display:inline-block;font-size:32px;font-weight:800;color:#6ee7b7;
-      text-shadow:0 0 18px rgba(52,211,153,0.4);
-      opacity:0;transform:translateY(14px);
-      animation:pharisLetterIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards;
-      animation-delay:calc(0.65s + var(--i) * 0.07s);
+    .pharis-part{
+      position:absolute;left:50%;top:50%;
+      font-size:42px;line-height:1;
+      transform:translate(calc(-50% + var(--from-x)), calc(-50% + var(--from-y)));
+      opacity:0;
+      filter:drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+      animation:pharisWalkIn 1.1s cubic-bezier(0.22,1,0.36,1) var(--delay) forwards;
+      z-index:2;
+    }
+    @keyframes pharisWalkIn{
+      0%{opacity:0;transform:translate(calc(-50% + var(--from-x)), calc(-50% + var(--from-y))) scale(0.6)}
+      25%{opacity:1}
+      40%{transform:translate(calc(-50% + var(--from-x)*0.55), calc(-50% + var(--from-y)*0.55 - 18px)) scale(1.05)}
+      55%{transform:translate(calc(-50% + var(--from-x)*0.35), calc(-50% + var(--from-y)*0.35)) scale(0.98)}
+      70%{transform:translate(calc(-50% + var(--from-x)*0.15), calc(-50% + var(--from-y)*0.15 - 14px)) scale(1.06)}
+      100%{opacity:0;transform:translate(-50%,-50%) scale(0.5)}
+    }
+    #part-full{animation:pharisFullIn 0.85s cubic-bezier(0.22,1,0.36,1) 1.45s forwards}
+    @keyframes pharisFullIn{
+      0%{opacity:0;transform:translate(-50%,-50%) scale(0.35)}
+      60%{opacity:1;transform:translate(-50%,-55%) scale(1.08)}
+      100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    }
+    #pharis-smoke span{
+      position:absolute;left:50%;top:50%;
+      width:10px;height:10px;margin:-5px;border-radius:50%;
+      background:rgba(110,231,183,0.35);
+      filter:blur(6px);
+      animation:pharisSmoke 1.4s ease-out forwards;
+    }
+    @keyframes pharisSmoke{
+      0%{opacity:0;transform:translate(0,8px) scale(0.4)}
+      30%{opacity:0.7}
+      100%{opacity:0;transform:translate(var(--sx), var(--sy)) scale(2.2)}
+    }
+    #pharis-boot-name.show{opacity:1}
+    #pharis-boot-name .pn{
+      display:inline-block;font-size:34px;font-weight:800;color:#6ee7b7;
+      text-shadow:0 0 22px rgba(52,211,153,0.55);
+      opacity:0;transform:translateY(10px) scale(0.9);
+    }
+    #pharis-boot-name.show .pn{
+      animation:pharisLetterIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation-delay:calc(var(--i) * 0.07s);
     }
     @keyframes pharisLetterIn{
-      0%{opacity:0;transform:translateY(14px)}
-      100%{opacity:1;transform:translateY(0)}
+      0%{opacity:0;transform:translateY(12px) scale(0.85);filter:blur(6px)}
+      100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
     }
-    @keyframes pharisBootIn{
-      0%{opacity:0;transform:scale(0.82)}
-      100%{opacity:1;transform:scale(1)}
-    }
-    @keyframes pharisFloat{
-      0%,100%{transform:translateY(0)}
-      50%{transform:translateY(-8px)}
-    }
-    @keyframes pharisSubIn{to{opacity:0.85}}
   </style>
   <script>
     (function () {
       var boot = document.getElementById("pharis-boot");
-      var minMs = 2800;
+      var minMs = 4200;
       var started = Date.now();
       var hidden = false;
+      var audioCtx = null;
+
+      function ctx() {
+        if (!audioCtx) {
+          try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+        }
+        return audioCtx;
+      }
+      function tone(freq, t0, dur, type, vol) {
+        var c = ctx(); if (!c) return;
+        try {
+          var o = c.createOscillator();
+          var g = c.createGain();
+          o.type = type || "sine";
+          o.frequency.setValueAtTime(freq, c.currentTime + t0);
+          g.gain.setValueAtTime(0.0001, c.currentTime + t0);
+          g.gain.exponentialRampToValueAtTime(vol || 0.06, c.currentTime + t0 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + t0 + dur);
+          o.connect(g); g.connect(c.destination);
+          o.start(c.currentTime + t0);
+          o.stop(c.currentTime + t0 + dur + 0.02);
+        } catch (e) {}
+      }
+      function noiseWhoosh(t0, dur) {
+        var c = ctx(); if (!c) return;
+        try {
+          var n = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+          var d = n.getChannelData(0);
+          for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+          var s = c.createBufferSource();
+          s.buffer = n;
+          var g = c.createGain();
+          var f = c.createBiquadFilter();
+          f.type = "lowpass"; f.frequency.value = 800;
+          g.gain.setValueAtTime(0.0001, c.currentTime + t0);
+          g.gain.exponentialRampToValueAtTime(0.05, c.currentTime + t0 + 0.08);
+          g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + t0 + dur);
+          s.connect(f); f.connect(g); g.connect(c.destination);
+          s.start(c.currentTime + t0);
+          s.stop(c.currentTime + t0 + dur);
+        } catch (e) {}
+      }
+      function playSequence() {
+        try { var c = ctx(); if (c && c.state === "suspended") c.resume(); } catch (e) {}
+        // خطوات الرموز
+        tone(180, 0.2, 0.08, "triangle", 0.05);
+        tone(200, 0.45, 0.08, "triangle", 0.05);
+        tone(220, 0.7, 0.08, "triangle", 0.05);
+        tone(260, 0.95, 0.1, "triangle", 0.06);
+        tone(320, 1.25, 0.12, "sine", 0.07);
+        // قفزة التجميع
+        tone(400, 1.5, 0.15, "sine", 0.08);
+        // دخان
+        noiseWhoosh(2.0, 0.7);
+        tone(520, 2.35, 0.25, "sine", 0.05);
+      }
+
+      // دخان CSS
+      setTimeout(function () {
+        var smoke = document.getElementById("pharis-smoke");
+        if (!smoke) return;
+        for (var i = 0; i < 14; i++) {
+          var s = document.createElement("span");
+          var ang = (i / 14) * Math.PI * 2;
+          var dist = 28 + (i % 4) * 12;
+          s.style.setProperty("--sx", Math.cos(ang) * dist + "px");
+          s.style.setProperty("--sy", Math.sin(ang) * dist - 20 + "px");
+          s.style.animationDelay = (0.04 * i) + "s";
+          smoke.appendChild(s);
+        }
+      }, 1950);
+
+      setTimeout(function () {
+        var name = document.getElementById("pharis-boot-name");
+        if (name) name.classList.add("show");
+        var sub = document.getElementById("pharis-boot-sub");
+        if (sub) { sub.style.transition = "opacity 0.5s"; sub.style.opacity = "0.85"; }
+      }, 2400);
+
+      // محاولة تشغيل الصوت (قد تُحجب بدون تفاعل المستخدم)
+      setTimeout(playSequence, 80);
+      document.addEventListener("pointerdown", function once() {
+        playSequence();
+        document.removeEventListener("pointerdown", once);
+      }, { once: true });
+
       window.__pharisHideBoot = function () {
         if (hidden || !boot) return;
         var wait = Math.max(0, minMs - (Date.now() - started));
@@ -120,12 +249,13 @@
           boot.style.opacity = "0";
           setTimeout(function () {
             if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
-          }, 560);
+            try { if (audioCtx) audioCtx.close(); } catch (e) {}
+          }, 600);
         }, wait);
       };
       setTimeout(function () {
         if (window.__pharisHideBoot) window.__pharisHideBoot();
-      }, 8000);
+      }, 9000);
     })();
   </script>
 
