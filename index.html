@@ -2786,7 +2786,7 @@ out center tags;`;
                 </div>
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-brand-400 leading-tight" dir="ltr">Pharis</h1>
-                  <p className="text-[11px] text-brand-300">{currentPlace}</p>
+                  <p className="text-[11px] text-brand-300">{currentPlace && (currentPlace.name || currentPlace.country) ? [currentPlace.name, currentPlace.country].filter(Boolean).join(" · ") : ""}</p>
                   {adminUser && userCount != null && (
                     <p className="text-[10px] text-brand-400/80 mt-0.5 flex items-center gap-1">
                       <span aria-hidden="true">👥</span>
@@ -2919,7 +2919,7 @@ out center tags;`;
             {/* Filters */}
             <div className="flex gap-1 mt-1.5 flex-wrap">
               <button
-                onClick={() => { setEmergencyMode(true); if (analytics) analytics.logEvent("emergency_mode_opened", { city: currentPlace }); setShowMap(false); }}
+                onClick={() => { setEmergencyMode(true); if (analytics) analytics.logEvent("emergency_mode_opened", { city: (currentPlace && currentPlace.name) || "" }); setShowMap(false); }}
                 className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition ${emergencyMode ? "bg-rose-500 text-white shadow-md" : "bg-rose-950/70 text-rose-300"}`}
               >
                 🚨 {t("emergency")}
