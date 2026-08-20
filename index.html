@@ -407,6 +407,11 @@
         searchCity: "ابحث عن مدينة...",
         detecting: "جاري تحديد موقعك...",
         geoError: "تعذر تحديد الموقع. استخدم القائمة يدوياً.",
+        locRequiredTitle: "الموقع ضروري",
+        locRequiredMsg: "لتظهر لك أقرب الصيدليات من مكانك، فعّل الموقع من النافذة التالية أو من إعدادات الهاتف.",
+        locAllowBtn: "تفعيل الموقع الآن",
+        locManualBtn: "اختيار الولاية يدوياً",
+        locNeededBanner: "فعّل الموقع لإظهار أقرب الصيدليات",
         country: "الدولة", city: "المدينة",
         darkMode: "الوضع الداكن", lightMode: "الوضع الفاتح",
         share: "مشاركة",
@@ -559,6 +564,11 @@
         searchCity: "Rechercher une ville...",
         detecting: "Détection de votre position...",
         geoError: "Impossible de détecter la position. Utilisez le menu.",
+        locRequiredTitle: "Position requise",
+        locRequiredMsg: "Pour afficher les pharmacies les plus proches, activez la localisation.",
+        locAllowBtn: "Activer la position",
+        locManualBtn: "Choisir la wilaya",
+        locNeededBanner: "Activez la position pour les pharmacies proches",
         country: "Pays", city: "Ville",
         darkMode: "Mode sombre", lightMode: "Mode clair",
         share: "Partager",
@@ -711,6 +721,11 @@
         searchCity: "Search a city...",
         detecting: "Detecting your location...",
         geoError: "Could not detect location. Use the menu manually.",
+        locRequiredTitle: "Location required",
+        locRequiredMsg: "To show the nearest pharmacies, please enable location access.",
+        locAllowBtn: "Enable location now",
+        locManualBtn: "Choose city manually",
+        locNeededBanner: "Enable location to see nearest pharmacies",
         country: "Country", city: "City",
         darkMode: "Dark mode", lightMode: "Light mode",
         share: "Share",
@@ -1790,6 +1805,7 @@ out center tags;`;
       const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
       const [locating, setLocating] = useState(true);
       const [geoError, setGeoError] = useState(null);
+      const [showLocGate, setShowLocGate] = useState(false);
       const [showLocationPicker, setShowLocationPicker] = useState(false);
       const [wilayaSearch, setWilayaSearch] = useState("");
       const [osmPharmacies, setOsmPharmacies] = useState([]);
@@ -1921,153 +1937,144 @@ out center tags;`;
         document.documentElement.classList.toggle("dark", dark);
       }, [dark]);
 
-      // Geolocation — سريع + دقيق + كاش + عرض مدينة + بلد احترافي
-      useEffect(() => {
+      // Geolocation — تلقائي وضروري
+      const requestUserLocation = () => {
         if (!navigator.geolocation) {
           setLocating(false);
           setGeoError("unsupported");
+          setShowLocGate(true);
           return;
         }
-
-        // تحميل موقع مخزن سابقًا فورًا (للسرعة)
-        try {
-          const cached = JSON.parse(localStorage.getItem("pharis_last_loc") || "null");
-          if (cached && cached.lat && cached.lng && Date.now() - (cached.ts || 0) < 30 * 60 * 1000) {
-            setUserLoc({ lat: cached.lat, lng: cached.lng });
-            if (cached.place) setCurrentPlace(cached.place);
-            if (cached.countryId) setCountryId(cached.countryId);
-            if (cached.wilayaId) setWilayaId(cached.wilayaId);
-            setLocating(false);
-          }
-        } catch {}
+        setLocating(true);
+        setGeoError(null);
+        setShowLocGate(false);
 
         const WILAYA_ALIASES = {
-          16: ["الجزائر", "alger", "algiers", "alger centre", "باب الوادي"],
+          16: ["الجزائر", "alger", "algiers"],
           31: ["وهران", "oran", "wahran"],
-          22: ["سيدي بلعباس", "sidi bel abbes", "sidi bel abbès", "sidi-bel-abbes", "bel abbes"],
+          22: ["سيدي بلعباس", "sidi bel abbes", "sidi bel abbès", "bel abbes"],
           13: ["تلمسان", "tlemcen"],
           25: ["قسنطينة", "constantine"],
           19: ["سطيف", "setif", "sétif"],
-          23: ["عنابة", "annaba", "bone"],
+          23: ["عنابة", "annaba"],
           9: ["البليدة", "blida"],
-          6: ["بجاية", "bejaia", "béjaïa"],
+          6: ["بجاية", "bejaia"],
           15: ["تيزي وزو", "tizi ouzou"],
           5: ["باتنة", "batna"],
           27: ["مستغانم", "mostaganem"],
           29: ["معسكر", "mascara"],
-          46: ["عين تموشنت", "ain temouchent", "aïn témouchent"],
-          20: ["سعيدة", "saida", "saïda"],
+          46: ["عين تموشنت", "ain temouchent"],
+          20: ["سعيدة", "saida"]
         };
 
         const processPosition = async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          setUserLoc({ lat, lng });
-          setLoadingOSM(true);
-
-          const reverseP = fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=ar,en,fr`,
-            { headers: { "Accept-Language": "ar,en,fr" } }
-          ).then(r => r.json()).catch(() => null);
-
-          const osmP = fetchOSMPharmacies(lat, lng, 12000).catch(() => []);
-
           try {
-            const [geoData, osmData] = await Promise.all([reverseP, osmP]);
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setUserLoc({ lat: lat, lng: lng });
+            setShowLocGate(false);
+            setGeoError(null);
+            setLoadingOSM(true);
 
-            if (Array.isArray(osmData) && osmData.length > 0) {
-              setOsmPharmacies(osmData);
-            }
-
-            const addr = (geoData && geoData.address) || {};
-            const cc = (addr.country_code || "").toUpperCase();
-            let finalCountryId = "DZ";
-
-            if (cc && COUNTRIES.some(c => c.id === cc)) {
-              finalCountryId = cc;
-              setCountryId(cc);
-            } else if (cc) {
-              finalCountryId = "OTHER";
-              setCountryId("OTHER");
-            }
-
-            const placeName =
-              addr.city || addr.town || addr.village || addr.municipality ||
-              addr.suburb || addr.county || addr.state || "";
-
-            const countryName =
-              lang === "ar" ? (addr.country || "الجزائر") :
-              lang === "fr" ? (addr.country || "Algérie") :
-              (addr.country || "Algeria");
-
-            const hay = (
-              placeName + " " + (addr.state || "") + " " + (addr.county || "") + " " + (addr.suburb || "")
-            ).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-            let matched = null;
-            for (const w of WILAYAS) {
-              if (!w.enabled || w.id === 999) continue;
-              const aliases = WILAYA_ALIASES[w.id] || [w.name];
-              if (aliases.some(a => hay.includes(String(a).toLowerCase()))) {
-                matched = w;
-                break;
-              }
-            }
-
-            let displayPlace = "";
-            let finalWilayaId = 999;
-
-            if (matched) {
-              finalWilayaId = matched.id;
-              setWilayaId(matched.id);
-              displayPlace = `${matched.name}، ${countryName}`;
-              setCurrentPlace(displayPlace);
-            } else {
-              setWilayaId(999);
-              displayPlace = placeName
-                ? `${placeName}، ${countryName}`
-                : (lang === "ar" ? "قريب منك" : lang === "fr" ? "Près de vous" : "Near you");
-              setCurrentPlace(displayPlace);
-            }
+            let geoData = null;
+            try {
+              const rr = await fetch(
+                "https://nominatim.openstreetmap.org/reverse?lat=" + lat + "&lon=" + lng + "&format=json&addressdetails=1&accept-language=ar,en,fr",
+                { headers: { "Accept-Language": "ar,en,fr" } }
+              );
+              geoData = await rr.json();
+            } catch (e1) {}
 
             try {
-              localStorage.setItem("pharis_last_loc", JSON.stringify({
-                lat, lng, place: displayPlace, countryId: finalCountryId, wilayaId: finalWilayaId, ts: Date.now()
-              }));
-            } catch {}
+              const osmData = await fetchOSMPharmacies(lat, lng, 12000);
+              if (osmData && osmData.length > 0) setOsmPharmacies(osmData);
+            } catch (e2) {}
 
-          } catch (e) {
-            console.error(e);
+            if (geoData && geoData.address) {
+              const addr = geoData.address;
+              const cc = (addr.country_code || "").toUpperCase();
+              let finalCountryId = "DZ";
+              try {
+                if (cc && typeof COUNTRIES !== "undefined" && COUNTRIES.some(function(x){ return x.id === cc; })) {
+                  finalCountryId = cc;
+                  setCountryId(cc);
+                } else if (cc) {
+                  finalCountryId = "OTHER";
+                  setCountryId("OTHER");
+                }
+              } catch (e3) {}
+
+              const placeName = addr.city || addr.town || addr.village || addr.municipality || addr.suburb || addr.county || addr.state || "";
+              const hay = (placeName + " " + (addr.state || "") + " " + (addr.county || "")).toLowerCase();
+              let matched = null;
+              if (finalCountryId === "DZ") {
+                const keys = Object.keys(WILAYA_ALIASES);
+                for (let ki = 0; ki < keys.length; ki++) {
+                  const wid = keys[ki];
+                  const aliases = WILAYA_ALIASES[wid];
+                  for (let ai = 0; ai < aliases.length; ai++) {
+                    if (hay.indexOf(aliases[ai].toLowerCase()) >= 0) {
+                      matched = Number(wid);
+                      break;
+                    }
+                  }
+                  if (matched) break;
+                }
+              }
+              if (matched) setWilayaId(matched);
+              const placeLabel = [placeName || "", addr.country || ""].filter(Boolean).join(" · ");
+              setCurrentPlace(placeLabel || (lang === "ar" ? "موقعك الحالي" : lang === "fr" ? "Votre position" : "Your location"));
+              try {
+                localStorage.setItem("pharis_last_loc", JSON.stringify({
+                  lat: lat, lng: lng, place: placeLabel, countryId: finalCountryId, wilayaId: matched, ts: Date.now()
+                }));
+              } catch (e4) {}
+            }
+          } catch (err) {
+            console.error(err);
+            setGeoError("denied");
+            setShowLocGate(true);
           } finally {
             setLoadingOSM(false);
             setLocating(false);
           }
         };
 
-        // محاولة أولى: دقة عالية + وقت قصير
+        const onFail = function () {
+          setGeoError("denied");
+          setLocating(false);
+          setShowLocGate(true);
+        };
+
         navigator.geolocation.getCurrentPosition(
           processPosition,
-          () => {
-            // فشل → نحاول بدقة منخفضة
+          function () {
             navigator.geolocation.getCurrentPosition(
               processPosition,
-              async () => {
-                setGeoError("denied");
-                setLocating(false);
-                setLoadingOSM(true);
-                try {
-                  const data = await fetchOSMPharmacies(DEFAULT_LOC.lat, DEFAULT_LOC.lng, 12000);
-                  if (data.length > 0) setOsmPharmacies(data);
-                } catch (e) {}
-                finally { setLoadingOSM(false); }
-              },
-              { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 }
+              onFail,
+              { enableHighAccuracy: false, timeout: 8000, maximumAge: 120000 }
             );
           },
-          { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
+          { enableHighAccuracy: true, timeout: 7000, maximumAge: 30000 }
         );
-      }, []);
+      };
 
+      useEffect(function () {
+        try {
+          const cached = JSON.parse(localStorage.getItem("pharis_last_loc") || "null");
+          if (cached && cached.lat && cached.lng && Date.now() - (cached.ts || 0) < 30 * 60 * 1000) {
+            setUserLoc({ lat: cached.lat, lng: cached.lng });
+            if (cached.place) {
+              const p = cached.place;
+              setCurrentPlace(typeof p === "string" ? p : [p.name, p.country].filter(Boolean).join(" · "));
+            }
+            if (cached.countryId) setCountryId(cached.countryId);
+            if (cached.wilayaId) setWilayaId(cached.wilayaId);
+            setLocating(false);
+          }
+        } catch (e) {}
+        requestUserLocation();
+      }, []);
 
       // عدّاد المستخدمين (مرة واحدة لكل جهاز عبر localStorage)
       useEffect(() => {
@@ -2782,7 +2789,7 @@ out center tags;`;
                 </div>
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-brand-400 leading-tight" dir="ltr">Pharis</h1>
-                  <p className="text-[11px] text-brand-300">{currentPlace}</p>
+                  <p className="text-[11px] text-brand-300">{typeof currentPlace === "string" ? currentPlace : (currentPlace && (currentPlace.name || currentPlace.country) ? [currentPlace.name, currentPlace.country].filter(Boolean).join(" · ") : "")}</p>
                   {adminUser && userCount != null && (
                     <p className="text-[10px] text-brand-400/80 mt-0.5 flex items-center gap-1">
                       <span aria-hidden="true">👥</span>
@@ -2819,7 +2826,7 @@ out center tags;`;
                 <span className="truncate">
                   {locating
                     ? (lang === "ar" ? "جارٍ تحديد موقعك..." : lang === "fr" ? "Détection de votre position..." : "Detecting your location...")
-                    : currentPlace}
+                    : (typeof currentPlace === "string" ? currentPlace : (currentPlace && (currentPlace.name || currentPlace.country) ? [currentPlace.name, currentPlace.country].filter(Boolean).join(" · ") : ""))}
                 </span>
               </span>
               <span className={`text-xs font-semibold underline flex-shrink-0 ${showLocationPicker ? "text-brand-950" : "text-brand-300"}`}>
@@ -2915,7 +2922,7 @@ out center tags;`;
             {/* Filters */}
             <div className="flex gap-1 mt-1.5 flex-wrap">
               <button
-                onClick={() => { setEmergencyMode(true); if (analytics) analytics.logEvent("emergency_mode_opened", { city: currentPlace }); setShowMap(false); }}
+                onClick={() => { setEmergencyMode(true); if (analytics) analytics.logEvent("emergency_mode_opened", { city: typeof currentPlace === "string" ? currentPlace : ((currentPlace && currentPlace.name) || "") }); setShowMap(false); }}
                 className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition ${emergencyMode ? "bg-rose-500 text-white shadow-md" : "bg-rose-950/70 text-rose-300"}`}
               >
                 🚨 {t("emergency")}
@@ -3160,7 +3167,47 @@ out center tags;`;
           )}
 
           {/* شاشة توضيح فكرة التطبيق عند أول دخول */}
-          {showOnboard && (
+          
+      {/* بوابة الموقع — ضروري لأقرب الصيدليات */}
+      {showLocGate && !showOnboard && (
+        <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center bg-black/55 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-brand-900 border border-brand-200 dark:border-brand-700 p-5 shadow-2xl text-center space-y-3">
+            <div className="text-3xl">📍</div>
+            <h3 className="text-base font-bold text-stone-900 dark:text-brand-50">{t("locRequiredTitle")}</h3>
+            <p className="text-sm text-stone-600 dark:text-brand-300 leading-relaxed">{t("locRequiredMsg")}</p>
+            <button
+              type="button"
+              onClick={() => requestUserLocation()}
+              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm"
+            >
+              {t("locAllowBtn")}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowLocGate(false); setShowLocationPicker(true); }}
+              className="w-full py-2.5 rounded-xl border border-brand-300 dark:border-brand-600 text-sm font-semibold text-stone-700 dark:text-brand-200"
+            >
+              {t("locManualBtn")}
+            </button>
+          </div>
+        </div>
+      )}
+      {locating && !showLocGate && !showOnboard && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[60] px-3 py-1.5 rounded-full bg-emerald-700 text-white text-xs font-semibold shadow-lg">
+          📍 {t("detecting")}
+        </div>
+      )}
+      {!userLoc && !locating && !showLocGate && !showOnboard && (
+        <button
+          type="button"
+          onClick={() => setShowLocGate(true)}
+          className="fixed top-14 left-1/2 -translate-x-1/2 z-[60] px-3 py-1.5 rounded-full bg-amber-600 text-white text-xs font-semibold shadow-lg"
+        >
+          📍 {t("locNeededBanner")}
+        </button>
+      )}
+
+{showOnboard && (
             <div className="fixed inset-0 z-[90] flex items-center justify-center bg-brand-950/95 p-4" dir={lang === "ar" ? "rtl" : "ltr"}>
               <div className="w-full max-w-sm bg-brand-900 border border-brand-600 rounded-2xl shadow-2xl p-6 space-y-5 text-center">
                 <div className="mx-auto w-24 h-24 bg-transparent flex items-center justify-center">
@@ -3725,6 +3772,11 @@ out center tags;`;
             <div style={{ padding: 24, fontFamily: "sans-serif", color: "#7f1d1d", background: "#fef2f2", direction: "rtl", textAlign: "right", minHeight: "100vh" }}>
               <h2 style={{ marginBottom: 12 }}>⚠️ حدث خطأ غير متوقع</h2>
               <p style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>جرب تحديث الصفحة.</p>
+              {this.state.error && (
+                <pre style={{ fontSize: 11, color: "#991b1b", whiteSpace: "pre-wrap", marginBottom: 12, textAlign: "left", direction: "ltr" }}>
+                  {String(this.state.error && (this.state.error.message || this.state.error))}
+                </pre>
+              )}
               <button onClick={() => window.location.reload()} style={{ background: "#059669", color: "white", border: "none", padding: "10px 20px", borderRadius: 8, cursor: "pointer" }}>
                 🔄 تحديث الصفحة
               </button>
