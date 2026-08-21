@@ -1400,6 +1400,7 @@
       "https://overpass-api.de/api/interpreter",
       "https://overpass.kumi.systems/api/interpreter",
       "https://overpass.nchc.org.tw/api/interpreter",
+      "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
     ];
 
     function parseOpeningHours(oh) {
@@ -1489,7 +1490,7 @@
       for (const endpoint of OVERPASS_ENDPOINTS) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 14000);
+          const timer = setTimeout(() => controller.abort(), 20000);
           const res = await fetch(endpoint, {
             method: "POST",
             body: "data=" + encodeURIComponent(query),
@@ -1508,18 +1509,22 @@
       throw lastErr || new Error("All Overpass endpoints failed");
     }
 
-    // Core: fetch real pharmacies around a point — أسرع
-    async function fetchOSMPharmacies(lat, lng, radius = 12000) {
+    // Core: fetch pharmacies around a point — improved (more tags + auto radius)
+    async function fetchOSMPharmacies(lat, lng, radius = 15000) {
       const cacheKey = `near_${lat.toFixed(3)}_${lng.toFixed(3)}_${radius}`;
       const cached = getOSMCache(cacheKey);
       if (cached && cached.length > 0) return cached;
 
-      const query = `[out:json][timeout:12];
+      const query = `[out:json][timeout:18];
 (
   node["amenity"="pharmacy"](around:${radius},${lat},${lng});
   way["amenity"="pharmacy"](around:${radius},${lat},${lng});
+  relation["amenity"="pharmacy"](around:${radius},${lat},${lng});
   node["healthcare"="pharmacy"](around:${radius},${lat},${lng});
   way["healthcare"="pharmacy"](around:${radius},${lat},${lng});
+  node["shop"="pharmacy"](around:${radius},${lat},${lng});
+  way["shop"="pharmacy"](around:${radius},${lat},${lng});
+  node["dispensing"="yes"](around:${radius},${lat},${lng});
 );
 out center tags;`;
 
@@ -1528,6 +1533,16 @@ out center tags;`;
         (data.elements || []).map((el, idx) => mapOSMElement(el, idx))
       );
       if (result.length > 0) setOSMCache(cacheKey, result);
+      return result;
+    }
+
+    // Auto-expand radius when few results (does not change function signature)
+    async function fetchOSMPharmaciesSmart(lat, lng) {
+      let result = [];
+      for (const radius of [15000, 25000, 40000]) {
+        result = await fetchOSMPharmacies(lat, lng, radius);
+        if (result.length >= 8) break;
+      }
       return result;
     }
 
@@ -1555,9 +1570,9 @@ out center tags;`;
 
       // Try increasing radius if few results (city centers vs suburbs)
       let result = [];
-      for (const radius of [12000, 20000, 30000]) {
+      for (const radius of [15000, 25000, 40000]) {
         result = await fetchOSMPharmacies(cityLat, cityLng, radius);
-        if (result.length >= 5) break;
+        if (result.length >= 8) break;
       }
 
       const tagged = result.map(p => ({
@@ -1986,7 +2001,7 @@ out center tags;`;
             } catch (e1) {}
 
             try {
-              const osmData = await fetchOSMPharmacies(lat, lng, 12000);
+              const osmData = await fetchOSMPharmaciesSmart(lat, lng);
               if (osmData && osmData.length > 0) setOsmPharmacies(osmData);
             } catch (e2) {}
 
@@ -2457,7 +2472,7 @@ out center tags;`;
           setUserLoc({ lat, lng });
           setLoadingOSM(true);
           // نصف قطر أوسع عند اختيار ولاية يدوياً
-          fetchOSMPharmacies(lat, lng, 20000)
+          fetchOSMPharmaciesSmart(lat, lng)
             .then((data) => {
               setOsmPharmacies(Array.isArray(data) ? data : []);
             })
@@ -2472,7 +2487,7 @@ out center tags;`;
           } catch {}
         } else if (userLoc && Number.isFinite(Number(userLoc.lat))) {
           setLoadingOSM(true);
-          fetchOSMPharmacies(userLoc.lat, userLoc.lng, 20000)
+          fetchOSMPharmaciesSmart(userLoc.lat, userLoc.lng)
             .then((data) => {
               setOsmPharmacies(Array.isArray(data) ? data : []);
             })
