@@ -3933,21 +3933,82 @@ out center tags;`;
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
-    // نظام التحديث التلقائي المحسّن
+    // نظام التحديث — يظهر الزر عند وجود نسخة جديدة (بدون إعادة تحميل تلقائية)
     if ("serviceWorker" in navigator) {
       let refreshing = false;
-      navigator.serviceWorker.addEventListener("controllerchange", function () {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
-      });
+      let pendingWorker = null;
 
-      navigator.serviceWorker.addEventListener("message", function (event) {
-        if (event.data && event.data.type === "SW_UPDATED") {
+      function pharisUpdateLang() {
+        var lang = "ar";
+        try {
+          var saved = localStorage.getItem("pharis_lang");
+          if (saved && ["ar", "fr", "en"].indexOf(saved) >= 0) lang = saved;
+          else {
+            var b = (navigator.language || "ar").slice(0, 2).toLowerCase();
+            if (b === "fr" || b === "en") lang = b;
+          }
+        } catch (e) {}
+        return lang;
+      }
+      function pharisUpdateLabels() {
+        var lang = pharisUpdateLang();
+        var map = {
+          ar: { text: "تحديث جديد", applying: "جاري التحديث..." },
+          fr: { text: "Nouvelle mise à jour", applying: "Mise à jour..." },
+          en: { text: "New update", applying: "Updating..." }
+        };
+        return map[lang] || map.ar;
+      }
+      function showUpdateButton(worker) {
+        if (worker) pendingWorker = worker;
+        if (document.getElementById("pharis-update-btn")) return;
+        var labels = pharisUpdateLabels();
+        var lang = pharisUpdateLang();
+        var dir = lang === "ar" ? "rtl" : "ltr";
+        var ub = document.createElement("button");
+        ub.id = "pharis-update-btn";
+        ub.type = "button";
+        ub.setAttribute("dir", dir);
+        ub.setAttribute("aria-label", labels.text);
+        ub.innerHTML = "🔄 " + labels.text;
+        ub.onclick = function () {
+          var L = pharisUpdateLabels();
+          ub.disabled = true;
+          ub.innerHTML = "⏳ " + L.applying;
+          applyUpdate(pendingWorker);
+        };
+        ub.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99998;border:none;border-radius:999px;padding:12px 20px;background:#065f46;color:#ecfdf5;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.35);cursor:pointer;font-family:system-ui,-apple-system,sans-serif;white-space:nowrap";
+        document.body.appendChild(ub);
+      }
+      function applyUpdate(worker) {
+        if (worker) {
+          try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+        }
+        try {
+          navigator.serviceWorker.getRegistration().then(function (reg) {
+            if (reg && reg.waiting) {
+              try { reg.waiting.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+            }
+          });
+        } catch (e) {}
+        setTimeout(function () {
           if (!refreshing) {
             refreshing = true;
             window.location.reload();
           }
+        }, 500);
+      }
+
+      // بعد الضغط على الزر فقط: أعد التحميل عند تغيّر الـ controller
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
+        if (!refreshing) return;
+        window.location.reload();
+      });
+
+      // عند وصول نسخة جديدة من الـ SW: أظهر الزر (لا تعِد التحميل تلقائياً)
+      navigator.serviceWorker.addEventListener("message", function (event) {
+        if (event.data && event.data.type === "SW_UPDATED") {
+          showUpdateButton(null);
         }
       });
 
@@ -3955,73 +4016,19 @@ out center tags;`;
         navigator.serviceWorker
           .register("./service-worker.js", { updateViaCache: "none" })
           .then(function (reg) {
-            function pharisUpdateLang() {
-              var lang = "ar";
-              try {
-                var saved = localStorage.getItem("pharis_lang");
-                if (saved && ["ar", "fr", "en"].indexOf(saved) >= 0) lang = saved;
-                else {
-                  var b = (navigator.language || "ar").slice(0, 2).toLowerCase();
-                  if (b === "fr" || b === "en") lang = b;
-                }
-              } catch (e) {}
-              return lang;
-            }
-            function pharisUpdateLabels() {
-              var lang = pharisUpdateLang();
-              var map = {
-                ar: { text: "تحديث جديد", applying: "جاري التحديث..." },
-                fr: { text: "Nouvelle mise à jour", applying: "Mise à jour..." },
-                en: { text: "New update", applying: "Updating..." }
-              };
-              return map[lang] || map.ar;
-            }
-            function showUpdateButton(worker) {
-              if (document.getElementById("pharis-update-btn")) return;
-              var labels = pharisUpdateLabels();
-              var lang = pharisUpdateLang();
-              var dir = lang === "ar" ? "rtl" : "ltr";
-              var ub = document.createElement("button");
-              ub.id = "pharis-update-btn";
-              ub.type = "button";
-              ub.setAttribute("dir", dir);
-              ub.setAttribute("aria-label", labels.text);
-              ub.innerHTML = "🔄 " + labels.text;
-              ub.onclick = function () {
-                var L = pharisUpdateLabels();
-                ub.disabled = true;
-                ub.innerHTML = "⏳ " + L.applying;
-                applyUpdate(worker || reg.waiting || reg.installing);
-              };
-              ub.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99998;border:none;border-radius:999px;padding:12px 20px;background:#065f46;color:#ecfdf5;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.35);cursor:pointer;font-family:system-ui,-apple-system,sans-serif;white-space:nowrap";
-              document.body.appendChild(ub);
-            }
-            const applyUpdate = function (worker) {
-              if (worker) {
-                try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
-              }
-              setTimeout(function () {
-                if (!refreshing) {
-                  refreshing = true;
-                  window.location.reload();
-                }
-              }, 400);
-            };
-
-            // لا زر إلا عند وجود تحديث فعلي
             if (reg.waiting) showUpdateButton(reg.waiting);
 
             reg.addEventListener("updatefound", function () {
               const newWorker = reg.installing;
               if (!newWorker) return;
               newWorker.addEventListener("statechange", function () {
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                if (newWorker.state === "installed") {
                   showUpdateButton(newWorker);
                 }
               });
             });
 
-            // فحص كل 5 ثوانٍ + عند العودة للتطبيق
+            // فحص دوري سريع
             setInterval(function () { reg.update().catch(function () {}); }, 5 * 1000);
             document.addEventListener("visibilitychange", function () {
               if (document.visibilityState === "visible") reg.update().catch(function () {});
