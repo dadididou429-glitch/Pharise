@@ -2168,5 +2168,325 @@
       "close": 24
     },
     "onDuty": true
+  },
+  {
+    "id": 5000,
+    "name": "صيدلية بن يعلش شاكيب",
+    "area": "8 شارع خيرية نبيا، سيدي بلعباس",
+    "address": "8 شارع خيرية نبيا، سيدي بلعباس",
+    "phone": "0553 74 47 49",
+    "lat": 35.187417,
+    "lng": -0.641333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5001,
+    "name": "صيدلية قنون عبد الحق",
+    "area": "حي 253 سكن شارع المزاني الهاشمي بن باديس",
+    "address": "حي 253 سكن شارع المزاني الهاشمي بن باديس - سيدي بلعباس",
+    "phone": "0550 01 51 61",
+    "lat": 35.266667,
+    "lng": -0.570833,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5002,
+    "name": "صيدلية بن حراث فريدة",
+    "area": "حي الميموزا 558 سكن سيدي بلعباس",
+    "address": "حي الميموزا 558 سكن سيدي بلعباس",
+    "phone": "0558 46 53 59",
+    "lat": 35.189,
+    "lng": -0.64125,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5003,
+    "name": "صيدلية بلفدال فاطمة الزهراء",
+    "area": "رقم 114 الدفعة الأولى سيدي الجيلالي",
+    "address": "رقم 114 الدفعة الأولى سيدي الجيلالي - سيدي بلعباس",
+    "phone": "0781 81 22 79",
+    "lat": 35.214,
+    "lng": -0.63025,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5004,
+    "name": "صيدلية الهلال (شعبان نعمان سمير شوقي)",
+    "area": "08 شارع العقيد عميروش سيدي بلعباس",
+    "address": "08 شارع العقيد عميروش سيدي بلعباس",
+    "phone": "0669 46 67 49",
+    "lat": 35.192333,
+    "lng": -0.6435,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5005,
+    "name": "صيدلية عتبان حمزة",
+    "area": "39 شارع حواورية عبد القادر",
+    "address": "39 شارع حواورية عبد القادر - سيدي بلعباس",
+    "phone": "048 68 18 36",
+    "lat": 35.188083,
+    "lng": -0.644083,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5006,
+    "name": "صيدلية عيساد محمد طارق",
+    "area": "04 شارع خميسة",
+    "address": "04 شارع خميسة - سيدي بلعباس",
+    "phone": "0770 74 33 07",
+    "lat": 35.193,
+    "lng": -0.638583,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5007,
+    "name": "صيدلية بوعاشة فريد",
+    "area": "شارع 8 نوفمبر ماكون",
+    "address": "شارع 8 نوفمبر ماكون - سيدي بلعباس",
+    "phone": "0770 62 40 20",
+    "lat": 35.193417,
+    "lng": -0.641833,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5008,
+    "name": "صيدلية معاشو محمد",
+    "area": "25 مجموعة 257 سكن رقم C28 بلوك H سيدي ال",
+    "address": "25 مجموعة 257 سكن رقم C28 بلوك H سيدي الجيلالي - سيدي بلعباس",
+    "phone": "0771 88 20 90",
+    "lat": 35.207167,
+    "lng": -0.627,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5009,
+    "name": "صيدلية هديبة نوال",
+    "area": "حي 366 سكن",
+    "address": "حي 366 سكن - سيدي بلعباس",
+    "phone": "048 69 32 42",
+    "lat": 35.189833,
+    "lng": -0.6385,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5010,
+    "name": "صيدلية حماد جيلالي",
+    "area": "25 شارع عيسات إيدير",
+    "address": "25 شارع عيسات إيدير - سيدي بلعباس",
+    "phone": "0559 56 87 22",
+    "lat": 35.186167,
+    "lng": -0.638583,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5011,
+    "name": "صيدلية بادسي عبد الإله",
+    "area": "22 بوليفارد محمد الخامس",
+    "address": "22 بوليفارد محمد الخامس - سيدي بلعباس",
+    "phone": "0558 51 34 54",
+    "lat": 35.19325,
+    "lng": -0.637417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5012,
+    "name": "صيدلية بن خالد بهيجة",
+    "area": "01 بوليفارد محمد خميسة",
+    "address": "01 بوليفارد محمد خميسة - سيدي بلعباس",
+    "phone": "048 75 09 35",
+    "lat": 35.188833,
+    "lng": -0.643,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5013,
+    "name": "صيدلية سليمان سيدي أحمد",
+    "area": "25 شارع موليير، سيدي بلعباس",
+    "address": "25 شارع موليير، سيدي بلعباس",
+    "phone": "048 69 74 21",
+    "lat": 35.187083,
+    "lng": -0.6405,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5014,
+    "name": "صيدلية بوعبد الله م أ زوجة بلخضر",
+    "area": "30 بوليفارد الصومام",
+    "address": "30 بوليفارد الصومام - سيدي بلعباس",
+    "phone": "0540 52 11 27",
+    "lat": 35.187917,
+    "lng": -0.641167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5015,
+    "name": "صيدلية خضرة جليلة",
+    "area": "المنطقة S قطعة 63 محل 2، سيدي الجيلالي",
+    "address": "المنطقة S قطعة 63 محل 2، سيدي الجيلالي - سيدي بلعباس",
+    "phone": "048 72 21 88",
+    "lat": 35.209333,
+    "lng": -0.634,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5016,
+    "name": "صيدلية هني محمد إبراهيم",
+    "area": "الإدريسي حي البدر",
+    "address": "الإدريسي حي البدر - سيدي بلعباس",
+    "phone": "048 75 00 10",
+    "lat": 35.188583,
+    "lng": -0.644,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5017,
+    "name": "صيدلية ماكتافارم",
+    "area": "سيدي بلعباس",
+    "address": "سيدي بلعباس",
+    "phone": "0554 62 76 83",
+    "lat": 35.187417,
+    "lng": -0.636083,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5018,
+    "name": "صيدلية بطاش نذير ب",
+    "area": "26",
+    "address": "26 - 27 حي 72 سكن روشيه - سيدي بلعباس",
+    "phone": "048 70 23 50",
+    "lat": 35.1915,
+    "lng": -0.637083,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 5019,
+    "name": "صيدلية بغدادي أمينة",
+    "area": "34 شارع عصام الإسلامي CPR",
+    "address": "34 شارع عصام الإسلامي CPR - سيدي بلعباس",
+    "phone": "0661 11 01 87",
+    "lat": 35.189,
+    "lng": -0.64075,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
   }
 ]

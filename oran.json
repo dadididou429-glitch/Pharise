@@ -838,5 +838,1205 @@
       "close": 21
     },
     "onDuty": false
+  },
+  {
+    "id": 2000,
+    "name": "صيدلية غرياني محمد",
+    "area": "4 طرق حي مطلع الفجر رقم 1",
+    "address": "4 طرق حي مطلع الفجر رقم 1 - وهران",
+    "phone": "0550 90 13 91",
+    "lat": 35.69325,
+    "lng": -0.637917,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2001,
+    "name": "صيدلية كرمد محمد أمين",
+    "area": "حي النجمة رقم 256",
+    "address": "حي النجمة رقم 256 - وهران",
+    "phone": "0667 48 03 05",
+    "lat": 35.697417,
+    "lng": -0.635583,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2002,
+    "name": "صيدلية سقال محمد رضا",
+    "area": "إقامة الحاجة فاطمة بلوك C 368 بئر الجير",
+    "address": "إقامة الحاجة فاطمة بلوك C 368 بئر الجير - وهران",
+    "phone": "0550 46 03 90",
+    "lat": 35.716333,
+    "lng": -0.578417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2003,
+    "name": "صيدلية بايش بشير",
+    "area": "08 شارع ديدوش مراد أرزيو",
+    "address": "08 شارع ديدوش مراد أرزيو - وهران",
+    "phone": "0770 49 47 93",
+    "lat": 35.85125,
+    "lng": -0.322833,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2004,
+    "name": "صيدلية قلاتي ميلود",
+    "area": "تجزئة ل 275 رقم 237",
+    "address": "تجزئة ل 275 رقم 237 - وهران",
+    "phone": "0557 10 30 19",
+    "lat": 35.69875,
+    "lng": -0.632167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2005,
+    "name": "صيدلية حاي أحمد",
+    "area": "03 شارع عبد الكريم مرافا",
+    "address": "03 شارع عبد الكريم مرافا - وهران",
+    "phone": "0770 90 45 39",
+    "lat": 35.695667,
+    "lng": -0.637917,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2006,
+    "name": "صيدلية مستار نادية",
+    "area": "حي بلقايد محل 03 بئر الجير",
+    "address": "حي بلقايد محل 03 بئر الجير - وهران",
+    "phone": "0773 01 79 23",
+    "lat": 35.718417,
+    "lng": -0.582333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2007,
+    "name": "صيدلية مادن خيرة",
+    "area": "حي 300 مسكن عمارة 04 05 بئر الجير وهران",
+    "address": "حي 300 مسكن عمارة 04 05 بئر الجير وهران",
+    "phone": "0542 28 06 21",
+    "lat": 35.716417,
+    "lng": -0.579167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2008,
+    "name": "صيدلية بودبوز زينب",
+    "area": "حبيب بون روشد قمبيطة",
+    "address": "حبيب بون روشد قمبيطة - وهران",
+    "phone": "0554 15 04 64",
+    "lat": 35.6925,
+    "lng": -0.625917,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2009,
+    "name": "صيدلية درويش وفاء",
+    "area": "رقم 03 ب.أ حي 94 مسكن عقيد لطفي",
+    "address": "رقم 03 ب.أ حي 94 مسكن عقيد لطفي - وهران",
+    "phone": "0797 66 08 81",
+    "lat": 35.699667,
+    "lng": -0.613583,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2010,
+    "name": "صيدلية نقروف ليديا",
+    "area": "حي نخلا بئر الجير",
+    "address": "حي نخلا بئر الجير - وهران",
+    "phone": "0550 94 37 29",
+    "lat": 35.723167,
+    "lng": -0.576417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2011,
+    "name": "صيدلية دخيلي ليليا ف.ز",
+    "area": "تعاونية سانت جورج المكاري",
+    "address": "تعاونية سانت جورج المكاري - وهران",
+    "phone": "0556 36 39 69",
+    "lat": 35.699833,
+    "lng": -0.634417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2012,
+    "name": "صيدلية عبيدة سمية",
+    "area": "حي، شارع رحالي العربي",
+    "address": "حي، شارع رحالي العربي - وهران",
+    "phone": "0770 73 42 45",
+    "lat": 35.697167,
+    "lng": -0.630667,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2013,
+    "name": "صيدلية تربش مونيا",
+    "area": "46 مكرر شارع أفوكات قمبيطة",
+    "address": "46 مكرر شارع أفوكات قمبيطة - وهران",
+    "phone": "0560 99 57 40",
+    "lat": 35.692,
+    "lng": -0.630417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2014,
+    "name": "صيدلية نافي جمال الدين",
+    "area": "حي خميسة ب.د ميلينيوم",
+    "address": "حي خميسة ب.د ميلينيوم - وهران",
+    "phone": "0540 09 69 49",
+    "lat": 35.69875,
+    "lng": -0.636,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2015,
+    "name": "صيدلية عبدي سمية شريفة",
+    "area": "بئر الجير بلقايد",
+    "address": "بئر الجير بلقايد - وهران",
+    "phone": "0660 32 53 65",
+    "lat": 35.722833,
+    "lng": -0.57725,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2016,
+    "name": "صيدلية بن علي دليلة",
+    "area": "9 شارع سيدي فروج هضاب",
+    "address": "9 شارع سيدي فروج هضاب - وهران",
+    "phone": "0542 34 78 69",
+    "lat": 35.701083,
+    "lng": -0.631333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2017,
+    "name": "صيدلية قادري عبد المالك",
+    "area": "14 شارع زيتوت يوسف هضاب",
+    "address": "14 شارع زيتوت يوسف هضاب - وهران",
+    "phone": "0778 90 80 04",
+    "lat": 35.69775,
+    "lng": -0.63175,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2018,
+    "name": "صيدلية بومازة عصام",
+    "area": "تعاونية تسالة محل رقم 2 بئر الجير",
+    "address": "تعاونية تسالة محل رقم 2 بئر الجير - وهران",
+    "phone": "0550 93 34 65",
+    "lat": 35.718833,
+    "lng": -0.577083,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2019,
+    "name": "صيدلية غفور شاهيناز",
+    "area": "حي خميسة قطعة رقم C461 فرنان فيل سوب بئر",
+    "address": "حي خميسة قطعة رقم C461 فرنان فيل سوب بئر الجير - وهران",
+    "phone": "0791 94 64 00",
+    "lat": 35.717833,
+    "lng": -0.582917,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2020,
+    "name": "صيدلية كتيتة رجاء خاليدة",
+    "area": "طريق الولاية 75 تعاونية الكرامة رقم 2 بل",
+    "address": "طريق الولاية 75 تعاونية الكرامة رقم 2 بلقايد - وهران",
+    "phone": "0561 17 51 78",
+    "lat": 35.696417,
+    "lng": -0.638,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2021,
+    "name": "صيدلية جغيز نعيمة فسيان بوغراسة",
+    "area": "72 شارع الجيش الوطني الشعبي",
+    "address": "72 شارع الجيش الوطني الشعبي - وهران",
+    "phone": "0560 04 43 39",
+    "lat": 35.697,
+    "lng": -0.635833,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2022,
+    "name": "صيدلية بومازة منير",
+    "area": "محل 01 حي الشهداء ميمون بوجماعة كاستور",
+    "address": "محل 01 حي الشهداء ميمون بوجماعة كاستور",
+    "phone": "0665 93 24 75",
+    "lat": 35.697,
+    "lng": -0.634,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2023,
+    "name": "صيدلية بلباشير بشرى",
+    "area": "حي نقطة النهار تعاونية أحمد زبانة",
+    "address": "حي نقطة النهار تعاونية أحمد زبانة - وهران",
+    "phone": "041 82 62 29",
+    "lat": 35.699417,
+    "lng": -0.635167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2024,
+    "name": "صيدلية حي محمد",
+    "area": "سكنات ذات الإيجار المنخفض USTO 153 LV87",
+    "address": "سكنات ذات الإيجار المنخفض USTO 153 LV87 - وهران",
+    "phone": "0697 48 06 01",
+    "lat": 35.698333,
+    "lng": -0.63475,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2025,
+    "name": "صيدلية بنشادي هند",
+    "area": "شارع مكي خليفة، وهران",
+    "address": "شارع مكي خليفة، وهران",
+    "phone": "0553 89 42 69",
+    "lat": 35.693,
+    "lng": -0.635667,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2026,
+    "name": "صيدلية دلاني ميلود جمال الدين",
+    "area": "شارع أحمد بوقرة 157 سكنات واد تليلات",
+    "address": "شارع أحمد بوقرة 157 سكنات واد تليلات - وهران",
+    "phone": "0771 27 68 79",
+    "lat": 35.694333,
+    "lng": -0.636083,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2027,
+    "name": "صيدلية بوعابدة سالم",
+    "area": "12 شارع ت. زغلول الكرمة",
+    "address": "12 شارع ت. زغلول الكرمة - وهران",
+    "phone": "0772 43 60 02",
+    "lat": 35.699,
+    "lng": -0.63525,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2028,
+    "name": "صيدلية مصطفى سيد أحمد",
+    "area": "رقم 36 140 مسكن واد تليلات",
+    "address": "رقم 36 140 مسكن واد تليلات - وهران",
+    "phone": "0555 75 96 94",
+    "lat": 35.697167,
+    "lng": -0.637167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2029,
+    "name": "صيدلية ريغي حبيب",
+    "area": "حي 50 مسكن ترويجي واد تليلات",
+    "address": "حي 50 مسكن ترويجي واد تليلات - وهران",
+    "phone": "0655 21 54 81",
+    "lat": 35.696167,
+    "lng": -0.63675,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2030,
+    "name": "صيدلية داودي نبيل (صيدلية النبلاء)",
+    "area": "02 شارع الشيخ عبد الرحمن الثعالبي سيدي ي",
+    "address": "02 شارع الشيخ عبد الرحمن الثعالبي سيدي يحيى - وهران",
+    "phone": "0781 84 88 06",
+    "lat": 35.698917,
+    "lng": -0.63475,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2031,
+    "name": "صيدلية يبردي أمل",
+    "area": "48 شارع بصل علال شوبو",
+    "address": "48 شارع بصل علال شوبو - وهران",
+    "phone": "0770 30 51 81",
+    "lat": 35.69925,
+    "lng": -0.635417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2032,
+    "name": "صيدلية يرمس حنان",
+    "area": "عمارة B3 عقيد لطفي",
+    "address": "عمارة B3 عقيد لطفي - وهران",
+    "phone": "0560 71 17 37",
+    "lat": 35.699583,
+    "lng": -0.613667,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2033,
+    "name": "صيدلية بلمكي نوال نجاة",
+    "area": "حي خميسة بئر الجير",
+    "address": "حي خميسة بئر الجير - وهران",
+    "phone": "0661 14 64 24",
+    "lat": 35.716333,
+    "lng": -0.576167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2034,
+    "name": "صيدلية مرازي عادل",
+    "area": "05 شارع بن ويس قادة قمبيطة",
+    "address": "05 شارع بن ويس قادة قمبيطة - وهران",
+    "phone": "0557 85 57 67",
+    "lat": 35.6925,
+    "lng": -0.633917,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2035,
+    "name": "صيدلية بن زيان محمد",
+    "area": "شارع تلمسان",
+    "address": "شارع تلمسان - وهران",
+    "phone": "0778 11 84 06",
+    "lat": 35.7,
+    "lng": -0.63475,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2036,
+    "name": "صيدلية عايد ياسمين",
+    "area": "1 قطعة 1 تعاونية الشهيد بن بولعيد رقم 2 ",
+    "address": "1 قطعة 1 تعاونية الشهيد بن بولعيد رقم 2 كاناستيل - وهران",
+    "phone": "0770 61 00 44",
+    "lat": 35.693417,
+    "lng": -0.6315,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2037,
+    "name": "صيدلية ل. محمد بلعربي",
+    "area": "حي الزيتون عمارة 6 مارافال",
+    "address": "حي الزيتون عمارة 6 مارافال - وهران",
+    "phone": "041 34 23 51",
+    "lat": 35.691083,
+    "lng": -0.643333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2038,
+    "name": "صيدلية طالب سمية",
+    "area": "عمارة T1 رقم 2 حي الزيتون مارافال",
+    "address": "عمارة T1 رقم 2 حي الزيتون مارافال - وهران",
+    "phone": "0550 92 94 78",
+    "lat": 35.686833,
+    "lng": -0.641167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2039,
+    "name": "صيدلية حمان جميلة",
+    "area": "50 شارع الشيخ عمر البسكري، وهران",
+    "address": "50 شارع الشيخ عمر البسكري، وهران",
+    "phone": "0796 09 14 12",
+    "lat": 35.695583,
+    "lng": -0.638083,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2040,
+    "name": "صيدلية بنددوش",
+    "area": "السوق البلدي حي 1500 مسكن، وهران",
+    "address": "السوق البلدي حي 1500 مسكن، وهران",
+    "phone": "0657 42 41 64",
+    "lat": 35.699917,
+    "lng": -0.630833,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2041,
+    "name": "صيدلية بن عبدي س",
+    "area": "عين البايدة",
+    "address": "عين البايدة - وهران",
+    "phone": "041 21 84 18",
+    "lat": 35.701,
+    "lng": -0.638,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2042,
+    "name": "صيدلية بوالقوان",
+    "area": "سانت هوبرت، وهران",
+    "address": "سانت هوبرت، وهران",
+    "phone": "0776 65 22 73",
+    "lat": 35.693167,
+    "lng": -0.635167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2043,
+    "name": "صيدلية بلجودي س",
+    "area": "40 شارع كراشاي غالي، وهران",
+    "address": "40 شارع كراشاي غالي، وهران",
+    "phone": "0792 93 36 43",
+    "lat": 35.694667,
+    "lng": -0.636,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2044,
+    "name": "صيدلية بن داوود",
+    "area": "9 شارع ساقبي الأخضر ساحة هوش، وهران",
+    "address": "9 شارع ساقبي الأخضر ساحة هوش، وهران",
+    "phone": "041 38 70 78",
+    "lat": 35.696333,
+    "lng": -0.634333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2045,
+    "name": "صيدلية غريرية نسرين",
+    "area": "قطعة 25 رقم 22 حاسي مفسوخ – وهران",
+    "address": "قطعة 25 رقم 22 حاسي مفسوخ – وهران",
+    "phone": "0799 88 99 43",
+    "lat": 35.693417,
+    "lng": -0.631417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2046,
+    "name": "صيدلية أورنيدي إلياس",
+    "area": "حي النجمة شتايبو سيدي شحمي",
+    "address": "حي النجمة شتايبو سيدي شحمي - وهران",
+    "phone": "0770 66 60 91",
+    "lat": 35.69925,
+    "lng": -0.634167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2047,
+    "name": "صيدلية ذهبي سفيان",
+    "area": "حي النجمة 48 قطعة لبيض",
+    "address": "حي النجمة 48 قطعة لبيض - وهران",
+    "phone": "0699 38 11 13",
+    "lat": 35.696,
+    "lng": -0.6345,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2048,
+    "name": "صيدلية روان شريفة",
+    "area": "حي 127 مسكن رقم 25 عين البيضاء",
+    "address": "حي 127 مسكن رقم 25 عين البيضاء - وهران",
+    "phone": "0798 46 87 56",
+    "lat": 35.693,
+    "lng": -0.63125,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2049,
+    "name": "صيدلية درني فاطمة الزهراء",
+    "area": "حي الفرح أشجار اللوز",
+    "address": "حي الفرح أشجار اللوز - وهران",
+    "phone": "0780 00 33 81",
+    "lat": 35.698917,
+    "lng": -0.633167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2050,
+    "name": "صيدلية بن ودان فيصل",
+    "area": "34 شارع شاليه",
+    "address": "34 شارع شاليه - وهران",
+    "phone": "0661 20 42 32",
+    "lat": 35.699917,
+    "lng": -0.63425,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2051,
+    "name": "صيدلية بليل زينب",
+    "area": "قطب AZ",
+    "address": "قطب AZ - وهران",
+    "phone": "0797 60 51 32",
+    "lat": 35.698083,
+    "lng": -0.636333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2052,
+    "name": "صيدلية بوطويل مريم",
+    "area": "رقم 106",
+    "address": "رقم 106-02 مسكن عين البايدة - وهران",
+    "phone": "0661 13 14 31",
+    "lat": 35.694333,
+    "lng": -0.6315,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2053,
+    "name": "صيدلية قاسمي أنيسة",
+    "area": "حي 139 مسكن رقم 07 عين البيضاء",
+    "address": "حي 139 مسكن رقم 07 عين البيضاء - وهران",
+    "phone": "0770 10 67 07",
+    "lat": 35.695667,
+    "lng": -0.635167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2054,
+    "name": "صيدلية محنان صابرينا",
+    "area": "محل C4، 2000 مسكن، موقع 2 عمارة رقم 3، A",
+    "address": "محل C4، 2000 مسكن، موقع 2 عمارة رقم 3، AADL، وهران",
+    "phone": "0783 80 36 00",
+    "lat": 35.69675,
+    "lng": -0.632333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2055,
+    "name": "صيدلية مهيدي بشرى",
+    "area": "موقع 1 2000 مسكن CGIC عمارة 14",
+    "address": "موقع 1 2000 مسكن CGIC عمارة 14 - وهران",
+    "phone": "0553 34 55 92",
+    "lat": 35.699917,
+    "lng": -0.637917,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2056,
+    "name": "صيدلية مباركي شهرزاد",
+    "area": "السانية",
+    "address": "السانية - وهران",
+    "phone": "0560 37 91 48",
+    "lat": 35.64775,
+    "lng": -0.619917,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2057,
+    "name": "صيدلية منازلي محمد أمين",
+    "area": "بن فريحة",
+    "address": "بن فريحة - وهران",
+    "phone": "0554 22 52 65",
+    "lat": 35.69875,
+    "lng": -0.637417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2058,
+    "name": "صيدلية سحابة عبد العالي",
+    "area": "شارع بشير محمد تافراوي",
+    "address": "شارع بشير محمد تافراوي - وهران",
+    "phone": "0669 34 21 56",
+    "lat": 35.698583,
+    "lng": -0.633333,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2059,
+    "name": "صيدلية بن زرفة بختا",
+    "area": "حاسي عامر",
+    "address": "حاسي عامر - وهران",
+    "phone": "0664 45 98 92",
+    "lat": 35.697,
+    "lng": -0.637417,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2060,
+    "name": "صيدلية بصدجراري حورية",
+    "area": "شارع بن قديح عبد الكريم واد تليلات",
+    "address": "شارع بن قديح عبد الكريم واد تليلات - وهران",
+    "phone": "0770 86 14 18",
+    "lat": 35.697667,
+    "lng": -0.630083,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2061,
+    "name": "صيدلية بن دخيخة موسى",
+    "area": "65 شارع محمد بوضياف",
+    "address": "65 شارع محمد بوضياف - وهران",
+    "phone": "0658 39 45 00",
+    "lat": 35.698167,
+    "lng": -0.6345,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2062,
+    "name": "صيدلية بن سعولة محمد الأزهر",
+    "area": "حي الأمير عبد القادر",
+    "address": "حي الأمير عبد القادر - وهران",
+    "phone": "0557 87 41 43",
+    "lat": 35.6945,
+    "lng": -0.638167,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2063,
+    "name": "صيدلية صلاح فاتن",
+    "area": "قطعة 612 قائد جرادي بئر الجير",
+    "address": "قطعة 612 قائد جرادي بئر الجير - وهران",
+    "phone": "0550 73 27 74",
+    "lat": 35.719417,
+    "lng": -0.58175,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 2064,
+    "name": "صيدلية الزهور - د. جوامة",
+    "area": "حي بن عربة بومامة وهران",
+    "address": "حي بن عربة بومامة وهران",
+    "phone": "0661 99 54 16",
+    "lat": 35.6995,
+    "lng": -0.6305,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "evexia",
+    "coordsApprox": true
+  },
+  {
+    "id": 3066,
+    "name": "صيدلية بندايخة",
+    "area": "Rue Mostaganem",
+    "address": "Rue Mostaganem",
+    "phone": "0550720516",
+    "lat": 35.7,
+    "lng": -0.64,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3067,
+    "name": "صيدلية ساحة الانتصارات",
+    "area": "Place des victoires",
+    "address": "Place des victoires",
+    "phone": "041401786",
+    "lat": 35.7,
+    "lng": -0.64,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3068,
+    "name": "صيدلية درويش",
+    "area": "Akid Lotfi",
+    "address": "Akid Lotfi",
+    "phone": "0770803431",
+    "lat": 35.7,
+    "lng": -0.61,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3069,
+    "name": "صيدلية Otodus Pharm",
+    "area": "Albert premier",
+    "address": "Albert premier",
+    "phone": "0551525330",
+    "lat": 35.7,
+    "lng": -0.64,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3070,
+    "name": "صيدلية Dalia Parapharm",
+    "area": "St Hubert",
+    "address": "St Hubert",
+    "phone": "0552951904",
+    "lat": 35.69,
+    "lng": -0.64,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3071,
+    "name": "صيدلية Parapharm Mimosai",
+    "area": "Bir Djir",
+    "address": "Bir Djir",
+    "phone": "0770918413",
+    "lat": 35.72,
+    "lng": -0.58,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3072,
+    "name": "صيدلية المستشفى",
+    "area": "Place Roux",
+    "address": "Place Roux",
+    "phone": "0542717573",
+    "lat": 35.7,
+    "lng": -0.64,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3073,
+    "name": "صيدلية السنترال",
+    "area": "Mediouni",
+    "address": "Mediouni",
+    "phone": "0540979325",
+    "lat": 35.7,
+    "lng": -0.64,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3074,
+    "name": "صيدلية رحالي",
+    "area": "Gdyel",
+    "address": "Gdyel",
+    "phone": "0799786084",
+    "lat": 35.78,
+    "lng": -0.42,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 3075,
+    "name": "صيدلية أحمد حاي",
+    "area": "Maraval Oran",
+    "address": "Maraval Oran",
+    "phone": "041342578",
+    "lat": 35.69,
+    "lng": -0.64,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
   }
 ]

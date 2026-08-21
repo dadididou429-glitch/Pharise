@@ -482,7 +482,7 @@
     "address": "Chemin Haddadi, Ben Aknoun",
     "phone": "021 91 22 33",
     "lat": 36.75,
-    "lng": 3,
+    "lng": 3.0,
     "hours": {
       "open": 8.5,
       "close": 22
@@ -580,7 +580,7 @@
     "address": "Rue des Mimosas, Bouzaréah",
     "phone": null,
     "lat": 36.7833,
-    "lng": 3,
+    "lng": 3.0,
     "hours": {
       "open": 8.5,
       "close": 21
@@ -776,7 +776,7 @@
     "address": "RN1, Birtouta",
     "phone": null,
     "lat": 36.65,
-    "lng": 3,
+    "lng": 3.0,
     "hours": {
       "open": 8,
       "close": 22
@@ -978,5 +978,213 @@
       "close": 21
     },
     "onDuty": false
+  },
+  {
+    "id": 6000,
+    "name": "صيدلية Vital Pharma",
+    "area": "Said Hamdine",
+    "address": "Said Hamdine",
+    "phone": "0550907620",
+    "lat": 36.75,
+    "lng": 3.03,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6001,
+    "name": "صيدلية الياسمين",
+    "area": "El Madania",
+    "address": "El Madania",
+    "phone": "0660609884",
+    "lat": 36.75,
+    "lng": 3.07,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6002,
+    "name": "صيدلية أرماف",
+    "area": "Chevalley",
+    "address": "Chevalley",
+    "phone": "023197684",
+    "lat": 36.76,
+    "lng": 3.02,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6003,
+    "name": "صيدلية سيرابي باوني",
+    "area": "Bir Khadem",
+    "address": "Bir Khadem",
+    "phone": "0552679102",
+    "lat": 36.72,
+    "lng": 3.05,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6004,
+    "name": "صيدلية مقراني",
+    "area": "Hydra",
+    "address": "Hydra",
+    "phone": "023484829",
+    "lat": 36.75,
+    "lng": 3.03,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6005,
+    "name": "صيدلية Lotus Para Cos",
+    "area": "Rouiba",
+    "address": "Rouiba",
+    "phone": "0554196969",
+    "lat": 36.74,
+    "lng": 3.28,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6006,
+    "name": "صيدلية El Rayhan Concept Store",
+    "area": "Chéraga",
+    "address": "Chéraga",
+    "phone": "0655353899",
+    "lat": 36.77,
+    "lng": 2.95,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6007,
+    "name": "صيدلية المدنية",
+    "area": "16 Rue Mohamed Badaoui El Madania",
+    "address": "16 Rue Mohamed Badaoui El Madania",
+    "phone": "0770251878",
+    "lat": 36.75,
+    "lng": 3.07,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6008,
+    "name": "صيدلية مسعودي",
+    "area": "Rouiba",
+    "address": "Rouiba",
+    "phone": "0559654887",
+    "lat": 36.74,
+    "lng": 3.28,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6009,
+    "name": "صيدلية ناجم",
+    "area": "Kouba",
+    "address": "Kouba",
+    "phone": "0556356967",
+    "lat": 36.73,
+    "lng": 3.08,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6010,
+    "name": "صيدلية Pharmaly",
+    "area": "Didouche Mourad",
+    "address": "Didouche Mourad, Alger Centre",
+    "phone": "0555239541",
+    "lat": 36.77,
+    "lng": 3.05,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6011,
+    "name": "صيدلية أودين",
+    "area": "33 Rue Didouche Mourad",
+    "address": "33 Rue Didouche Mourad, Alger Centre",
+    "phone": "0770340034",
+    "lat": 36.77,
+    "lng": 3.05,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
+  },
+  {
+    "id": 6012,
+    "name": "صيدلية الزيتونة",
+    "area": "Said Hamdine",
+    "address": "Said Hamdine",
+    "phone": "0779672524",
+    "lat": 36.75,
+    "lng": 3.03,
+    "hours": {
+      "open": 8,
+      "close": 21
+    },
+    "onDuty": false,
+    "source": "eternel",
+    "coordsApprox": true
   }
 ]
