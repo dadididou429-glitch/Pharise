@@ -1555,9 +1555,9 @@ out center tags;`;
 
       // Try increasing radius if few results (city centers vs suburbs)
       let result = [];
-      for (const radius of [12000, 20000, 30000]) {
+      for (const radius of [20000, 35000, 50000]) {
         result = await fetchOSMPharmacies(cityLat, cityLng, radius);
-        if (result.length >= 5) break;
+        if (result.length >= 12) break;
       }
 
       const tagged = result.map(p => ({
@@ -1992,7 +1992,7 @@ out center tags;`;
             ).then(function (rr) { return rr.json(); }).catch(function () { return null; });
 
             const seq = ++osmFetchSeq.current;
-            const osmP = fetchOSMPharmacies(lat, lng, 15000).catch(function () { return []; });
+            const osmP = fetchOSMPharmacies(lat, lng, 25000).catch(function () { return []; });
 
             const results = await Promise.all([reverseP, osmP]);
             const geoData = results[0];
@@ -2108,7 +2108,7 @@ out center tags;`;
             // جلب صيدليات من الكاش فوراً دون انتظار GPS
             setLoadingOSM(true);
             const seqCache = ++osmFetchSeq.current;
-            fetchOSMPharmacies(cached.lat, cached.lng, 15000).then(function (data) {
+            fetchOSMPharmacies(cached.lat, cached.lng, 25000).then(function (data) {
               applyOsmPharmacies(data, seqCache);
             }).catch(function () {}).finally(function () { setLoadingOSM(false); });
           }
@@ -2278,12 +2278,12 @@ out center tags;`;
           rawFiltered = [];
         }
 
-        // OSM: نفس حد المسافة 40 كم لتفادي تغيّر العدد بعد إعادة الجلب
+        // OSM: نطاق عرض أوسع (55 كم) حتى تظهر صيدليات الولاية عند الاختيار اليدوي
         let osmFiltered = osmPharmacies.filter(p => !isRemovedPh(p));
         if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
           osmFiltered = osmFiltered.filter(p => {
             if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
-            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 40;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 55;
           });
         }
 
@@ -2496,22 +2496,37 @@ out center tags;`;
         setShowLocationPicker(false);
         setCountryId("DZ");
 
-        // لا نفرّغ القائمة فوراً (يمنع القفزة 264→0→155) — نستبدل عند وصول النتيجة فقط
+        // جلب أوسع عند اختيار ولاية — نصف قطر متصاعد + احتياطي باسم المدينة
         if (w.id !== 999 && Number.isFinite(Number(w.lat)) && Number.isFinite(Number(w.lng))) {
           const lat = Number(w.lat);
           const lng = Number(w.lng);
           setUserLoc({ lat, lng });
           setLoadingOSM(true);
           const seq = ++osmFetchSeq.current;
-          fetchOSMPharmacies(lat, lng, 15000)
-            .then((data) => {
+          const cityName = w.nameFr || w.nameEn || w.name;
+          (async function () {
+            try {
+              let best = [];
+              for (const radius of [20000, 35000, 50000]) {
+                if (seq !== osmFetchSeq.current) return;
+                const data = await fetchOSMPharmacies(lat, lng, radius);
+                if (Array.isArray(data) && data.length > best.length) best = data;
+                if (best.length >= 15) break;
+              }
+              if (best.length < 8 && seq === osmFetchSeq.current) {
+                try {
+                  const byCity = await fetchOSMByCity(cityName + ", Algeria", lat, lng);
+                  if (Array.isArray(byCity) && byCity.length > best.length) best = byCity;
+                } catch (e) {}
+              }
               if (seq !== osmFetchSeq.current) return;
-              setOsmPharmacies(Array.isArray(data) ? data : []);
-            })
-            .catch(() => {
+              setOsmPharmacies(best);
+            } catch (e) {
               if (seq === osmFetchSeq.current) setOsmPharmacies([]);
-            })
-            .finally(() => { if (seq === osmFetchSeq.current) setLoadingOSM(false); });
+            } finally {
+              if (seq === osmFetchSeq.current) setLoadingOSM(false);
+            }
+          })();
           try {
             localStorage.setItem("pharis_last_loc", JSON.stringify({
               lat, lng, place: display, countryId: "DZ", wilayaId: w.id, ts: Date.now()
@@ -2520,15 +2535,23 @@ out center tags;`;
         } else if (userLoc && Number.isFinite(Number(userLoc.lat))) {
           setLoadingOSM(true);
           const seq = ++osmFetchSeq.current;
-          fetchOSMPharmacies(userLoc.lat, userLoc.lng, 15000)
-            .then((data) => {
+          (async function () {
+            try {
+              let best = [];
+              for (const radius of [20000, 35000, 50000]) {
+                if (seq !== osmFetchSeq.current) return;
+                const data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng, radius);
+                if (Array.isArray(data) && data.length > best.length) best = data;
+                if (best.length >= 15) break;
+              }
               if (seq !== osmFetchSeq.current) return;
-              setOsmPharmacies(Array.isArray(data) ? data : []);
-            })
-            .catch(() => {
+              setOsmPharmacies(best);
+            } catch (e) {
               if (seq === osmFetchSeq.current) setOsmPharmacies([]);
-            })
-            .finally(() => { if (seq === osmFetchSeq.current) setLoadingOSM(false); });
+            } finally {
+              if (seq === osmFetchSeq.current) setLoadingOSM(false);
+            }
+          })();
         }
       };
 
