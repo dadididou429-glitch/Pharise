@@ -1809,6 +1809,13 @@ out center tags;`;
       const [showLocationPicker, setShowLocationPicker] = useState(false);
       const [wilayaSearch, setWilayaSearch] = useState("");
       const [osmPharmacies, setOsmPharmacies] = useState([]);
+      const osmFetchSeq = useRef(0);
+      const applyOsmPharmacies = (data, seq) => {
+        if (seq !== osmFetchSeq.current) return; // تجاهل نتيجة قديمة
+        if (Array.isArray(data) && data.length > 0) {
+          setOsmPharmacies(data);
+        }
+      };
       const [loadingOSM, setLoadingOSM] = useState(false);
       const [submitted, setSubmitted] = useState([]);
       const [removedIds, setRemovedIds] = useState(new Set());
@@ -1984,12 +1991,13 @@ out center tags;`;
               { headers: { "Accept-Language": "ar,en,fr" } }
             ).then(function (rr) { return rr.json(); }).catch(function () { return null; });
 
-            const osmP = fetchOSMPharmacies(lat, lng, 10000).catch(function () { return []; });
+            const seq = ++osmFetchSeq.current;
+            const osmP = fetchOSMPharmacies(lat, lng, 15000).catch(function () { return []; });
 
             const results = await Promise.all([reverseP, osmP]);
             const geoData = results[0];
             const osmData = results[1];
-            if (osmData && osmData.length > 0) setOsmPharmacies(osmData);
+            applyOsmPharmacies(osmData, seq);
 
             if (geoData && geoData.address) {
               const addr = geoData.address;
@@ -2057,19 +2065,19 @@ out center tags;`;
         navigator.geolocation.getCurrentPosition(
           function (pos) {
             processPosition(pos);
-            // تحسين دقة في الخلفية دون تعطيل الواجهة
+            // تحسين دقة فقط إذا تحرّك الموقع بشكل ملحوظ (~300م+) لتجنب إعادة الجلب وتغيّر العدد
             try {
               navigator.geolocation.getCurrentPosition(
                 function (pos2) {
                   if (!pos2 || !pos2.coords) return;
                   const dLat = Math.abs(pos2.coords.latitude - pos.coords.latitude);
                   const dLng = Math.abs(pos2.coords.longitude - pos.coords.longitude);
-                  if (dLat > 0.002 || dLng > 0.002) {
+                  if (dLat > 0.004 || dLng > 0.004) {
                     processPosition(pos2);
                   }
                 },
                 function () {},
-                { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
               );
             } catch (e) {}
           },
@@ -2099,8 +2107,9 @@ out center tags;`;
             setLocating(false);
             // جلب صيدليات من الكاش فوراً دون انتظار GPS
             setLoadingOSM(true);
-            fetchOSMPharmacies(cached.lat, cached.lng, 10000).then(function (data) {
-              if (data && data.length > 0) setOsmPharmacies(data);
+            const seqCache = ++osmFetchSeq.current;
+            fetchOSMPharmacies(cached.lat, cached.lng, 15000).then(function (data) {
+              applyOsmPharmacies(data, seqCache);
             }).catch(function () {}).finally(function () { setLoadingOSM(false); });
           }
         } catch (e) {}
@@ -2269,12 +2278,12 @@ out center tags;`;
           rawFiltered = [];
         }
 
-        // OSM: حد المسافة 35 كم حول مركز الولاية/الموقع
+        // OSM: نفس حد المسافة 40 كم لتفادي تغيّر العدد بعد إعادة الجلب
         let osmFiltered = osmPharmacies.filter(p => !isRemovedPh(p));
         if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
           osmFiltered = osmFiltered.filter(p => {
             if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
-            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 35;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 40;
           });
         }
 
@@ -2487,23 +2496,22 @@ out center tags;`;
         setShowLocationPicker(false);
         setCountryId("DZ");
 
-        // امسح نتائج OSM القديمة فوراً حتى لا تبقى صيدليات المدينة السابقة
-        setOsmPharmacies([]);
-
+        // لا نفرّغ القائمة فوراً (يمنع القفزة 264→0→155) — نستبدل عند وصول النتيجة فقط
         if (w.id !== 999 && Number.isFinite(Number(w.lat)) && Number.isFinite(Number(w.lng))) {
           const lat = Number(w.lat);
           const lng = Number(w.lng);
           setUserLoc({ lat, lng });
           setLoadingOSM(true);
-          // نصف قطر أوسع عند اختيار ولاية يدوياً
-          fetchOSMPharmacies(lat, lng, 20000)
+          const seq = ++osmFetchSeq.current;
+          fetchOSMPharmacies(lat, lng, 15000)
             .then((data) => {
+              if (seq !== osmFetchSeq.current) return;
               setOsmPharmacies(Array.isArray(data) ? data : []);
             })
             .catch(() => {
-              setOsmPharmacies([]);
+              if (seq === osmFetchSeq.current) setOsmPharmacies([]);
             })
-            .finally(() => setLoadingOSM(false));
+            .finally(() => { if (seq === osmFetchSeq.current) setLoadingOSM(false); });
           try {
             localStorage.setItem("pharis_last_loc", JSON.stringify({
               lat, lng, place: display, countryId: "DZ", wilayaId: w.id, ts: Date.now()
@@ -2511,12 +2519,16 @@ out center tags;`;
           } catch {}
         } else if (userLoc && Number.isFinite(Number(userLoc.lat))) {
           setLoadingOSM(true);
-          fetchOSMPharmacies(userLoc.lat, userLoc.lng, 20000)
+          const seq = ++osmFetchSeq.current;
+          fetchOSMPharmacies(userLoc.lat, userLoc.lng, 15000)
             .then((data) => {
+              if (seq !== osmFetchSeq.current) return;
               setOsmPharmacies(Array.isArray(data) ? data : []);
             })
-            .catch(() => setOsmPharmacies([]))
-            .finally(() => setLoadingOSM(false));
+            .catch(() => {
+              if (seq === osmFetchSeq.current) setOsmPharmacies([]);
+            })
+            .finally(() => { if (seq === osmFetchSeq.current) setLoadingOSM(false); });
         }
       };
 
