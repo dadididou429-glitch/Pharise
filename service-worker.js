@@ -1,6 +1,13 @@
-// Pharis Service Worker — fast update ≤5s
-const CACHE_NAME = "pharis-v66-brand-btns";
-const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./splash-intro.mp4"];
+// Pharis Service Worker — offline-capable + fast update
+const CACHE_NAME = "pharis-v67-offline";
+const SHELL = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./apple-touch-icon.png"
+];
 
 const EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
@@ -8,7 +15,7 @@ const EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js",
   "https://cdn.tailwindcss.com",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ];
 
 self.addEventListener("install", (event) => {
@@ -62,12 +69,23 @@ self.addEventListener("fetch", (event) => {
     url.hostname.includes("tile") ||
     url.hostname.includes("ipapi");
 
+  // APIs: شبكة ثم كاش إن وُجد
   if (isAPI) {
-    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+    event.respondWith(
+      fetch(event.request)
+        .then((res) => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(event.request, copy)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => caches.match(event.request))
+    );
     return;
   }
 
-  // Network-first for app files
+  // ملفات التطبيق: شبكة أولاً، عند الفشل كاش (أوفلاين)
   if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(event.request, { cache: "no-store" })
@@ -78,11 +96,19 @@ self.addEventListener("fetch", (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(event.request).then((r) => r || caches.match("./index.html")))
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) return cached;
+          if (event.request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/" || url.pathname.endsWith("/")) {
+            return (await caches.match("./index.html")) || (await caches.match("/index.html"));
+          }
+          return new Response("", { status: 503, statusText: "Offline" });
+        })
     );
     return;
   }
 
+  // CDN وغيرها: كاش أولاً ثم شبكة (أفضل للأوفلاين)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetched = fetch(event.request)

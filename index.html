@@ -407,6 +407,8 @@
         searchCity: "ابحث عن مدينة...",
         detecting: "جاري تحديد موقعك...",
         geoError: "تعذر تحديد الموقع. استخدم القائمة يدوياً.",
+        offlineBanner: "وضع بدون إنترنت — عرض آخر بيانات محفوظة",
+        offlineHint: "بعض الميزات تحتاج اتصالاً عند توفر الشبكة",
         locRequiredTitle: "الموقع ضروري",
         locRequiredMsg: "لتظهر لك أقرب الصيدليات من مكانك، فعّل الموقع من النافذة التالية أو من إعدادات الهاتف.",
         locAllowBtn: "تفعيل الموقع الآن",
@@ -564,6 +566,8 @@
         searchCity: "Rechercher une ville...",
         detecting: "Détection de votre position...",
         geoError: "Impossible de détecter la position. Utilisez le menu.",
+        offlineBanner: "Hors ligne — dernières données enregistrées",
+        offlineHint: "Certaines fonctions nécessitent Internet",
         locRequiredTitle: "Position requise",
         locRequiredMsg: "Pour afficher les pharmacies les plus proches, activez la localisation.",
         locAllowBtn: "Activer la position",
@@ -721,6 +725,8 @@
         searchCity: "Search a city...",
         detecting: "Detecting your location...",
         geoError: "Could not detect location. Use the menu manually.",
+        offlineBanner: "Offline — showing last saved data",
+        offlineHint: "Some features need a connection when available",
         locRequiredTitle: "Location required",
         locRequiredMsg: "To show the nearest pharmacies, please enable location access.",
         locAllowBtn: "Enable location now",
@@ -1474,14 +1480,30 @@
         const raw = localStorage.getItem("pharis_osm_" + key);
         if (!raw) return null;
         const { ts, data } = JSON.parse(raw);
-        if (Date.now() - ts > 3 * 60 * 60 * 1000) return null; // 3h
+        // 14 يوماً — للاستخدام بدون إنترنت في المناطق المعزولة
+        if (Date.now() - ts > 14 * 24 * 60 * 60 * 1000) return null;
         return data;
       } catch { return null; }
     }
     function setOSMCache(key, data) {
       try {
         localStorage.setItem("pharis_osm_" + key, JSON.stringify({ ts: Date.now(), data }));
+        if (Array.isArray(data) && data.length > 0) {
+          localStorage.setItem("pharis_offline_pharmacies", JSON.stringify({
+            ts: Date.now(),
+            data: data.slice(0, 500)
+          }));
+        }
       } catch {}
+    }
+    function getOfflinePharmacies() {
+      try {
+        const raw = localStorage.getItem("pharis_offline_pharmacies");
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.data) || parsed.data.length === 0) return null;
+        return parsed.data;
+      } catch { return null; }
     }
 
     async function overpassFetch(query) {
@@ -1514,7 +1536,15 @@
       const cached = getOSMCache(cacheKey);
       if (cached && cached.length > 0) return cached;
 
-      const query = `[out:json][timeout:12];
+      // بدون إنترنت: آخر قائمة محفوظة
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        const offline = getOfflinePharmacies();
+        if (offline && offline.length > 0) return offline;
+        return cached || [];
+      }
+
+      try {
+        const query = `[out:json][timeout:12];
 (
   node["amenity"="pharmacy"](around:${radius},${lat},${lng});
   way["amenity"="pharmacy"](around:${radius},${lat},${lng});
@@ -1523,12 +1553,18 @@
 );
 out center tags;`;
 
-      const data = await overpassFetch(query);
-      const result = dedupePharmacies(
-        (data.elements || []).map((el, idx) => mapOSMElement(el, idx))
-      );
-      if (result.length > 0) setOSMCache(cacheKey, result);
-      return result;
+        const data = await overpassFetch(query);
+        const result = dedupePharmacies(
+          (data.elements || []).map((el, idx) => mapOSMElement(el, idx))
+        );
+        if (result.length > 0) setOSMCache(cacheKey, result);
+        return result;
+      } catch (e) {
+        const offline = getOfflinePharmacies();
+        if (offline && offline.length > 0) return offline;
+        if (cached && cached.length > 0) return cached;
+        throw e;
+      }
     }
 
     // Fetch by city name — uses coordinates when available (fast path)
@@ -2105,15 +2141,29 @@ out center tags;`;
             if (cached.countryId) setCountryId(cached.countryId);
             if (cached.wilayaId) setWilayaId(cached.wilayaId);
             setLocating(false);
-            // جلب صيدليات من الكاش فوراً دون انتظار GPS
+            // فوراً: صيدليات محفوظة (أوفلاين) ثم تحديث إن أمكن
+            try {
+              const snap = getOfflinePharmacies();
+              if (snap && snap.length > 0) setOsmPharmacies(snap);
+            } catch (e0) {}
             setLoadingOSM(true);
             const seqCache = ++osmFetchSeq.current;
             fetchOSMPharmacies(cached.lat, cached.lng, 25000).then(function (data) {
               applyOsmPharmacies(data, seqCache);
             }).catch(function () {}).finally(function () { setLoadingOSM(false); });
+          } else {
+            // لا كاش موقع — على الأقل آخر صيدليات محفوظة
+            try {
+              const snap = getOfflinePharmacies();
+              if (snap && snap.length > 0) setOsmPharmacies(snap);
+            } catch (e1) {}
           }
         } catch (e) {}
-        requestUserLocation();
+        if (navigator.onLine !== false) {
+          requestUserLocation();
+        } else {
+          setLocating(false);
+        }
       }, []);
 
       // عدّاد المستخدمين — يعمل بعد جاهزية Firebase + إعادة محاولة
@@ -3041,9 +3091,8 @@ out center tags;`;
           {toast && <Toast message={toast} onClose={() => setToast(null)} />}
 
           {offline && (
-            <div className="fixed top-0 inset-x-0 z-50 bg-amber-600 text-white text-center text-xs py-2 px-3">
-              {lang === "ar" ? "📡 أنت غير متصل — المفضلة والبيانات المحفوظة متاحة" : lang === "fr" ? "📡 Hors ligne — favoris et cache disponibles" : "📡 Offline — favorites and cache available"}
-              <span className="opacity-75 ms-2">{new Date().toLocaleDateString()}</span>
+            <div className="fixed top-0 inset-x-0 z-50 bg-amber-600 text-white text-center text-xs font-semibold py-1.5 px-3 shadow-md">
+              📡 {t("offlineBanner")}
             </div>
           )}
 
