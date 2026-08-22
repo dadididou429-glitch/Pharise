@@ -1,0 +1,34 @@
+========================================
+  Pharis + OpenClaw — ملفات جاهزة
+========================================
+
+استبدل في مستودع GitHub (جذر المشروع) هذه الملفات فقط:
+
+  1) index.html
+  2) service-worker.js
+  3) pharis-command-api.js     (ملف جديد)
+  4) pharis-bridge-snippet.js  (ملف جديد)
+
+لا تعدّل أي شيء يدويًا داخل الملفات.
+
+طريقة الرفع (من جهازك أو من GitHub web):
+
+أ) عبر موقع GitHub:
+   - ادخل المستودع → Add file → Upload files
+   - اسحب الملفات الأربعة
+   - Commit changes
+
+ب) عبر git:
+   git add index.html service-worker.js pharis-command-api.js pharis-bridge-snippet.js
+   git commit -m "Add OpenClaw Pharis command API (ready)"
+   git push
+
+بعد دقيقة افتح:
+  https://dadididou429-glitch.github.io/Pharise/index.html
+
+اختبار سريع في Console المتصفح (F12):
+  await PharisCommand("ping")
+  PharisCommand.help()
+
+إذا ظهر ok: true فكل شيء يعمل.
+========================================
