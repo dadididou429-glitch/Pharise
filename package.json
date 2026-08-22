@@ -1,12 +1,19 @@
 {
-  "name": "pharis-functions",
+  "name": "pharis-openclaw-mcp",
   "version": "1.0.0",
-  "dependencies": {
-    "axios": "^1.6.0",
-    "firebase-admin": "^11.0.0",
-    "firebase-functions": "^4.0.0"
-  },
+  "private": true,
+  "type": "module",
+  "description": "Local MCP admin bridge for the Pharis pharmacy app",
   "engines": {
-    "node": "20"
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "firebase-admin": "14.3.0",
+    "zod": "4.4.3"
   }
 }
