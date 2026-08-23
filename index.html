@@ -1830,6 +1830,7 @@ out center tags;`;
       });
       const [canInstall, setCanInstall] = useState(false);
       const [offline, setOffline] = useState(!navigator.onLine);
+      const [showDlShare, setShowDlShare] = useState(false);
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
       const [adminView, setAdminView] = useState(false);
@@ -2433,21 +2434,21 @@ out center tags;`;
       };
 
       const shareApp = () => {
-        const apkUrl = "https://github.com/dadididou429-glitch/Pharise/releases/download/V1.0/Pharise.apk";
-        const shareText = lang === "ar" 
-          ? "🚀 حمّل تطبيق Pharis واعثر على أقرب صيدلية مفتوحة!"
+        setShowDlShare(true);
+        const dlLink = "https://aftv.news/5040717";
+        const shareText = lang === "ar"
+          ? "🚀 حمّل تطبيق Pharis عبر Downloader\nالكود: 5040717\n" + dlLink
           : lang === "fr"
-          ? "🚀 Téléchargez Pharis et trouvez la pharmacie ouverte la plus proche !"
-          : "🚀 Download Pharis and find the nearest open pharmacy!";
-
+          ? "🚀 Téléchargez Pharis via Downloader\nCode: 5040717\n" + dlLink
+          : "🚀 Download Pharis via Downloader\nCode: 5040717\n" + dlLink;
         if (navigator.share) {
-          navigator.share({ title: "Pharis - Open Pharmacies", text: shareText, url: apkUrl }).catch(() => {});
-        } else {
-          const fullText = shareText + "\n\n" + apkUrl;
-          navigator.clipboard.writeText(fullText).then(() => {
-            showToast(lang === "ar" ? "✅ تم نسخ رابط التحميل!" : lang === "fr" ? "✅ Lien copié!" : "✅ Link copied!");
-          }).catch(() => { window.open(apkUrl, "_blank"); });
+          navigator.share({ title: "Pharis", text: shareText, url: dlLink }).catch(function () {});
         }
+        try {
+          navigator.clipboard.writeText(dlLink).then(function () {
+            showToast(lang === "ar" ? "✅ تم نسخ رابط Downloader" : lang === "fr" ? "✅ Lien Downloader copié" : "✅ Downloader link copied");
+          }).catch(function () {});
+        } catch (e) {}
       };
 
       const copyDownloaderCode = () => {
@@ -2927,6 +2928,9 @@ out center tags;`;
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
+                <button onClick={() => shareApp()} className="p-1.5 rounded-lg hover:bg-brand-900 transition text-brand-300" title={lang === "ar" ? "مشاركة التطبيق" : lang === "fr" ? "Partager l'app" : "Share app"}>
+                  <Icons.Share className="w-4 h-4" />
+                </button>
                 <button onClick={() => setDark(d => !d)} className="p-1.5 rounded-lg hover:bg-brand-900 transition" title={dark ? t("lightMode") : t("darkMode")}>
                   {dark ? <Icons.Sun className="w-4 h-4 text-brand-300" /> : <Icons.Moon className="w-4 h-4 text-brand-300" />}
                 </button>
@@ -2935,49 +2939,6 @@ out center tags;`;
                 </button>
                 <div className="font-mono text-brand-400 text-xs border border-brand-800 rounded-md px-2 py-1">{timeStr}</div>
               </div>
-            </div>
-
-            {/* تحميل ومشاركة التطبيق — بارزة أعلى الواجهة */}
-            <div className="mt-2 bg-gradient-to-r from-orange-900/40 to-amber-900/40 rounded-xl p-3 border border-orange-700/50">
-              <div className="flex items-center gap-2">
-                <a
-                  href="https://github.com/dadididou429-glitch/Pharise/releases/download/V1.0/Pharise.apk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold py-2 rounded-lg transition"
-                >
-                  <Icons.Download className="w-3.5 h-3.5" />
-                  {lang === "ar" ? "تحميل التطبيق" : lang === "fr" ? "Télécharger l'app" : "Download app"}
-                </a>
-                <button
-                  onClick={() => shareApp()}
-                  className="flex items-center justify-center gap-1.5 bg-brand-900/60 hover:bg-brand-900 border border-orange-700/50 text-orange-200 text-xs font-bold py-2 px-3 rounded-lg transition"
-                >
-                  <Icons.Share className="w-3.5 h-3.5" />
-                  {lang === "ar" ? "مشاركة" : lang === "fr" ? "Partager" : "Share"}
-                </button>
-              </div>
-              <details className="mt-2">
-                <summary className="text-[10px] text-orange-300/80 cursor-pointer select-none">
-                  {lang === "ar" ? "لا يعمل التحميل المباشر؟ استخدم تطبيق Downloader" : lang === "fr" ? "Le téléchargement direct ne fonctionne pas ? Utilisez Downloader" : "Direct download not working? Use the Downloader app"}
-                </summary>
-                <p className="text-[11px] text-orange-300/80 mt-2 mb-2 leading-relaxed">
-                  1. حمّل تطبيق <b>Downloader</b> من متجر Google Play أو Amazon Appstore<br/>
-                  2. افتح التطبيق وادخل الكود أدناه<br/>
-                  3. اضغط <b>Go</b> وابدأ التحميل
-                </p>
-                <div className="bg-black/30 rounded-xl p-3 text-center border border-orange-600/30">
-                  <p className="text-[10px] text-orange-400 mb-1">الكود / Code</p>
-                  <p className="text-2xl font-mono font-bold text-white tracking-widest" dir="ltr">5040717</p>
-                  <button onClick={() => copyDownloaderCode()} className="mt-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-lg transition">
-                    📋 نسخ الكود
-                  </button>
-                </div>
-                <div className="mt-2 text-center">
-                  <p className="text-[10px] text-orange-400/70 mb-1">أو ادخل الرابط المباشر</p>
-                  <p className="text-xs font-mono text-orange-200 bg-black/20 rounded-lg px-2 py-1" dir="ltr">aftv.news/5040717</p>
-                </div>
-              </details>
             </div>
 
             {/* Location button — مدينة + بلد + تغيير يدوي */}
@@ -3133,6 +3094,39 @@ out center tags;`;
           {offline && (
             <div className="fixed top-0 inset-x-0 z-50 bg-amber-600 text-white text-center text-xs font-semibold py-1.5 px-3 shadow-md">
               📡 {t("offlineBanner")}
+            </div>
+          )}
+          {showDlShare && (
+            <div className={`fixed inset-x-0 z-50 bg-emerald-700 text-white shadow-lg ${offline ? "top-7" : "top-0"}`}>
+              <div className="max-w-lg mx-auto px-3 py-2.5 flex items-center gap-2">
+                <div className="flex-1 min-w-0 text-center sm:text-start">
+                  <p className="text-[11px] font-semibold opacity-90">
+                    {lang === "ar" ? "رابط التحميل عبر Downloader" : lang === "fr" ? "Lien Downloader" : "Downloader link"}
+                  </p>
+                  <p className="text-sm font-mono font-bold tracking-wide truncate" dir="ltr">https://aftv.news/5040717</p>
+                  <p className="text-[11px] opacity-90" dir="ltr">Code: 5040717</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      navigator.clipboard.writeText("https://aftv.news/5040717");
+                      showToast(lang === "ar" ? "✅ تم النسخ" : lang === "fr" ? "✅ Copié" : "✅ Copied");
+                    } catch (e) {}
+                  }}
+                  className="shrink-0 px-2.5 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-bold"
+                >
+                  {lang === "ar" ? "نسخ" : lang === "fr" ? "Copier" : "Copy"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDlShare(false)}
+                  className="shrink-0 px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-bold"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           )}
 
@@ -3480,6 +3474,8 @@ out center tags;`;
 
           {/* Footer — قانوني + عرض تجاري للصيدليات */}
           <footer className="max-w-lg mx-auto px-4 pb-8 pt-2 text-center space-y-2">
+                        
+
 {/* aboutMoney مخفي مؤقتاً */}
             {false && <p className="text-[11px] text-stone-500 dark:text-brand-400">{t("aboutMoney")}</p>}
             <div className="flex items-center justify-center gap-3 text-[11px]">
@@ -4174,45 +4170,5 @@ out center tags;`;
       window.dispatchEvent(new Event("pharis-installable"));
     });
   </script>
-
-  <!-- Pharis OpenClaw Command API (ready package) -->
-  <script src="./pharis-command-api.js"></script>
-  <script src="./pharis-bridge-snippet.js"></script>
-<script>
-    // دالة لإرسال أمر التحكم إلى الخادم الوسيط
-    async function sendCommand(action, params) {
-        try {
-            const response = await fetch('http://127.0.0.1:3000/api/command', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ action, params })
-            });
-
-            const data = await response.json();
-            console.log('الرد من OpenClaw:', data);
-            return data;
-        } catch (error) {
-            console.error('فشل الاتصال بالخادم:', error);
-            return null;
-        }
-    }
-
-    // مثال على كيفية استخدامها (يمكنك ربطها بزر في تطبيقك):
-    // عند الضغط على زر "تشغيل الوكيل":
-    async function runAgent() {
-        const result = await sendCommand('agent.run', {
-            agent: 'general',
-            prompt: 'افتح المتصفح وابحث عن أشياء مفيدة'
-        });
-        
-        if (result) {
-            alert('تم تنفيذ الأمر بنجاح!');
-        } else {
-            alert('حدث خطأ في الاتصال.');
-        }
-    }
-</script>
 </body>
 </html>

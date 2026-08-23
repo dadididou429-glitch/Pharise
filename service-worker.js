@@ -1,10 +1,8 @@
 // Pharis Service Worker — offline-capable + fast update
-const CACHE_NAME = "pharis-v69-openclaw";
+const CACHE_NAME = "pharis-v68-share-only";
 const SHELL = [
   "./",
   "./index.html",
-  "./pharis-command-api.js",
-  "./pharis-bridge-snippet.js",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
