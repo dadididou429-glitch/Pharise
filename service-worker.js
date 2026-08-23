@@ -1,12 +1,13 @@
 // Pharis Service Worker — offline-capable + fast update
-const CACHE_NAME = "pharis-v68-share-only";
+const CACHE_NAME = "pharis-v69-geoalgeria";
 const SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./apple-touch-icon.png"
+  "./apple-touch-icon.png",
+  "./geo-pharmacies.json"
 ];
 
 const EXTERNAL = [

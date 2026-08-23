@@ -1846,6 +1846,7 @@ out center tags;`;
       const [showLocationPicker, setShowLocationPicker] = useState(false);
       const [wilayaSearch, setWilayaSearch] = useState("");
       const [osmPharmacies, setOsmPharmacies] = useState([]);
+      const [geoPharmacies, setGeoPharmacies] = useState([]);
       const osmFetchSeq = useRef(0);
       const applyOsmPharmacies = (data, seq) => {
         if (seq !== osmFetchSeq.current) return; // تجاهل نتيجة قديمة
@@ -2167,6 +2168,19 @@ out center tags;`;
         }
       }, []);
 
+      // GeoAlgeria — قاعدة صيدليات OSM ثابتة (~3800)
+      useEffect(() => {
+        let cancelled = false;
+        fetch("./geo-pharmacies.json")
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (payload) {
+            if (cancelled || !payload || !Array.isArray(payload.pharmacies)) return;
+            setGeoPharmacies(payload.pharmacies);
+          })
+          .catch(function () {});
+        return function () { cancelled = true; };
+      }, []);
+
       // عدّاد المستخدمين — يعمل بعد جاهزية Firebase + إعادة محاولة
       useEffect(() => {
         if (!firebaseReady || !db) return;
@@ -2347,8 +2361,35 @@ out center tags;`;
           });
         }
 
-        return [...rawFiltered, ...submittedNear, ...osmFiltered];
-      }, [submitted, osmPharmacies, removedIds, wilayaId, userLoc.lat, userLoc.lng]);
+        // GeoAlgeria: حسب الولاية أو ضمن 55 كم من الموقع
+        let geoFiltered = (geoPharmacies || []).filter(p => !isRemovedPh(p));
+        if (wilayaId && wilayaId !== 999) {
+          geoFiltered = geoFiltered.filter(p => Number(p.wilayaId) === Number(wilayaId));
+        } else if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
+          geoFiltered = geoFiltered.filter(p => {
+            if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 55;
+          });
+        } else {
+          geoFiltered = [];
+        }
+
+        // إزالة تكرار تقريبي مع OSM (نفس الإحداثيات تقريباً)
+        const seenCoords = new Set();
+        const mark = (arr) => {
+          const out = [];
+          for (let i = 0; i < arr.length; i++) {
+            const p = arr[i];
+            const key = (Number(p.lat).toFixed(3) + "," + Number(p.lng).toFixed(3));
+            if (seenCoords.has(key)) continue;
+            seenCoords.add(key);
+            out.push(p);
+          }
+          return out;
+        };
+
+        return mark([...rawFiltered, ...submittedNear, ...osmFiltered, ...geoFiltered]);
+      }, [submitted, osmPharmacies, geoPharmacies, removedIds, wilayaId, userLoc.lat, userLoc.lng]);
 
       const allComputed = useMemo(() => {
         return baseList
