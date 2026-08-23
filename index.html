@@ -4162,6 +4162,41 @@ out center tags;`;
   <!-- Pharis OpenClaw Command API (ready package) -->
   <script src="./pharis-command-api.js"></script>
   <script src="./pharis-bridge-snippet.js"></script>
+<script>
+    // دالة لإرسال أمر التحكم إلى الخادم الوسيط
+    async function sendCommand(action, params) {
+        try {
+            const response = await fetch('http://127.0.0.1:3000/api/command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action, params })
+            });
 
+            const data = await response.json();
+            console.log('الرد من OpenClaw:', data);
+            return data;
+        } catch (error) {
+            console.error('فشل الاتصال بالخادم:', error);
+            return null;
+        }
+    }
+
+    // مثال على كيفية استخدامها (يمكنك ربطها بزر في تطبيقك):
+    // عند الضغط على زر "تشغيل الوكيل":
+    async function runAgent() {
+        const result = await sendCommand('agent.run', {
+            agent: 'general',
+            prompt: 'افتح المتصفح وابحث عن أشياء مفيدة'
+        });
+        
+        if (result) {
+            alert('تم تنفيذ الأمر بنجاح!');
+        } else {
+            alert('حدث خطأ في الاتصال.');
+        }
+    }
+</script>
 </body>
 </html>
