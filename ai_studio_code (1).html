@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <style id="pharis-early-bg">html,body{margin:0;background:#022c22!important;}</style>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v15</title>
+  <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
+  <meta name="theme-color" content="#022c22" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pharis" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="./icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+              400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+              800: '#065f46', 900: '#064e3b', 950: '#022c22'
+            }
+          },
+          fontFamily: {
+            arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+            sans: ['IBM Plex Sans', 'IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace']
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.25s ease-out',
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            'pulse-soft': 'pulseSoft 2s ease-in-out infinite'
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+            slideUp: { transform: 'translateY(100%)', opacity: 0.5 },
+            pulseSoft: { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.6 } }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+    html, body { margin: 0; padding: 0; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+    .leaflet-container { font-family: inherit; }
+    .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15); }
+    .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  </style>
+  <link rel="preload" href="./icon-192.png" as="image" />
+</head>
+<body class="bg-brand-50 text-stone-900 antialiased">
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#022c22;overflow:hidden">
+    <div style="position:relative;width:min(100vw,380px);height:min(100vh,520px);display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="pb-ring" style="--d:0s"></div>
+      <div class="pb-ring" style="--d:0.18s"></div>
+      <div class="pb-symbols">
+        <span class="pb-sym" style="--a:0">📍</span>
+        <span class="pb-sym" style="--a:1">✚</span>
+        <span class="pb-sym" style="--a:2">💊</span>
+      </div>
+      <div class="pb-icon-wrap">
+        <img src="./icon-192.png" alt="Pharis" width="132" height="132" class="pb-icon" fetchpriority="high" />
+      </div>
+      <div class="pb-name" dir="ltr">
+        <span style="--i:0">P</span><span style="--i:1">h</span><span style="--i:2">a</span><span style="--i:3">r</span><span style="--i:4">i</span><span style="--i:5">s</span>
+      </div>
+      <p class="pb-tag">صيدليات مفتوحة · قريبة منك</p>
+    </div>
+  </div>
+  <div id="root"></div>
+
+  <style>
+    .pb-ring{
+      position:absolute;left:50%;top:40%;width:168px;height:168px;margin:-84px 0 0 -84px;
+      border:1.5px solid rgba(110,231,183,0.25);border-radius:50%;
+      animation:pbRing 1.4s ease-out var(--d) both;
+      pointer-events:none;
+    }
+    @keyframes pbRing{
+      0%{transform:scale(0.35);opacity:0}
+      30%{opacity:0.7}
+      100%{transform:scale(2.2);opacity:0}
+    }
+    .pb-symbols{position:absolute;left:50%;top:40%;width:0;height:0;z-index:2}
+    .pb-sym{
+      position:absolute;font-size:28px;left:0;top:0;opacity:0;
+      animation:pbSym 0.85s cubic-bezier(0.22,1,0.36,1) calc(0.02s + var(--a)*0.08s) both;
+      filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+    @keyframes pbSym{
+      0%{opacity:0;transform:rotate(calc(var(--a)*120deg)) translateY(-70px) scale(0.4)}
+      40%{opacity:1;transform:rotate(calc(var(--a)*120deg)) translateY(-52px) scale(1.05)}
+      70%{opacity:1;transform:rotate(0deg) translateY(0) scale(0.9)}
+      100%{opacity:0;transform:rotate(0deg) translateY(0) scale(0.25)}
+    }
+    .pb-icon-wrap{
+      position:relative;z-index:3;width:132px;height:132px;border-radius:32px;
+      box-shadow:0 18px 44px rgba(0,0,0,0.38),0 0 0 1px rgba(110,231,183,0.22);
+      opacity:0;transform:scale(0.55);
+      animation:pbIcon 0.55s cubic-bezier(0.22,1,0.36,1) 0.6s forwards;
+      overflow:hidden;background:#fff;
+    }
+    .pb-icon{width:132px;height:132px;display:block;border-radius:32px}
+    @keyframes pbIcon{
+      0%{opacity:0;transform:scale(0.5)}
+      65%{opacity:1;transform:scale(1.05)}
+      100%{opacity:1;transform:scale(1)}
+    }
+    .pb-name{
+      margin-top:20px;display:flex;gap:2px;justify-content:center;direction:ltr;z-index:3;
+    }
+    .pb-name span{
+      display:inline-block;font-size:36px;font-weight:800;color:#6ee7b7;
+      letter-spacing:0.05em;text-shadow:0 0 24px rgba(52,211,153,0.5);
+      opacity:0;transform:translateY(12px);
+      animation:pbLetter 0.35s cubic-bezier(0.22,1,0.36,1) calc(0.9s + var(--i)*0.06s) forwards;
+      font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+    }
+    @keyframes pbLetter{
+      from{opacity:0;transform:translateY(12px);filter:blur(4px)}
+      to{opacity:1;transform:translateY(0);filter:blur(0)}
+    }
+    .pb-tag{
+      margin:10px 0 0;font-size:12px;color:#a7f3d0;opacity:0;
+      animation:pbLetter 0.4s ease 1.35s forwards;
+      font-family:system-ui,sans-serif;
+    }
+  </style>
+
+  <script>
+    (function () {
+      var boot = document.getElementById("pharis-boot");
+      var hidden = false;
+      var NAME_DONE_MS = 1450;
+      var HOLD_NAME_MS = 450;
+      var FADE_MS = 350;
+      var audioCtx = null;
+
+      function music() {
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          var t0 = audioCtx.currentTime + 0.02;
+          var master = audioCtx.createGain();
+          master.gain.setValueAtTime(0.0001, t0);
+          master.gain.exponentialRampToValueAtTime(0.08, t0 + 0.15);
+          master.gain.setValueAtTime(0.08, t0 + 1.4);
+          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.9);
+          master.connect(audioCtx.destination);
+
+          function pad(f, s, d) {
+            var o = audioCtx.createOscillator();
+            var g = audioCtx.createGain();
+            o.type = "sine"; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t0 + s);
+            g.gain.exponentialRampToValueAtTime(0.03, t0 + s + 0.1);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
+            o.connect(g); g.connect(master);
+            o.start(t0 + s); o.stop(t0 + s + d);
+          }
+          function note(f, s, d, v) {
+            var o = audioCtx.createOscillator();
+            var g = audioCtx.createGain();
+            o.type = "triangle"; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t0 + s);
+            g.gain.exponentialRampToValueAtTime(v || 0.05, t0 + s + 0.015);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
+            o.connect(g); g.connect(master);
+            o.start(t0 + s); o.stop(t0 + s + d);
+          }
+
+          pad(261.63, 0, 1.8); pad(329.63, 0.08, 1.7); pad(392, 0.15, 1.6);
+          note(392, 0.15, 0.2); note(523.25, 0.45, 0.25); note(659.25, 0.75, 0.25);
+          note(523.25, 1.05, 0.2); note(783.99, 1.3, 0.35, 0.06);
+        } catch (e) {}
+      }
+
+      music();
+
+      function hideBoot() {
+        if (hidden || !boot) return;
+        hidden = true;
+        boot.style.transition = "opacity " + (FADE_MS / 1000) + "s ease";
+        boot.style.opacity = "0";
+        try {
+          if (audioCtx) {
+            setTimeout(function () {
+              try { audioCtx.close(); } catch (e) {}
+            }, 200);
+          }
+        } catch (e) {}
+        setTimeout(function () {
+          if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+        }, FADE_MS + 30);
+      }
+
+      if (boot) {
+        boot.style.cursor = "pointer";
+        boot.addEventListener("click", hideBoot, { once: true });
+        boot.addEventListener("pointerdown", function once() {
+          try { if (audioCtx && audioCtx.state === "suspended") audioCtx.resume(); music(); } catch (e) {}
+        }, { once: true });
+      }
+
+      window.__pharisHideBoot = hideBoot;
+      setTimeout(hideBoot, NAME_DONE_MS + HOLD_NAME_MS);
+    })();
+  </script>
+
+  <script>
+    // Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHMYoNaXnkrILKM38Q0f-bL1u72AXRbkE",
+      authDomain: "maftouha-ap.firebaseapp.com",
+      projectId: "maftouha-ap",
+      storageBucket: "maftouha-ap.firebasestorage.app",
+      messagingSenderId: "584528603494",
+      appId: "1:584528603494:web:46f17d9c9bee0cb208c0a7",
+      measurementId: "G-BNSGCRJ4X6"
+    };
+    let db = null;
+    let auth = null;
+    let analytics = null;
+    let firebaseReady = false;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      auth = firebase.auth();
+      try { analytics = firebase.analytics(); } catch(e) {}
+      try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch(e) {}
+      firebaseReady = true;
+    } catch(e) {
+      console.warn('Firebase init failed, running in offline mode');
+    }
+  </script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useMemo, useCallback, useRef, memo } = React;
+
+    const Icon = ({ children, className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+    );
+    const Icons = {
+      MapPin: (p) => <Icon {...p}><path d="M12 21s-6-5.686-6-10a6 6 0 1112 0c0 4.314-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></Icon>,
+      Clock: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></Icon>,
+      Phone: (p) => <Icon {...p}><path d="M5 4h3.5l1.8 4.5-2 1.5a10.5 10.5 0 005.7 5.7l1.5-2L20 15.5V19a1.5 1.5 0 01-1.6 1.5A15.5 15.5 0 013.5 5.6 1.5 1.5 0 015 4z"/></Icon>,
+      Search: (p) => <Icon {...p}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></Icon>,
+      X: (p) => <Icon {...p}><path d="M6 6l12 12M6 18L18 6"/></Icon>,
+      Flag: (p) => <Icon {...p}><path d="M5 21V4h13l-3 4 3 4H5"/></Icon>,
+      Alert: (p) => <Icon {...p}><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></Icon>,
+      Nav: (p) => <Icon {...p}><path d="M3 11l18-8-8 18-2-8-8-2z"/></Icon>,
+      Heart: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 21s-7.5-4.686-10-9A5.5 5.5 0 0112 6a5.5 5.5 0 0110 6c-2.5 4.314-10 9-10 9z"/></svg>,
+      Star: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+      Share: (p) => <Icon {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></Icon>,
+      Download: (p) => <Icon {...p}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>,
+      Plus: (p) => <Icon {...p}><path d="M12 5v14M5 12h14"/></Icon>,
+      Map: (p) => <Icon {...p}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></Icon>,
+      Globe: (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></Icon>,
+      Moon: (p) => <Icon {...p}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></Icon>,
+      Sun: (p) => <Icon {...p}><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></Icon>,
+      Cross: (p) => <Icon {...p}><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z"/></Icon>,
+    };
+
+    const T = {
+      ar: {
+        tagline: "صيدليات {place}، الآن", dashboard: "لوحة التحكم", openStat: "مفتوحة من أصل {total}",
+        searchPlaceholder: "ابحث باسم الصيدلية أو الحي...", filterAll: "الكل", filterOpen: "مفتوحة",
+        filterUrgent: "مناوبة 24س", filterFavorites: "المفضلة", filterLate: "مفتوحة ليلاً",
+        emergency: "طوارئ", emergencyTitle: "مفتوح الآن بالقرب منك", emergencySubtitle: "أقرب الصيدليات المفتوحة · اضغط للاتصال أو الاتجاهات",
+        emergencyEmpty: "لا توجد صيدليات مفتوحة قريبة حالياً", nearest: "الأقرب", callNow: "اتصال", goNow: "اتجاهات",
+        sourceLocal: "محلية", sourceOSM: "خريطة", sourceUser: "مستخدم", trustVerified: "موثقة", viewAll: "عرض الكل",
+        emergencyHint: "وضع الطوارئ — نتائج سريعة", confirmOpen: "مفتوحة الآن؟", confirmClosed: "مغلقة؟",
+        thanksConfirm: "شكراً — تم تسجيل ملاحظتك", confirmedOpen: "أكّد مستخدمون أنها مفتوحة", confirmedClosed: "أكّد مستخدمون أنها مغلقة",
+        addedFavorite: 'أُضيفت "{name}" للمفضلة', removedFavorite: 'أُزيلت "{name}" من المفضلة',
+        noFavorites: "لا توجد صيدليات مفضلة بعد. اضغط على القلب لإضافة واحدة.", noRatingsYet: "لا تقييمات بعد",
+        ratingsCount: "({n})", yourRating: "قيّم هذه الصيدلية", reviewPlaceholder: "شاركنا تجربتك (اختياري)...",
+        submitReview: "إرسال التقييم", reviewSubmitted: "شكراً على تقييمك!", pickStarsFirst: "اختر عدد النجوم أولاً",
+        reviewsTitle: "التقييمات", changeLocation: "تغيير الموقع", noResults: "لا توجد نتائج مطابقة",
+        openNow: "مفتوحة الآن", closedNow: "مغلقة", closedNowFull: "مغلقة الآن", onDutyLabel: "مناوبة · 24 ساعة",
+        closesAt: "تغلق الساعة {time}", opensAt: "تفتح الساعة {time}", reportTitle: "الإبلاغ عن هذه الصيدلية",
+        directions: "الاتجاهات", underReviewBanner: "وصلت لـ {n} شكاوى — قيد المراجعة",
+        underReviewDetail: "هذه الصيدلية وصلت إلى {n} شكاوى وهي الآن قيد المراجعة اليدوية.",
+        adminTitle: "لوحة التحكم", adminSubtitle: "صيدليات قيد المراجعة (الحد: {n} شكاوى)",
+        adminEmpty: "لا توجد صيدليات قيد المراجعة", adminSearchPh: "ابحث عن صيدلية بالاسم...",
+        adminTabAdmins: "المشرفون", addAdminTitle: "إضافة أدمن", addAdminUid: "User UID من Firebase",
+        addAdminEmail: "البريد (اختياري)", addAdminBtn: "إضافة", adminSearchNoResults: "لا نتائج",
+        verifyReturn: "تحقق — إعادتها", deleteFinal: "حذف نهائي", comingSoon: "قريباً",
+        alreadyReported: "تم الإبلاغ مسبقاً", thanksReport: "شكراً، تم استلام بلاغك",
+        thresholdReached: 'وصلت "{name}" إلى {n} شكاوى — أُرسلت للمراجعة',
+        dismissedToast: 'تمت إعادة "{name}" للقائمة', removedToast: 'تم حذف "{name}" نهائياً',
+        addPharmacyBtn: "أضف صيدليتك", addPharmacyTitle: "تسجيل صيدلية جديدة",
+        addPharmacySubtitle: "تظهر في القائمة مباشرة بعد الإرسال", formName: "اسم الصيدلية",
+        formArea: "الحي / المنطقة", formAddress: "العنوان الكامل", formPhone: "الهاتف (اختياري)",
+        formOpenHour: "ساعة الفتح", formCloseHour: "ساعة الغلق", formOnDuty: "مناوبة 24 ساعة",
+        useMyLocation: "استخدم موقعي الحالي", locationCaptured: "تم تحديد الموقع ✓",
+        locationFailed: "تعذر تحديد الموقع", submitNewPharmacy: "إرسال التسجيل",
+        submittingPharmacy: "جاري الإرسال...", newPharmacySuccess: "تم تسجيل الصيدلية بنجاح",
+        newPharmacyError: "حدث خطأ، حاول مرة أخرى", formRequiredError: "أدخل اسم الصيدلية والعنوان على الأقل",
+        unverifiedBadge: "غير موثقة", unverifiedNote: "أُضيفت من صاحبها ولم تُتحقق بعد",
+        addFreeNote: "التسجيل مجاني 100%. للحصول على شارة «مميزة» وظهور أولاً: اشتراك 500 دج/شهر",
+        upgradeFeatured: "ترقية لشارة مميزة — 500 دج/شهر", freeRegister: "تسجيل مجاني",
+        activationCodeLabel: "كود التفعيل (اختياري — للشارة المميزة)", activationCodePlaceholder: "مثال: PHARIS-XXXX",
+        activationOk: "✅ تم تفعيل الشارة المميزة!", activationBad: "❌ كود غير صالح أو مستخدم مسبقاً",
+        payModalTitle: "الدفع بالبطاقة الذهبية", payModalSub: "اشتراك الصيدلية المميزة — 500 دج / شهر",
+        payStep1: "1) انسخ رقم حساب CCP", payStep2: "2) ادفع 500 دج عبر بريدي موب أو البطاقة الذهبية",
+        payStep3: "3) أرسل صورة الوصل على واتساب لاستلام كود التفعيل", payCopyCcp: "نسخ رقم الحساب",
+        payWhatsapp: "إرسال الوصل عبر واتساب", payPaypalForeign: "أجنبي؟ ادفع عبر PayPal (تفعيل فوري)",
+        payAccountName: "باسم", payCcpCopied: "تم نسخ رقم الحساب", onboardTitle: "مرحباً بك في Pharis",
+        onboardSub: "أقرب صيدلية مفتوحة… في ثوانٍ", onboard1: "اعثر على الصيدليات المفتوحة والقريبة منك فوراً",
+        onboard2: "فلاتر: مفتوحة · مناوبة ليلية · طوارئ", onboard3: "خريطة واتجاهات واتصال مباشر",
+        onboard4: "الجزائر وأي بلد في العالم", onboard5: "أبحث عن دواء — اطلب دواءً ناقصاً وتواصل مع من يساعد",
+        onboardBtn: "ابدأ الآن", onboardSkip: "تخطي", medBtn: "أبحث عن دواء", medTitle: "أبحث عن دواء",
+        medSub: "انشر طلباً ليراه الصيادلة والمتطوعون — صالح لمدة 30 يوماً", medName: "اسم الدواء",
+        medNamePh: "مثال: باراسيتامول 1000", medCity: "المدينة / الولاية", medCityPh: "مثال: سيدي بلعباس",
+        medWa: "رقم واتساب", medWaPh: "05xxxxxxxx", medNote: "ملاحظة (اختياري)",
+        medNotePh: "الجرعة أو تفاصيل مفيدة", medPublish: "نشر الطلب", medList: "الطلبات الحالية",
+        medEmpty: "لا توجد طلبات حالياً", medContact: "تواصل واتساب",
+        medDisclaimer: "منصة تواصل فقط. لا بيع داخل التطبيق. لا استشارة طبية. تجنّب الأدوية المراقبة. التواصل على مسؤولية الطرفين.",
+        medSuccess: "تم نشر طلبك لمدة 30 يوماً", medError: "تعذّر النشر. تحقق من البيانات أو الاتصال.",
+        medNeedName: "اكتب اسم الدواء", medNeedWa: "أدخل رقم واتساب صحيح", medExpires: "ينتهي",
+        medClose: "إغلاق", medLoading: "جاري التحميل…",
+        activationHint: "بعد الدفع عبر CCP أو PayPal يصلك كود التفعيل على واتساب",
+        adminLoginTitle: "دخول المسؤول", loginBtn: "دخول", loginError: "بيانات غير صحيحة",
+        logoutBtn: "خروج", allPharmaciesTab: "كل الصيدليات ({n})", allPharmaciesSubtitle: "احذف أي صيدلية نهائياً",
+        kmAway: "كم", copy: "نسخ", call: "اتصل", map: "خريطة", list: "قائمة",
+        loadFromMap: "جلب من الخريطة", searchCity: "ابحث عن مدينة...", detecting: "جاري تحديد موقعك...",
+        geoError: "تعذر تحديد الموقع. استخدم القائمة يدوياً.", offlineBanner: "وضع بدون إنترنت — عرض آخر بيانات محفوظة",
+        offlineHint: "بعض الميزات تحتاج اتصالاً عند توفر الشبكة", locRequiredTitle: "الموقع ضروري",
+        locRequiredMsg: "لتظهر لك أقرب الصيدليات من مكانك، فعّل الموقع من النافذة التالية أو من إعدادات الهاتف.",
+        locAllowBtn: "تفعيل الموقع الآن", locManualBtn: "اختيار الولاية يدوياً",
+        locNeededBanner: "فعّل الموقع لإظهار أقرب الصيدليات", country: "الدولة", city: "المدينة",
+        darkMode: "الوضع الداكن", lightMode: "الوضع الفاتح", share: "مشاركة",
+        pharmaciesFound: "✅ {n} صيدلية في {name}", loadFailed: "❌ تعذر الجلب",
+        wait30s: "⏳ انتظر 30 ثانية قبل إضافة أخرى", invalidPhone: "❌ رقم هاتف غير صالح",
+        locatingAddress: "جاري تحديد الموقع من العنوان...", noLocation: "حدد موقعاً أو أدخل عنواناً صالحاً",
+        protected: "الحقول محمية ضد البيانات الزائفة", worldwide: "أضف صيدليتك من أي مكان في العالم",
+        reviewBtn: "قيد المراجعة ({n})", openLate: "مفتوحة ليلاً", featuredBadge: "مميزة",
+        privacy: "الخصوصية", terms: "الشروط", aboutMoney: "للصيدليات: 500 دج/شهر (بطاقة ذهبية) أو PayPal للأجانب — شارة مميزة",
+      },
+      fr: {
+        tagline: "Pharmacies de {place}, en direct", dashboard: "Tableau de bord", openStat: "ouvertes sur {total}",
+        searchPlaceholder: "Rechercher une pharmacie ou un quartier...", filterAll: "Toutes", filterOpen: "Ouvertes",
+        filterUrgent: "De garde 24h", filterFavorites: "Favoris", filterLate: "Ouvert tard",
+        emergency: "Urgence", emergencyTitle: "Ouvertes près de vous", emergencySubtitle: "Pharmacies ouvertes les plus proches · appeler ou y aller",
+        emergencyEmpty: "Aucune pharmacie ouverte à proximité", nearest: "La plus proche", callNow: "Appeler", goNow: "Y aller",
+        sourceLocal: "Locale", sourceOSM: "Carte", sourceUser: "Utilisateur", trustVerified: "Vérifiée", viewAll: "Tout voir",
+        emergencyHint: "Mode urgence — résultats rapides", confirmOpen: "Ouverte maintenant ?", confirmClosed: "Fermée ?",
+        thanksConfirm: "Merci — votre observation est enregistrée", confirmedOpen: "Des utilisateurs confirment qu'elle est ouverte",
+        confirmedClosed: "Des utilisateurs confirment qu'elle est fermée", addedFavorite: '"{name}" ajoutée aux favoris',
+        removedFavorite: '"{name}" retirée des favoris', noFavorites: "Aucune pharmacie favorite. Touchez le cœur pour en ajouter.",
+        noRatingsYet: "Pas encore d'avis", ratingsCount: "({n})", yourRating: "Notez cette pharmacie",
+        reviewPlaceholder: "Partagez votre expérience (optionnel)...", submitReview: "Envoyer l'avis", reviewSubmitted: "Merci pour votre avis !",
+        pickStarsFirst: "Choisissez d'abord une note", reviewsTitle: "Avis", changeLocation: "Changer de lieu", noResults: "Aucun résultat",
+        openNow: "Ouverte", closedNow: "Fermée", closedNowFull: "Fermée maintenant", onDutyLabel: "De garde · 24h",
+        closesAt: "Ferme à {time}", opensAt: "Ouvre à {time}", reportTitle: "Signaler cette pharmacie", directions: "Itinéraire",
+        underReviewBanner: "{n} signalements — en revue", underReviewDetail: "Cette pharmacie a reçu {n} signalements et est en revue manuelle.",
+        adminTitle: "Tableau de bord", adminSubtitle: "Pharmacies en revue (seuil : {n})", adminEmpty: "Aucune pharmacie en revue",
+        adminSearchPh: "Rechercher une pharmacie...", adminTabAdmins: "Admins", addAdminTitle: "Ajouter un admin",
+        addAdminUid: "User UID Firebase", addAdminEmail: "Email (optionnel)", addAdminBtn: "Ajouter", adminSearchNoResults: "Aucun résultat",
+        verifyReturn: "Vérifiée — restaurer", deleteFinal: "Supprimer", comingSoon: "Bientôt", alreadyReported: "Déjà signalée",
+        thanksReport: "Merci, signalement reçu", thresholdReached: '"{name}" a atteint {n} signalements — envoyée en revue',
+        dismissedToast: '"{name}" restaurée', removedToast: '"{name}" supprimée définitivement', addPharmacyBtn: "Ajouter votre pharmacie",
+        addPharmacyTitle: "Enregistrer une pharmacie", addPharmacySubtitle: "Elle apparaît immédiatement après envoi",
+        formName: "Nom de la pharmacie", formArea: "Quartier", formAddress: "Adresse complète", formPhone: "Téléphone (optionnel)",
+        formOpenHour: "Heure d'ouverture", formCloseHour: "Heure de fermeture", formOnDuty: "De garde 24h/24", useMyLocation: "Utiliser ma position",
+        locationCaptured: "Position enregistrée ✓", locationFailed: "Impossible de localiser", submitNewPharmacy: "Envoyer",
+        submittingPharmacy: "Envoi...", newPharmacySuccess: "Pharmacie enregistrée avec succès", newPharmacyError: "Erreur, réessayez",
+        formRequiredError: "Indiquez au moins le nom et l'adresse", unverifiedBadge: "Non vérifiée",
+        unverifiedNote: "Ajoutée par son propriétaire, pas encore vérifiée",
+        addFreeNote: "Inscription 100% gratuite. Badge « Mise en avant » + premier rang : 500 DA/mois",
+        upgradeFeatured: "Passer au badge premium — 500 DA/mois", freeRegister: "Inscription gratuite",
+        activationCodeLabel: "Code d'activation (optionnel — badge premium)", activationCodePlaceholder: "Ex: PHARIS-XXXX",
+        activationOk: "✅ Badge premium activé !", activationBad: "❌ Code invalide ou déjà utilisé",
+        payModalTitle: "Paiement carte Edahabia", payModalSub: "Abonnement pharmacie mise en avant — 500 DA / mois",
+        payStep1: "1) Copiez le n° de compte CCP", payStep2: "2) Payez 500 DA via BaridiMob ou carte dorée",
+        payStep3: "3) Envoyez le reçu sur WhatsApp pour recevoir le code", payCopyCcp: "Copier le n° de compte",
+        payWhatsapp: "Envoyer le reçu sur WhatsApp", payPaypalForeign: "Étranger ? Payez via PayPal (activation immédiate)",
+        payAccountName: "Au nom de", payCcpCopied: "Numéro copié", onboardTitle: "Bienvenue sur Pharis",
+        onboardSub: "La pharmacie ouverte la plus proche… en secondes", onboard1: "Trouvez les pharmacies ouvertes près de vous",
+        onboard2: "Filtres : ouvertes · de garde · urgence", onboard3: "Carte, itinéraire et appel direct",
+        onboard4: "Algérie et le monde entier", onboard5: "Je cherche un médicament — demandez un médicament manquant",
+        onboardBtn: "Commencer", onboardSkip: "Passer", medBtn: "Je cherche un médicament", medTitle: "Je cherche un médicament",
+        medSub: "Publiez une demande visible 30 jours pour pharmacies et bénévoles", medName: "Nom du médicament",
+        medNamePh: "Ex. : Paracétamol 1000", medCity: "Ville / wilaya", medCityPh: "Ex. : Sidi Bel Abbès",
+        medWa: "Numéro WhatsApp", medWaPh: "05xxxxxxxx", medNote: "Note (optionnel)", medNotePh: "Dosage ou détails utiles",
+        medPublish: "Publier la demande", medList: "Demandes en cours", medEmpty: "Aucune demande pour le moment",
+        medContact: "Contacter WhatsApp", medDisclaimer: "Mise en relation uniquement. Pas de vente dans l'app. Pas de conseil médical. Évitez les médicaments contrôlés. Contact à vos risques.",
+        medSuccess: "Demande publiée pour 30 jours", medError: "Échec de la publication. Vérifiez les données ou la connexion.",
+        medNeedName: "Indiquez le nom du médicament", medNeedWa: "Entrez un numéro WhatsApp valide", medExpires: "Expire le",
+        medClose: "Fermer", medLoading: "Chargement…", activationHint: "Après paiement CCP/PayPal vous recevez le code sur WhatsApp",
+        adminLoginTitle: "Connexion admin", loginBtn: "Se connecter", loginError: "Identifiants incorrects", logoutBtn: "Déconnexion",
+        allPharmaciesTab: "Toutes ({n})", allPharmaciesSubtitle: "Supprimez n'importe quelle pharmacie", kmAway: "km",
+        copy: "Copier", call: "Appeler", map: "Carte", list: "Liste", loadFromMap: "Charger depuis la carte",
+        searchCity: "Rechercher une ville...", detecting: "Détection de votre position...",
+        geoError: "Impossible de détecter la position. Utilisez le menu.", offlineBanner: "Hors ligne — dernières données enregistrées",
+        offlineHint: "Certaines fonctions nécessitent Internet", locRequiredTitle: "Position requise",
+        locRequiredMsg: "Pour afficher les pharmacies les plus proches, activez la localisation.", locAllowBtn: "Activer la position",
+        locManualBtn: "Choisir la wilaya", locNeededBanner: "Activez la position pour les pharmacies proches", country: "Pays",
+        city: "Ville", darkMode: "Mode sombre", lightMode: "Mode clair", share: "Partager", pharmaciesFound: "✅ {n} pharmacies à {name}",
+        loadFailed: "❌ Échec du chargement", wait30s: "⏳ Attendez 30 secondes", invalidPhone: "❌ Numéro invalide",
+        locatingAddress: "Localisation de l'adresse...", noLocation: "Indiquez une position ou une adresse valide",
+        protected: "Champs protégés contre les injections", worldwide: "Ajoutez votre pharmacie de n'importe où",
+        reviewBtn: "En revue ({n})", openLate: "Ouvert tard", featuredBadge: "Mise en avant", privacy: "Confidentialité",
+        terms: "Conditions", aboutMoney: "Pharmacies: 500 DA/mois (Edahabia) ou PayPal (étranger) — badge en premier",
+      },
+      en: {
+        tagline: "{place} pharmacies, live", dashboard: "Dashboard", openStat: "open out of {total}",
+        searchPlaceholder: "Search by name or neighborhood...", filterAll: "All", filterOpen: "Open",
+        filterUrgent: "24h duty", filterFavorites: "Favorites", filterLate: "Open late", emergency: "Emergency",
+        emergencyTitle: "Open near you now", emergencySubtitle: "Nearest open pharmacies · tap to call or go",
+        emergencyEmpty: "No open pharmacies nearby right now", nearest: "Nearest", callNow: "Call", goNow: "Go",
+        sourceLocal: "Local", sourceOSM: "Map", sourceUser: "User", trustVerified: "Verified", viewAll: "View all",
+        emergencyHint: "Emergency mode — fast results", confirmOpen: "Open now?", confirmClosed: "Closed?",
+        thanksConfirm: "Thanks — your note was saved", confirmedOpen: "Users confirmed it is open",
+        confirmedClosed: "Users confirmed it is closed", addedFavorite: '"{name}" added to favorites',
+        removedFavorite: '"{name}" removed from favorites', noFavorites: "No favorites yet. Tap the heart to add one.",
+        noRatingsYet: "No ratings yet", ratingsCount: "({n})", yourRating: "Rate this pharmacy",
+        reviewPlaceholder: "Share your experience (optional)...", submitReview: "Submit rating",
+        reviewSubmitted: "Thanks for your rating!", pickStarsFirst: "Pick a star rating first",
+        reviewsTitle: "Reviews", changeLocation: "Change location", noResults: "No matching results",
+        openNow: "Open now", closedNow: "Closed", closedNowFull: "Closed now", onDutyLabel: "On duty · 24h",
+        closesAt: "Closes at {time}", opensAt: "Opens at {time}", reportTitle: "Report this pharmacy",
+        directions: "Directions", underReviewBanner: "{n} complaints — under review",
+        underReviewDetail: "This pharmacy has {n} complaints and is under manual review.", adminTitle: "Dashboard",
+        adminSubtitle: "Pharmacies under review (threshold: {n})", adminEmpty: "No pharmacies under review",
+        adminSearchPh: "Search pharmacy by name...", adminTabAdmins: "Admins", addAdminTitle: "Add admin",
+        addAdminUid: "Firebase User UID", addAdminEmail: "Email (optional)", addAdminBtn: "Add",
+        adminSearchNoResults: "No results", verifyReturn: "Verified — restore", deleteFinal: "Delete permanently",
+        comingSoon: "Coming soon", alreadyReported: "Already reported", thanksReport: "Thanks, report received",
+        thresholdReached: '"{name}" reached {n} complaints — sent for review', dismissedToast: '"{name}" restored to listing',
+        removedToast: '"{name}" permanently removed', addPharmacyBtn: "Add your pharmacy",
+        addPharmacyTitle: "Register a new pharmacy", addPharmacySubtitle: "Appears in the list right after submitting",
+        formName: "Pharmacy name", formArea: "Neighborhood / Area", formAddress: "Full address",
+        formPhone: "Phone (optional)", formOpenHour: "Opening hour", formCloseHour: "Closing hour",
+        formOnDuty: "On duty 24h", useMyLocation: "Use my current location", locationCaptured: "Location captured ✓",
+        locationFailed: "Could not get location", submitNewPharmacy: "Submit registration", submittingPharmacy: "Submitting...",
+        newPharmacySuccess: "Pharmacy registered successfully", newPharmacyError: "Something went wrong, try again",
+        formRequiredError: "Fill in at least the name and address", unverifiedBadge: "Unverified",
+        unverifiedNote: "Added by its owner, not yet verified by the team",
+        addFreeNote: "100% free registration. « Featured » badge + rank first: 500 DZD/month",
+        upgradeFeatured: "Upgrade to featured badge — 500 DZD/month", freeRegister: "Free registration",
+        activationCodeLabel: "Activation code (optional — featured badge)", activationCodePlaceholder: "e.g. PHARIS-XXXX",
+        activationOk: "✅ Featured badge activated!", activationBad: "❌ Invalid or already used code",
+        payModalTitle: "Golden Card payment", payModalSub: "Featured pharmacy subscription — 500 DZD / month",
+        payStep1: "1) Copy the CCP account number", payStep2: "2) Pay 500 DZD via BaridiMob or Golden Card",
+        payStep3: "3) Send the receipt on WhatsApp to get your activation code", payCopyCcp: "Copy account number",
+        payWhatsapp: "Send receipt on WhatsApp", payPaypalForeign: "Outside Algeria? Pay with PayPal (instant activation)",
+        payAccountName: "Account name", payCcpCopied: "Account number copied", onboardTitle: "Welcome to Pharis",
+        onboardSub: "Nearest open pharmacy… in seconds", onboard1: "Find open pharmacies near you instantly",
+        onboard2: "Filters: open · night duty · emergency", onboard3: "Map, directions and direct call",
+        onboard4: "Algeria and worldwide", onboard5: "Looking for a medicine — request a missing medicine and get help",
+        onboardBtn: "Get started", onboardSkip: "Skip", medBtn: "Looking for a medicine", medTitle: "Looking for a medicine",
+        medSub: "Post a request visible for 30 days to pharmacies and helpers", medName: "Medicine name",
+        medNamePh: "e.g. Paracetamol 1000", medCity: "City / region", medCityPh: "e.g. Sidi Bel Abbès",
+        medWa: "WhatsApp number", medWaPh: "05xxxxxxxx", medNote: "Note (optional)", medNotePh: "Dose or useful details",
+        medPublish: "Publish request", medList: "Current requests", medEmpty: "No requests yet",
+        medContact: "Contact on WhatsApp",
+        medDisclaimer: "Contact board only. No in-app sales. Not medical advice. Avoid controlled medicines. Contact at your own risk.",
+        medSuccess: "Request published for 30 days", medError: "Could not publish. Check data or connection.",
+        medNeedName: "Enter the medicine name", medNeedWa: "Enter a valid WhatsApp number", medExpires: "Expires",
+        medClose: "Close", medLoading: "Loading…", activationHint: "After CCP/PayPal payment you receive the code on WhatsApp",
+        adminLoginTitle: "Admin login", loginBtn: "Log in", loginError: "Incorrect credentials", logoutBtn: "Log out",
+        allPharmaciesTab: "All pharmacies ({n})", allPharmaciesSubtitle: "Permanently delete any pharmacy", kmAway: "km",
+        copy: "Copy", call: "Call", map: "Map", list: "List", loadFromMap: "Load from map", searchCity: "Search a city...",
+        detecting: "Detecting your location...", geoError: "Could not detect location. Use the menu manually.",
+        offlineBanner: "Offline — showing last saved data", offlineHint: "Some features need a connection when available",
+        locRequiredTitle: "Location required", locRequiredMsg: "To show the nearest pharmacies, please enable location access.",
+        locAllowBtn: "Enable location now", locManualBtn: "Choose city manually",
+        locNeededBanner: "Enable location to see nearest pharmacies", country: "Country", city: "City",
+        darkMode: "Dark mode", lightMode: "Light mode", share: "Share", pharmaciesFound: "✅ {n} pharmacies in {name}",
+        loadFailed: "❌ Failed to load", wait30s: "⏳ Wait 30 seconds before adding another", invalidPhone: "❌ Invalid phone number",
+        locatingAddress: "Locating address...", noLocation: "Provide a location or valid address",
+        protected: "Fields protected against injection", worldwide: "Add your pharmacy from anywhere in the world",
+        reviewBtn: "Under review ({n})", openLate: "Open late", featuredBadge: "Featured", privacy: "Privacy",
+        terms: "Terms", aboutMoney: "Pharmacies: 500 DZD/month (Golden Card) or PayPal (international) — featured badge",
+      }
+    };
+
+    function normalizeSearch(s) {
+      return String(s || "")
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u064B-\u065F\u0670]/g, "")
+        .replace(/\u0640/g, "")
+        .replace(/[أإآٱ]/g, "ا")
+        .replace(/[ىئ]/g, "ي")
+        .replace(/ة/g, "ه")
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    function matchesSearch(ph, qRaw) {
+      const q = normalizeSearch(qRaw);
+      if (!q) return true;
+      const hay = normalizeSearch([ph.name, ph.area, ph.address, ph.wilaya, ph.commune, ph.phone].filter(Boolean).join(" "));
+      return q.split(" ").every(w => w && hay.includes(w));
+    }
+
+    function tr(lang, key, vars = {}) {
+      let str = (T[lang] && T[lang][key]) || T.ar[key] || key;
+      Object.entries(vars).forEach(([k, v]) => { str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v); });
+      return str;
+    }
+
+    const SBA = [
+      { id: 1, name: "صيدلية بوعشة فريد", area: "شارع 08 نوفمبر", address: "Rue 08 Novembre, Sidi Bel Abbès", phone: null, lat: 35.1994115, lng: -0.6453492, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 2, name: "صيدلية أنس بن الأزهر", area: "سيدي جيلالي", address: "Agence Foncière, Sidi Djilali", phone: "040 73 11 11", lat: 35.2100923, lng: -0.6308727, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 3, name: "صيدلية منصور وفاء", area: "سيدي جيلالي", address: "250 Segar Abdelaziz, Secteur 1, Sidi Djilali", phone: null, lat: 35.2156413, lng: -0.6350891, hours: { open: 8.5, close: 24 }, onDuty: false },
+      { id: 4, name: "صيدلية بن حمودة", area: "سيدي بلعباس", address: "Unnamed Rd, Sidi Bel Abbès 22000", phone: "0557 48 64 80", lat: 35.2194202, lng: -0.6259365, hours: { open: 8, close: 25 }, onDuty: false },
+      { id: 5, name: "صيدلية د. عربي", area: "روڨاب عكاشة", address: "Telmouni N°23 Lot 36, Rouggab Okkacha", phone: "0542 61 77 50", lat: 35.1736176, lng: -0.5448622, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 6, name: "صيدلية بن عز الدين عبد الصمد", area: "بوليفار بنديدة", address: "56 Bd Bendida Mohamed, 22002", phone: "0770 80 52 35", lat: 35.1950042, lng: -0.6194100, hours: { open: 8, close: 26.5 }, onDuty: false },
+      { id: 7, name: "صيدلية رقبال محل", area: "سيدي بلعباس", address: "17 Rue Laziz Ghalem", phone: "0542 69 78 07", lat: 35.1976143, lng: -0.6484907, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 8, name: "صيدلية د. عراد بن علي", area: "حي 100 مسكن", address: "Cité 100 Logements Aile A N°1", phone: "048 76 77 85", lat: 35.1966647, lng: -0.6176962, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 9, name: "صيدلية بلعربي الحسين", area: "AADL", address: "AADL, Sidi Bel Abbès 22000", phone: "0549 67 98 94", lat: 35.2185763, lng: -0.6275044, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 10, name: "صيدلية معاشو محمد", area: "حي 237 مسكن", address: "Cité 237 Logts", phone: "0561 06 28 18", lat: 35.2125875, lng: -0.6232656, hours: { open: 8, close: 27 }, onDuty: false },
+    ].map(p => ({ ...p, wilaya: "سيدي بلعباس", commune: p.area, verified: true }));
+
+    const ORAN = [
+      { id: 201, name: "صيدلية بوزيان", area: "شارع الشيخ عبد القادر", address: "50 Av. Cheikh Abdelkader, Oran", phone: "041 23 17 75", lat: 35.6903998, lng: -0.6409355, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 202, name: "صيدلية الحاج", area: "وهران", address: "Oran", phone: "041 23 25 78", lat: 35.674515, lng: -0.6503951, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 203, name: "صيدلية بوزيان (الجامع الكبير)", area: "بوليفار عبد الحميد بن باديس", address: "Pole Abdelhamid Ibn Badis, Bir El Djir", phone: "041 23 17 75", lat: 35.6970558, lng: -0.6072521, hours: { open: 0, close: 24 }, onDuty: true },
+    ].map(p => ({ ...p, wilaya: "وهران", commune: p.area, verified: true }));
+
+    const ALGER = [
+      { id: 401, name: "صيدل
