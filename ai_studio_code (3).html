@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <style id="pharis-early-bg">html,body{margin:0;background:#022c22!important;}</style>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+  <title>Pharis — Open Pharmacies Near You · auto-geo-v15</title>
+  <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
+  
+  <!-- منع الكاش المؤقت لضمان سرعة التحديث فور النشر -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <meta name="theme-color" content="#022c22" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pharis" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="./icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+              400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+              800: '#065f46', 900: '#064e3b', 950: '#022c22'
+            }
+          },
+          fontFamily: {
+            arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+            sans: ['IBM Plex Sans', 'IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace']
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.25s ease-out',
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            'pulse-soft': 'pulseSoft 2s ease-in-out infinite'
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+            slideUp: { transform: 'translateY(100%)', opacity: 0.5 },
+            pulseSoft: { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.6 } }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+    html, body { margin: 0; padding: 0; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+    .leaflet-container { font-family: inherit; }
+    .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15); }
+    .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  </style>
+  <link rel="preload" href="./icon-192.png" as="image" />
+</head>
+<body class="bg-brand-50 text-stone-900 antialiased">
+  <!-- شاشة فتح خفيفة وسريعة -->
+  <div id="pharis-boot" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#022c22;overflow:hidden;cursor:pointer">
+    <div style="position:relative;width:min(100vw,380px);height:min(100vh,520px);display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="pb-ring" style="--d:0s"></div>
+      <div class="pb-ring" style="--d:0.18s"></div>
+      <div class="pb-symbols">
+        <span class="pb-sym" style="--a:0">📍</span>
+        <span class="pb-sym" style="--a:1">✚</span>
+        <span class="pb-sym" style="--a:2">💊</span>
+      </div>
+      <div class="pb-icon-wrap">
+        <img src="./icon-192.png" alt="Pharis" width="132" height="132" class="pb-icon" fetchpriority="high" />
+      </div>
+      <div class="pb-name" dir="ltr">
+        <span style="--i:0">P</span><span style="--i:1">h</span><span style="--i:2">a</span><span style="--i:3">r</span><span style="--i:4">i</span><span style="--i:5">s</span>
+      </div>
+      <p class="pb-tag">صيدليات مفتوحة · قريبة منك</p>
+    </div>
+  </div>
+  <div id="root"></div>
+  <style>
+    .pb-ring{
+      position:absolute;left:50%;top:40%;width:168px;height:168px;margin:-84px 0 0 -84px;
+      border:1.5px solid rgba(110,231,183,0.25);border-radius:50%;
+      animation:pbRing 1.35s ease-out var(--d) both;
+      pointer-events:none;
+    }
+    @keyframes pbRing{
+      0%{transform:scale(0.35);opacity:0}
+      30%{opacity:0.7}
+      100%{transform:scale(2.2);opacity:0}
+    }
+    .pb-symbols{position:absolute;left:50%;top:40%;width:0;height:0;z-index:2}
+    .pb-sym{
+      position:absolute;font-size:28px;left:0;top:0;opacity:0;
+      animation:pbSym 0.8s cubic-bezier(0.22,1,0.36,1) calc(0.02s + var(--a)*0.08s) both;
+      filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+    @keyframes pbSym{
+      0%{opacity:0;transform:rotate(calc(var(--a)*120deg)) translateY(-70px) scale(0.4)}
+      40%{opacity:1;transform:rotate(calc(var(--a)*120deg)) translateY(-50px) scale(1.05)}
+      70%{opacity:1;transform:rotate(0deg) translateY(0) scale(0.9)}
+      100%{opacity:0;transform:rotate(0deg) translateY(0) scale(0.25)}
+    }
+    .pb-icon-wrap{
+      position:relative;z-index:3;width:132px;height:132px;border-radius:32px;
+      box-shadow:0 18px 44px rgba(0,0,0,0.38),0 0 0 1px rgba(110,231,183,0.22);
+      opacity:0;transform:scale(0.55);
+      animation:pbIcon 0.55s cubic-bezier(0.22,1,0.36,1) 0.55s forwards;
+      overflow:hidden;background:#fff;
+    }
+    .pb-icon{width:132px;height:132px;display:block;border-radius:32px}
+    @keyframes pbIcon{
+      0%{opacity:0;transform:scale(0.5)}
+      65%{opacity:1;transform:scale(1.05)}
+      100%{opacity:1;transform:scale(1)}
+    }
+    .pb-name{
+      margin-top:20px;display:flex;gap:2px;justify-content:center;direction:ltr;z-index:3;
+    }
+    .pb-name span{
+      display:inline-block;font-size:36px;font-weight:800;color:#6ee7b7;
+      letter-spacing:0.05em;text-shadow:0 0 24px rgba(52,211,153,0.5);
+      opacity:0;transform:translateY(12px);
+      animation:pbLetter 0.35s cubic-bezier(0.22,1,0.36,1) calc(0.85s + var(--i)*0.06s) forwards;
+      font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+    }
+    @keyframes pbLetter{
+      from{opacity:0;transform:translateY(12px);filter:blur(4px)}
+      to{opacity:1;transform:translateY(0);filter:blur(0)}
+    }
+    .pb-tag{
+      margin:10px 0 0;font-size:12px;color:#a7f3d0;opacity:0;
+      animation:pbLetter 0.4s ease 1.3s forwards;
+      font-family:system-ui,sans-serif;
+    }
+  </style>
+  <script>
+    (function () {
+      var boot = document.getElementById("pharis-boot");
+      var hidden = false;
+      var NAME_DONE_MS = 1400;
+      var HOLD_NAME_MS = 400;
+      var FADE_MS = 300;
+      var audioCtx = null;
+
+      function music() {
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          var t0 = audioCtx.currentTime + 0.02;
+          var master = audioCtx.createGain();
+          master.gain.setValueAtTime(0.0001, t0);
+          master.gain.exponentialRampToValueAtTime(0.08, t0 + 0.15);
+          master.gain.setValueAtTime(0.08, t0 + 1.4);
+          master.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.85);
+          master.connect(audioCtx.destination);
+          function pad(f, s, d) {
+            var o = audioCtx.createOscillator();
+            var g = audioCtx.createGain();
+            o.type = "sine"; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t0 + s);
+            g.gain.exponentialRampToValueAtTime(0.03, t0 + s + 0.1);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
+            o.connect(g); g.connect(master);
+            o.start(t0 + s); o.stop(t0 + s + d);
+          }
+          function note(f, s, d, v) {
+            var o = audioCtx.createOscillator();
+            var g = audioCtx.createGain();
+            o.type = "triangle"; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t0 + s);
+            g.gain.exponentialRampToValueAtTime(v || 0.05, t0 + s + 0.015);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + s + d);
+            o.connect(g); g.connect(master);
+            o.start(t0 + s); o.stop(t0 + s + d);
+          }
+          pad(261.63, 0, 1.8); pad(329.63, 0.08, 1.7); pad(392, 0.15, 1.6);
+          note(392, 0.15, 0.2); note(523.25, 0.45, 0.25); note(659.25, 0.75, 0.25);
+          note(523.25, 1.05, 0.2); note(783.99, 1.3, 0.35, 0.06);
+        } catch (e) {}
+      }
+      music();
+
+      function hideBoot() {
+        if (hidden || !boot) return;
+        hidden = true;
+        boot.style.transition = "opacity " + (FADE_MS / 1000) + "s ease";
+        boot.style.opacity = "0";
+        try { if (audioCtx) setTimeout(function () { try { audioCtx.close(); } catch (e) {} }, 150); } catch (e) {}
+        setTimeout(function () {
+          if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+        }, FADE_MS + 20);
+      }
+
+      if (boot) {
+        boot.addEventListener("click", hideBoot, { once: true });
+        boot.addEventListener("pointerdown", function once() {
+          try { if (audioCtx && audioCtx.state === "suspended") audioCtx.resume(); music(); } catch (e) {}
+        }, { once: true });
+      }
+
+      window.__pharisHideBoot = hideBoot;
+      setTimeout(hideBoot, NAME_DONE_MS + HOLD_NAME_MS);
+    })();
+  </script>
+
+  <script>
+    // Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHMYoNaXnkrILKM38Q0f-bL1u72AXRbkE",
+      authDomain: "maftouha-ap.firebaseapp.com",
+      projectId: "maftouha-ap",
+      storageBucket: "maftouha-ap.firebasestorage.app",
+      messagingSenderId: "584528603494",
+      appId: "1:584528603494:web:46f17d9c9bee0cb208c0a7",
+      measurementId: "G-BNSGCRJ4X6"
+    };
+    let db = null;
+    let auth = null;
+    let analytics = null;
+    let firebaseReady = false;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      auth = firebase.auth();
+      try { analytics = firebase.analytics(); } catch(e) {}
+      try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch(e) {}
+      firebaseReady = true;
+    } catch(e) {
+      console.warn('Firebase init failed, running in offline mode');
+    }
+  </script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useMemo, useCallback, useRef, memo } = React;
+
+    const Icon = ({ children, className = "w-5 h-5" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+    );
+    const Icons = {
+      MapPin: (p) => <Icon {...p}><path d="M12 21s-6-5.686-6-10a6 6 0 1112 0c0 4.314-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></Icon>,
+      Clock: (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></Icon>,
+      Phone: (p) => <Icon {...p}><path d="M5 4h3.5l1.8 4.5-2 1.5a10.5 10.5 0 005.7 5.7l1.5-2L20 15.5V19a1.5 1.5 0 01-1.6 1.5A15.5 15.5 0 013.5 5.6 1.5 1.5 0 015 4z"/></Icon>,
+      Search: (p) => <Icon {...p}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></Icon>,
+      X: (p) => <Icon {...p}><path d="M6 6l12 12M6 18L18 6"/></Icon>,
+      Flag: (p) => <Icon {...p}><path d="M5 21V4h13l-3 4 3 4H5"/></Icon>,
+      Alert: (p) => <Icon {...p}><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></Icon>,
+      Nav: (p) => <Icon {...p}><path d="M3 11l18-8-8 18-2-8-8-2z"/></Icon>,
+      Heart: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 21s-7.5-4.686-10-9A5.5 5.5 0 0112 6a5.5 5.5 0 0110 6c-2.5 4.314-10 9-10 9z"/></svg>,
+      Star: ({ fill, ...p }) => <svg viewBox="0 0 24 24" fill={fill === "currentColor" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={p.className || "w-5 h-5"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+      Share: (p) => <Icon {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></Icon>,
+      Download: (p) => <Icon {...p}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>,
+      Plus: (p) => <Icon {...p}><path d="M12 5v14M5 12h14"/></Icon>,
+      Map: (p) => <Icon {...p}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></Icon>,
+      Globe: (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></Icon>,
+      Moon: (p) => <Icon {...p}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></Icon>,
+      Sun: (p) => <Icon {...p}><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></Icon>,
+      Cross: (p) => <Icon {...p}><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z"/></Icon>,
+    };
+
+    const T = {
+      ar: {
+        tagline: "صيدليات {place}، الآن", dashboard: "لوحة التحكم", openStat: "مفتوحة من أصل {total}",
+        searchPlaceholder: "ابحث باسم الصيدلية أو الحي...", filterAll: "الكل", filterOpen: "مفتوحة",
+        filterUrgent: "مناوبة 24س", filterFavorites: "المفضلة", filterLate: "مفتوحة ليلاً",
+        emergency: "طوارئ", emergencyTitle: "مفتوح الآن بالقرب منك", emergencySubtitle: "أقرب الصيدليات المفتوحة · اضغط للاتصال أو الاتجاهات",
+        emergencyEmpty: "لا توجد صيدليات مفتوحة قريبة حالياً", nearest: "الأقرب", callNow: "اتصال", goNow: "اتجاهات",
+        sourceLocal: "محلية", sourceOSM: "خريطة", sourceUser: "مستخدم", trustVerified: "موثقة", viewAll: "عرض الكل",
+        emergencyHint: "وضع الطوارئ — نتائج سريعة", confirmOpen: "مفتوحة الآن؟", confirmClosed: "مغلقة؟",
+        thanksConfirm: "شكراً — تم تسجيل ملاحظتك", confirmedOpen: "أكّد مستخدمون أنها مفتوحة", confirmedClosed: "أكّد مستخدمون أنها مغلقة",
+        addedFavorite: 'أُضيفت "{name}" للمفضلة', removedFavorite: 'أُزيلت "{name}" من المفضلة',
+        noFavorites: "لا توجد صيدليات مفضلة بعد. اضغط على القلب لإضافة واحدة.", noRatingsYet: "لا تقييمات بعد",
+        ratingsCount: "({n})", yourRating: "قيّم هذه الصيدلية", reviewPlaceholder: "شاركنا تجربتك (اختياري)...",
+        submitReview: "إرسال التقييم", reviewSubmitted: "شكراً على تقييمك!", pickStarsFirst: "اختر عدد النجوم أولاً",
+        reviewsTitle: "التقييمات", changeLocation: "تغيير الموقع", noResults: "لا توجد نتائج مطابقة",
+        openNow: "مفتوحة الآن", closedNow: "مغلقة", closedNowFull: "مغلقة الآن", onDutyLabel: "مناوبة · 24 ساعة",
+        closesAt: "تغلق الساعة {time}", opensAt: "تفتح الساعة {time}", reportTitle: "الإبلاغ عن هذه الصيدلية",
+        directions: "الاتجاهات", underReviewBanner: "وصلت لـ {n} شكاوى — قيد المراجعة",
+        underReviewDetail: "هذه الصيدلية وصلت إلى {n} شكاوى وهي الآن قيد المراجعة اليدوية.",
+        adminTitle: "لوحة التحكم", adminSubtitle: "صيدليات قيد المراجعة (الحد: {n} شكاوى)",
+        adminEmpty: "لا توجد صيدليات قيد المراجعة", adminSearchPh: "ابحث عن صيدلية بالاسم...",
+        adminTabAdmins: "المشرفون", addAdminTitle: "إضافة أدمن", addAdminUid: "User UID من Firebase",
+        addAdminEmail: "البريد (اختياري)", addAdminBtn: "إضافة", adminSearchNoResults: "لا نتائج",
+        verifyReturn: "تحقق — إعادتها", deleteFinal: "حذف نهائي", comingSoon: "قريباً",
+        alreadyReported: "تم الإبلاغ مسبقاً", thanksReport: "شكراً، تم استلام بلاغك",
+        thresholdReached: 'وصلت "{name}" إلى {n} شكاوى — أُرسلت للمراجعة',
+        dismissedToast: 'تمت إعادة "{name}" للقائمة', removedToast: 'تم حذف "{name}" نهائياً',
+        addPharmacyBtn: "أضف صيدليتك", addPharmacyTitle: "تسجيل صيدلية جديدة",
+        addPharmacySubtitle: "تظهر في القائمة مباشرة بعد الإرسال", formName: "اسم الصيدلية",
+        formArea: "الحي / المنطقة", formAddress: "العنوان الكامل", formPhone: "الهاتف (اختياري)",
+        formOpenHour: "ساعة الفتح", formCloseHour: "ساعة الغلق", formOnDuty: "مناوبة 24 ساعة",
+        useMyLocation: "استخدم موقعي الحالي", locationCaptured: "تم تحديد الموقع ✓",
+        locationFailed: "تعذر تحديد الموقع", submitNewPharmacy: "إرسال التسجيل",
+        submittingPharmacy: "جاري الإرسال...", newPharmacySuccess: "تم تسجيل الصيدلية بنجاح",
+        newPharmacyError: "حدث خطأ، حاول مرة أخرى", formRequiredError: "أدخل اسم الصيدلية والعنوان على الأقل",
+        unverifiedBadge: "غير موثقة", unverifiedNote: "أُضيفت من صاحبها ولم تُتحقق بعد",
+        addFreeNote: "التسجيل مجاني 100%. للحصول على شارة «مميزة» وظهور أولاً: اشتراك 500 دج/شهر",
+        upgradeFeatured: "ترقية لشارة مميزة — 500 دج/شهر", freeRegister: "تسجيل مجاني",
+        activationCodeLabel: "كود التفعيل (اختياري — للشارة المميزة)", activationCodePlaceholder: "مثال: PHARIS-XXXX",
+        activationOk: "✅ تم تفعيل الشارة المميزة!", activationBad: "❌ كود غير صالح أو مستخدم مسبقاً",
+        payModalTitle: "الدفع بالبطاقة الذهبية", payModalSub: "اشتراك الصيدلية المميزة — 500 دج / شهر",
+        payStep1: "1) انسخ رقم حساب CCP", payStep2: "2) ادفع 500 دج عبر بريدي موب أو البطاقة الذهبية",
+        payStep3: "3) أرسل صورة الوصل على واتساب لاستلام كود التفعيل", payCopyCcp: "نسخ رقم الحساب",
+        payWhatsapp: "إرسال الوصل عبر واتساب", payPaypalForeign: "أجنبي؟ ادفع عبر PayPal (تفعيل فوري)",
+        payAccountName: "باسم", payCcpCopied: "تم نسخ رقم الحساب", onboardTitle: "مرحباً بك في Pharis",
+        onboardSub: "أقرب صيدلية مفتوحة… في ثوانٍ", onboard1: "اعثر على الصيدليات المفتوحة والقريبة منك فوراً",
+        onboard2: "فلاتر: مفتوحة · مناوبة ليلية · طوارئ", onboard3: "خريطة واتجاهات واتصال مباشر",
+        onboard4: "الجزائر وأي بلد في العالم", onboard5: "أبحث عن دواء — اطلب دواءً ناقصاً وتواصل مع من يساعد",
+        onboardBtn: "ابدأ الآن", onboardSkip: "تخطي", medBtn: "أبحث عن دواء", medTitle: "أبحث عن دواء",
+        medSub: "انشر طلباً ليراه الصيادلة والمتطوعون — صالح لمدة 30 يوماً", medName: "اسم الدواء",
+        medNamePh: "مثال: باراسيتامول 1000", medCity: "المدينة / الولاية", medCityPh: "مثال: سيدي بلعباس",
+        medWa: "رقم واتساب", medWaPh: "05xxxxxxxx", medNote: "ملاحظة (اختياري)",
+        medNotePh: "الجرعة أو تفاصيل مفيدة", medPublish: "نشر الطلب", medList: "الطلبات الحالية",
+        medEmpty: "لا توجد طلبات حالياً", medContact: "تواصل واتساب",
+        medDisclaimer: "منصة تواصل فقط. لا بيع داخل التطبيق. لا استشارة طبية. تجنّب الأدوية المراقبة. التواصل على مسؤولية الطرفين.",
+        medSuccess: "تم نشر طلبك لمدة 30 يوماً", medError: "تعذّر النشر. تحقق من البيانات أو الاتصال.",
+        medNeedName: "اكتب اسم الدواء", medNeedWa: "أدخل رقم واتساب صحيح", medExpires: "ينتهي",
+        medClose: "إغلاق", medLoading: "جاري التحميل…",
+        activationHint: "بعد الدفع عبر CCP أو PayPal يصلك كود التفعيل على واتساب",
+        adminLoginTitle: "دخول المسؤول", loginBtn: "دخول", loginError: "بيانات غير صحيحة",
+        logoutBtn: "خروج", allPharmaciesTab: "كل الصيدليات ({n})", allPharmaciesSubtitle: "احذف أي صيدلية نهائياً",
+        kmAway: "كم", copy: "نسخ", call: "اتصل", map: "خريطة", list: "قائمة",
+        loadFromMap: "جلب من الخريطة", searchCity: "ابحث عن مدينة...", detecting: "جاري تحديد موقعك...",
+        geoError: "تعذر تحديد الموقع. استخدم القائمة يدوياً.", offlineBanner: "وضع بدون إنترنت — عرض آخر بيانات محفوظة",
+        offlineHint: "بعض الميزات تحتاج اتصالاً عند توفر الشبكة", locRequiredTitle: "الموقع ضروري",
+        locRequiredMsg: "لتظهر لك أقرب الصيدليات من مكانك، فعّل الموقع من النافذة التالية أو من إعدادات الهاتف.",
+        locAllowBtn: "تفعيل الموقع الآن", locManualBtn: "اختيار الولاية يدوياً",
+        locNeededBanner: "فعّل الموقع لإظهار أقرب الصيدليات", country: "الدولة", city: "المدينة",
+        darkMode: "الوضع الداكن", lightMode: "الوضع الفاتح", share: "مشاركة",
+        pharmaciesFound: "✅ {n} صيدلية في {name}", loadFailed: "❌ تعذر الجلب",
+        wait30s: "⏳ انتظر 30 ثانية قبل إضافة أخرى", invalidPhone: "❌ رقم هاتف غير صالح",
+        locatingAddress: "جاري تحديد الموقع من العنوان...", noLocation: "حدد موقعاً أو أدخل عنواناً صالحاً",
+        protected: "الحقول محمية ضد البيانات الزائفة", worldwide: "أضف صيدليتك من أي مكان في العالم",
+        reviewBtn: "قيد المراجعة ({n})", openLate: "مفتوحة ليلاً", featuredBadge: "مميزة",
+        privacy: "الخصوصية", terms: "الشروط", aboutMoney: "للصيدليات: 500 دج/شهر (بطاقة ذهبية) أو PayPal للأجانب — شارة مميزة",
+      },
+      fr: {
+        tagline: "Pharmacies de {place}, en direct", dashboard: "Tableau de bord", openStat: "ouvertes sur {total}",
+        searchPlaceholder: "Rechercher une pharmacie ou un quartier...", filterAll: "Toutes", filterOpen: "Ouvertes",
+        filterUrgent: "De garde 24h", filterFavorites: "Favoris", filterLate: "Ouvert tard",
+        emergency: "Urgence", emergencyTitle: "Ouvertes près de vous", emergencySubtitle: "Pharmacies ouvertes les plus proches · appeler ou y aller",
+        emergencyEmpty: "Aucune pharmacie ouverte à proximité", nearest: "La plus proche", callNow: "Appeler", goNow: "Y aller",
+        sourceLocal: "Locale", sourceOSM: "Carte", sourceUser: "Utilisateur", trustVerified: "Vérifiée", viewAll: "Tout voir",
+        emergencyHint: "Mode urgence — résultats rapides", confirmOpen: "Ouverte maintenant ?", confirmClosed: "Fermée ?",
+        thanksConfirm: "Merci — votre observation est enregistrée", confirmedOpen: "Des utilisateurs confirment qu'elle est ouverte",
+        confirmedClosed: "Des utilisateurs confirment qu'elle est fermée", addedFavorite: '"{name}" ajoutée aux favoris',
+        removedFavorite: '"{name}" retirée des favoris', noFavorites: "Aucune pharmacie favorite. Touchez le cœur pour en ajouter.",
+        noRatingsYet: "Pas encore d'avis", ratingsCount: "({n})", yourRating: "Notez cette pharmacie",
+        reviewPlaceholder: "Partagez votre expérience (optionnel)...", submitReview: "Envoyer l'avis", reviewSubmitted: "Merci pour votre avis !",
+        pickStarsFirst: "Choisissez d'abord une note", reviewsTitle: "Avis", changeLocation: "Changer de lieu", noResults: "Aucun résultat",
+        openNow: "Ouverte", closedNow: "Fermée", closedNowFull: "Fermée maintenant", onDutyLabel: "De garde · 24h",
+        closesAt: "Ferme à {time}", opensAt: "Ouvre à {time}", reportTitle: "Signaler cette pharmacie", directions: "Itinéraire",
+        underReviewBanner: "{n} signalements — en revue", underReviewDetail: "Cette pharmacie a reçu {n} signalements et est en revue manuelle.",
+        adminTitle: "Tableau de bord", adminSubtitle: "Pharmacies en revue (seuil : {n})", adminEmpty: "Aucune pharmacie en revue",
+        adminSearchPh: "Rechercher une pharmacie...", adminTabAdmins: "Admins", addAdminTitle: "Ajouter un admin",
+        addAdminUid: "User UID Firebase", addAdminEmail: "Email (optionnel)", addAdminBtn: "Ajouter", adminSearchNoResults: "Aucun résultat",
+        verifyReturn: "Vérifiée — restaurer", deleteFinal: "Supprimer", comingSoon: "Bientôt", alreadyReported: "Déjà signalée",
+        thanksReport: "Merci, signalement reçu", thresholdReached: '"{name}" a atteint {n} signalements — envoyée en revue',
+        dismissedToast: '"{name}" restaurée', removedToast: '"{name}" supprimée définitivement', addPharmacyBtn: "Ajouter votre pharmacie",
+        addPharmacyTitle: "Enregistrer une pharmacie", addPharmacySubtitle: "Elle apparaît immédiatement après envoi",
+        formName: "Nom de la pharmacie", formArea: "Quartier", formAddress: "Adresse complète", formPhone: "Téléphone (optionnel)",
+        formOpenHour: "Heure d'ouverture", formCloseHour: "Heure de fermeture", formOnDuty: "De garde 24h/24", useMyLocation: "Utiliser ma position",
+        locationCaptured: "Position enregistrée ✓", locationFailed: "Impossible de localiser", submitNewPharmacy: "Envoyer",
+        submittingPharmacy: "Envoi...", newPharmacySuccess: "Pharmacie enregistrée avec succès", newPharmacyError: "Erreur, réessayez",
+        formRequiredError: "Indiquez au moins le nom et l'adresse", unverifiedBadge: "Non vérifiée",
+        unverifiedNote: "Ajoutée par son propriétaire, pas encore vérifiée",
+        addFreeNote: "Inscription 100% gratuite. Badge « Mise en avant » + premier rang : 500 DA/mois",
+        upgradeFeatured: "Passer au badge premium — 500 DA/mois", freeRegister: "Inscription gratuite",
+        activationCodeLabel: "Code d'activation (optionnel — badge premium)", activationCodePlaceholder: "Ex: PHARIS-XXXX",
+        activationOk: "✅ Badge premium activé !", activationBad: "❌ Code invalide ou déjà utilisé",
+        payModalTitle: "Paiement carte Edahabia", payModalSub: "Abonnement pharmacie mise en avant — 500 DA / mois",
+        payStep1: "1) Copiez le n° de compte CCP", payStep2: "2) Payez 500 DA via BaridiMob ou carte dorée",
+        payStep3: "3) Envoyez le reçu sur WhatsApp pour recevoir le code", payCopyCcp: "Copier le n° de compte",
+        payWhatsapp: "Envoyer le reçu sur WhatsApp", payPaypalForeign: "Étranger ? Payez via PayPal (activation immédiate)",
+        payAccountName: "Au nom de", payCcpCopied: "Numéro copié", onboardTitle: "Bienvenue sur Pharis",
+        onboardSub: "La pharmacie ouverte la plus proche… en secondes", onboard1: "Trouvez les pharmacies ouvertes près de vous",
+        onboard2: "Filtres : ouvertes · de garde · urgence", onboard3: "Carte, itinéraire et appel direct",
+        onboard4: "Algérie et le monde entier", onboard5: "Je cherche un médicament — demandez un médicament manquant",
+        onboardBtn: "Commencer", onboardSkip: "Passer", medBtn: "Je cherche un médicament", medTitle: "Je cherche un médicament",
+        medSub: "Publiez une demande visible 30 jours pour pharmacies et bénévoles", medName: "Nom du médicament",
+        medNamePh: "Ex. : Paracétamol 1000", medCity: "Ville / wilaya", medCityPh: "Ex. : Sidi Bel Abbès",
+        medWa: "Numéro WhatsApp", medWaPh: "05xxxxxxxx", medNote: "Note (optionnel)", medNotePh: "Dosage ou détails utiles",
+        medPublish: "Publier la demande", medList: "Demandes en cours", medEmpty: "Aucune demande pour le moment",
+        medContact: "Contacter WhatsApp", medDisclaimer: "Mise en relation uniquement. Pas de vente dans l'app. Pas de conseil médical. Évitez les médicaments contrôlés. Contact à vos risques.",
+        medSuccess: "Demande publiée pour 30 jours", medError: "Échec de la publication. Vérifiez les données ou la connexion.",
+        medNeedName: "Indiquez le nom du médicament", medNeedWa: "Entrez un numéro WhatsApp valide", medExpires: "Expire le",
+        medClose: "Fermer", medLoading: "Chargement…", activationHint: "Après paiement CCP/PayPal vous recevez le code sur WhatsApp",
+        adminLoginTitle: "Connexion admin", loginBtn: "Se connecter", loginError: "Identifiants incorrects", logoutBtn: "Déconnexion",
+        allPharmaciesTab: "Toutes ({n})", allPharmaciesSubtitle: "Supprimez n'importe quelle pharmacie", kmAway: "km",
+        copy: "Copier", call: "Appeler", map: "Carte", list: "Liste", loadFromMap: "Charger depuis la carte",
+        searchCity: "Rechercher une ville...", detecting: "Détection de votre position...",
+        geoError: "Impossible de détecter la position. Utilisez le menu.", offlineBanner: "Hors ligne — dernières données enregistrées",
+        offlineHint: "Certaines fonctions nécessitent Internet", locRequiredTitle: "Position requise",
+        locRequiredMsg: "Pour afficher les pharmacies les plus proches, activez la localisation.", locAllowBtn: "Activer la position",
+        locManualBtn: "Choisir la wilaya", locNeededBanner: "Activez la position pour les pharmacies proches", country: "Pays",
+        city: "Ville", darkMode: "Mode sombre", lightMode: "Mode clair", share: "Partager", pharmaciesFound: "✅ {n} pharmacies à {name}",
+        loadFailed: "❌ Échec du chargement", wait30s: "⏳ Attendez 30 secondes", invalidPhone: "❌ Numéro invalide",
+        locatingAddress: "Localisation de l'adresse...", noLocation: "Indiquez une position ou une adresse valide",
+        protected: "Champs protégés contre les injections", worldwide: "Ajoutez votre pharmacie de n'importe où",
+        reviewBtn: "En revue ({n})", openLate: "Ouvert tard", featuredBadge: "Mise en avant", privacy: "Confidentialité",
+        terms: "Conditions", aboutMoney: "Pharmacies: 500 DA/mois (Edahabia) ou PayPal (étranger) — badge en premier",
+      },
+      en: {
+        tagline: "{place} pharmacies, live", dashboard: "Dashboard", openStat: "open out of {total}",
+        searchPlaceholder: "Search by name or neighborhood...", filterAll: "All", filterOpen: "Open",
+        filterUrgent: "24h duty", filterFavorites: "Favorites", filterLate: "Open late", emergency: "Emergency",
+        emergencyTitle: "Open near you now", emergencySubtitle: "Nearest open pharmacies · tap to call or go",
+        emergencyEmpty: "No open pharmacies nearby right now", nearest: "Nearest", callNow: "Call", goNow: "Go",
+        sourceLocal: "Local", sourceOSM: "Map", sourceUser: "User", trustVerified: "Verified", viewAll: "View all",
+        emergencyHint: "Emergency mode — fast results", confirmOpen: "Open now?", confirmClosed: "Closed?",
+        thanksConfirm: "Thanks — your note was saved", confirmedOpen: "Users confirmed it is open",
+        confirmedClosed: "Users confirmed it is closed", addedFavorite: '"{name}" added to favorites',
+        removedFavorite: '"{name}" removed from favorites', noFavorites: "No favorites yet. Tap the heart to add one.",
+        noRatingsYet: "No ratings yet", ratingsCount: "({n})", yourRating: "Rate this pharmacy",
+        reviewPlaceholder: "Share your experience (optional)...", submitReview: "Submit rating",
+        reviewSubmitted: "Thanks for your rating!", pickStarsFirst: "Pick a star rating first",
+        reviewsTitle: "Reviews", changeLocation: "Change location", noResults: "No matching results",
+        openNow: "Open now", closedNow: "Closed", closedNowFull: "Closed now", onDutyLabel: "On duty · 24h",
+        closesAt: "Closes at {time}", opensAt: "Opens at {time}", reportTitle: "Report this pharmacy",
+        directions: "Directions", underReviewBanner: "{n} complaints — under review",
+        underReviewDetail: "This pharmacy has {n} complaints and is under manual review.", adminTitle: "Dashboard",
+        adminSubtitle: "Pharmacies under review (threshold: {n})", adminEmpty: "No pharmacies under review",
+        adminSearchPh: "Search pharmacy by name...", adminTabAdmins: "Admins", addAdminTitle: "Add admin",
+        addAdminUid: "Firebase User UID", addAdminEmail: "Email (optional)", addAdminBtn: "Add",
+        adminSearchNoResults: "No results", verifyReturn: "Verified — restore", deleteFinal: "Delete permanently",
+        comingSoon: "Coming soon", alreadyReported: "Already reported", thanksReport: "Thanks, report received",
+        thresholdReached: '"{name}" reached {n} complaints — sent for review', dismissedToast: '"{name}" restored to listing',
+        removedToast: '"{name}" permanently removed', addPharmacyBtn: "Add your pharmacy",
+        addPharmacyTitle: "Register a new pharmacy", addPharmacySubtitle: "Appears in the list right after submitting",
+        formName: "Pharmacy name", formArea: "Neighborhood / Area", formAddress: "Full address",
+        formPhone: "Phone (optional)", formOpenHour: "Opening hour", formCloseHour: "Closing hour",
+        formOnDuty: "On duty 24h", useMyLocation: "Use my current location", locationCaptured: "Location captured ✓",
+        locationFailed: "Could not get location", submitNewPharmacy: "Submit registration", submittingPharmacy: "Submitting...",
+        newPharmacySuccess: "Pharmacy registered successfully", newPharmacyError: "Something went wrong, try again",
+        formRequiredError: "Fill in at least the name and address", unverifiedBadge: "Unverified",
+        unverifiedNote: "Added by its owner, not yet verified by the team",
+        addFreeNote: "100% free registration. « Featured » badge + rank first: 500 DZD/month",
+        upgradeFeatured: "Upgrade to featured badge — 500 DZD/month", freeRegister: "Free registration",
+        activationCodeLabel: "Activation code (optional — featured badge)", activationCodePlaceholder: "e.g. PHARIS-XXXX",
+        activationOk: "✅ Featured badge activated!", activationBad: "❌ Invalid or already used code",
+        payModalTitle: "Golden Card payment", payModalSub: "Featured pharmacy subscription — 500 DZD / month",
+        payStep1: "1) Copy the CCP account number", payStep2: "2) Pay 500 DZD via BaridiMob or Golden Card",
+        payStep3: "3) Send the receipt on WhatsApp to get your activation code", payCopyCcp: "Copy account number",
+        payWhatsapp: "Send receipt on WhatsApp", payPaypalForeign: "Outside Algeria? Pay with PayPal (instant activation)",
+        payAccountName: "Account name", payCcpCopied: "Account number copied", onboardTitle: "Welcome to Pharis",
+        onboardSub: "Nearest open pharmacy… in seconds", onboard1: "Find open pharmacies near you instantly",
+        onboard2: "Filters: open · night duty · emergency", onboard3: "Map, directions and direct call",
+        onboard4: "Algeria and worldwide", onboard5: "Looking for a medicine — request a missing medicine and get help",
+        onboardBtn: "Get started", onboardSkip: "Skip", medBtn: "Looking for a medicine", medTitle: "Looking for a medicine",
+        medSub: "Post a request visible for 30 days to pharmacies and helpers", medName: "Medicine name",
+        medNamePh: "e.g. Paracetamol 1000", medCity: "City / region", medCityPh: "e.g. Sidi Bel Abbès",
+        medWa: "WhatsApp number", medWaPh: "05xxxxxxxx", medNote: "Note (optional)", medNotePh: "Dose or useful details",
+        medPublish: "Publish request", medList: "Current requests", medEmpty: "No requests yet",
+        medContact: "Contact on WhatsApp",
+        medDisclaimer: "Contact board only. No in-app sales. Not medical advice. Avoid controlled medicines. Contact at your own risk.",
+        medSuccess: "Request published for 30 days", medError: "Could not publish. Check data or connection.",
+        medNeedName: "Enter the medicine name", medNeedWa: "Enter a valid WhatsApp number", medExpires: "Expires",
+        medClose: "Close", medLoading: "Loading…", activationHint: "After CCP/PayPal payment you receive the code on WhatsApp",
+        adminLoginTitle: "Admin login", loginBtn: "Log in", loginError: "Incorrect credentials", logoutBtn: "Log out",
+        allPharmaciesTab: "All pharmacies ({n})", allPharmaciesSubtitle: "Permanently delete any pharmacy", kmAway: "km",
+        copy: "Copy", call: "Call", map: "Map", list: "List", loadFromMap: "Load from map", searchCity: "Search a city...",
+        detecting: "Detecting your location...", geoError: "Could not detect location. Use the menu manually.",
+        offlineBanner: "Offline — showing last saved data", offlineHint: "Some features need a connection when available",
+        locRequiredTitle: "Location required", locRequiredMsg: "To show the nearest pharmacies, please enable location access.",
+        locAllowBtn: "Enable location now", locManualBtn: "Choose city manually",
+        locNeededBanner: "Enable location to see nearest pharmacies", country: "Country", city: "City",
+        darkMode: "Dark mode", lightMode: "Light mode", share: "Share", pharmaciesFound: "✅ {n} pharmacies in {name}",
+        loadFailed: "❌ Failed to load", wait30s: "⏳ Wait 30 seconds before adding another", invalidPhone: "❌ Invalid phone number",
+        locatingAddress: "Locating address...", noLocation: "Provide a location or valid address",
+        protected: "Fields protected against injection", worldwide: "Add your pharmacy from anywhere in the world",
+        reviewBtn: "Under review ({n})", openLate: "Open late", featuredBadge: "Featured", privacy: "Privacy",
+        terms: "Terms", aboutMoney: "Pharmacies: 500 DZD/month (Golden Card) or PayPal (international) — featured badge",
+      }
+    };
+
+    function normalizeSearch(s) {
+      return String(s || "")
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u064B-\u065F\u0670]/g, "")
+        .replace(/\u0640/g, "")
+        .replace(/[أإآٱ]/g, "ا")
+        .replace(/[ىئ]/g, "ي")
+        .replace(/ة/g, "ه")
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    function matchesSearch(ph, qRaw) {
+      const q = normalizeSearch(qRaw);
+      if (!q) return true;
+      const hay = normalizeSearch([ph.name, ph.area, ph.address, ph.wilaya, ph.commune, ph.phone].filter(Boolean).join(" "));
+      return q.split(" ").every(w => w && hay.includes(w));
+    }
+
+    function tr(lang, key, vars = {}) {
+      let str = (T[lang] && T[lang][key]) || T.ar[key] || key;
+      Object.entries(vars).forEach(([k, v]) => { str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v); });
+      return str;
+    }
+
+    const SBA = [
+      { id: 1, name: "صيدلية بوعشة فريد", area: "شارع 08 نوفمبر", address: "Rue 08 Novembre, Sidi Bel Abbès", phone: null, lat: 35.1994115, lng: -0.6453492, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 2, name: "صيدلية أنس بن الأزهر", area: "سيدي جيلالي", address: "Agence Foncière, Sidi Djilali", phone: "040 73 11 11", lat: 35.2100923, lng: -0.6308727, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 3, name: "صيدلية منصور وفاء", area: "سيدي جيلالي", address: "250 Segar Abdelaziz, Secteur 1, Sidi Djilali", phone: null, lat: 35.2156413, lng: -0.6350891, hours: { open: 8.5, close: 24 }, onDuty: false },
+      { id: 4, name: "صيدلية بن حمودة", area: "سيدي بلعباس", address: "Unnamed Rd, Sidi Bel Abbès 22000", phone: "0557 48 64 80", lat: 35.2194202, lng: -0.6259365, hours: { open: 8, close: 25 }, onDuty: false },
+      { id: 5, name: "صيدلية د. عربي", area: "روڨاب عكاشة", address: "Telmouni N°23 Lot 36, Rouggab Okkacha", phone: "0542 61 77 50", lat: 35.1736176, lng: -0.5448622, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 6, name: "صيدلية بن عز الدين عبد الصمد", area: "بوليفار بنديدة", address: "56 Bd Bendida Mohamed, 22002", phone: "0770 80 52 35", lat: 35.1950042, lng: -0.6194100, hours: { open: 8, close: 26.5 }, onDuty: false },
+      { id: 7, name: "صيدلية رقبال محل", area: "سيدي بلعباس", address: "17 Rue Laziz Ghalem", phone: "0542 69 78 07", lat: 35.1976143, lng: -0.6484907, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 8, name: "صيدلية د. عراد بن علي", area: "حي 100 مسكن", address: "Cité 100 Logements Aile A N°1", phone: "048 76 77 85", lat: 35.1966647, lng: -0.6176962, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 9, name: "صيدلية بلعربي الحسين", area: "AADL", address: "AADL, Sidi Bel Abbès 22000", phone: "0549 67 98 94", lat: 35.2185763, lng: -0.6275044, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 10, name: "صيدلية معاشو محمد", area: "حي 237 مسكن", address: "Cité 237 Logts", phone: "0561 06 28 18", lat: 35.2125875, lng: -0.6232656, hours: { open: 8, close: 27 }, onDuty: false },
+      { id: 11, name: "صيدلية المؤسسة", area: "حي الجزائرة", address: "Site 2 DGSN, Haï El Djazeera", phone: "0668 73 38 31", lat: 35.1785633, lng: -0.6117378, hours: { open: 8.25, close: 24 }, onDuty: false },
+      { id: 12, name: "صيدلية نبال", area: "بوليفار عبان رمضان", address: "Bd Abane Ramdane, 22002", phone: "0542 31 47 07", lat: 35.1923259, lng: -0.6186891, hours: { open: 8, close: 23 }, onDuty: false },
+      { id: 13, name: "صيدلية سي أحمد نذير", area: "سيدي بلعباس", address: "Sidi Bel Abbès 22000", phone: "0664 40 64 46", lat: 35.2122881, lng: -0.6251282, hours: { open: 8, close: 23 }, onDuty: false },
+      { id: 14, name: "صيدلية عصاد", area: "بوليفار محمد الخميستي", address: "04 Bd Mohamed Khemisti", phone: null, lat: 35.1866666, lng: -0.632567, hours: { open: 8.5, close: 23 }, onDuty: false },
+      { id: 15, name: "صيدلية سيد أحمد", area: "شارع الراسي مهاجي", address: "Rue Rassi M'Hadji", phone: null, lat: 35.2056856, lng: -0.6299211, hours: { open: 8, close: 23 }, onDuty: false },
+      { id: 16, name: "صيدلية شارع حواورية عبد القادر", area: "سيدي بلعباس", address: "Rue Houaoria Abdelkader", phone: "048 72 40 31", lat: 35.1870193, lng: -0.6470397, hours: { open: 8.5, close: 21 }, onDuty: false },
+      { id: 17, name: "صيدلية حاجب إبراهيم", area: "بوليفار عيساط إيدير", address: "Unnamed Rd", phone: "048 72 09 53", lat: 35.2164652, lng: -0.6206502, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 18, name: "صيدلية فرتوت", area: "سيدي بلعباس", address: "Unnamed Rd, 22002", phone: "048 75 82 31", lat: 35.1893368, lng: -0.6123998, hours: { open: 8.5, close: 22 }, onDuty: false },
+      { id: 19, name: "صيدلية بوزيدي يحيى", area: "سيدي بلعباس", address: "Unnamed Rd", phone: "048 77 50 35", lat: 35.1753948, lng: -0.6215078, hours: { open: 9, close: 21 }, onDuty: false },
+      { id: 20, name: "صيدلية شرشالي", area: "شارع أحمد زبانة", address: "Rue Ahmed Zabana", phone: null, lat: 35.1876422, lng: -0.6225517, hours: { open: 8.5, close: 22.17 }, onDuty: false },
+      { id: 21, name: "صيدلية بن حدو", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.214565, lng: -0.620614, hours: { open: 8.5, close: 24 }, onDuty: false },
+      { id: 22, name: "صيدلية حماد جيلالي", area: "بوليفار عيساط إيدير", address: "Bd Aissat Idir", phone: "0559 56 87 22", lat: 35.1945066, lng: -0.6248018, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 23, name: "صيدلية هديبي", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.2121015, lng: -0.6290114, hours: { open: 8, close: 22 }, onDuty: false },
+      { id: 24, name: "صيدلية طلحة", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: "0779 23 47 38", lat: 35.2116249, lng: -0.6214044, hours: { open: 8.5, close: 24 }, onDuty: false },
+      { id: 25, name: "صيدلية بلحاج عمر بلقاسم", area: "نهج بوشارب زيتوني", address: "22002", phone: null, lat: 35.1883583, lng: -0.6158417, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 26, name: "صيدلية الشيخ أمين", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.182191, lng: -0.6311097, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 27, name: "صيدلية الوفاء", area: "سيدي بلعباس", address: "Sidi Bel Abbès", phone: null, lat: 35.2092497, lng: -0.6506582, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 28, name: "صيدلية شارع مدغشقر", area: "شارع مدغشقر", address: "25 Rue Madagascar", phone: null, lat: 35.1839758, lng: -0.6442548, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 29, name: "صيدلية سيدي بلعباس الجديدة", area: "حي 500 مسكن", address: "Cité 500 Logements", phone: "0540 11 22 33", lat: 35.2050, lng: -0.6150, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 30, name: "صيدلية النجاح", area: "حي البدر", address: "Cité El Badr", phone: "0660 44 55 66", lat: 35.1950, lng: -0.6350, hours: { open: 8, close: 22 }, onDuty: false },
+      { id: 31, name: "صيدلية الرائد", area: "حي الأمير", address: "Cité El Amir", phone: null, lat: 35.2100, lng: -0.6400, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 32, name: "صيدلية سفيزف المركزية", area: "نهج الاستقلال", address: "Rue de l'Indépendance, Sfisef", phone: "048 70 12 34", lat: 35.2333, lng: -0.2500, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 33, name: "صيدلية الشفاء سفيزف", area: "شارع أول نوفمبر", address: "Bd 1er Novembre, Sfisef", phone: "0550 77 88 99", lat: 35.2350, lng: -0.2480, hours: { open: 8, close: 23 }, onDuty: false },
+      { id: 34, name: "صيدلية النور سفيزف", area: "حي الزيتون", address: "Cité Ezzitoune, Sfisef", phone: null, lat: 35.2300, lng: -0.2550, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+      { id: 35, name: "صيدلية ابن باديس المركزية", area: "ساحة الشهداء", address: "Place des Martyrs, Ben Badis", phone: "048 77 12 34", lat: 35.2667, lng: -0.5667, hours: { open: 8, close: 23 }, onDuty: false },
+      { id: 36, name: "صيدلية الأمل بن باديس", area: "نهج الأمير عبد القادر", address: "Rue Emir Abdelkader, Ben Badis", phone: "0665 33 44 55", lat: 35.2680, lng: -0.5640, hours: { open: 8, close: 22 }, onDuty: false },
+      { id: 37, name: "صيدلية الحياة بن باديس", area: "الطريق الوطني 7", address: "RN7, Ben Badis", phone: null, lat: 35.2700, lng: -0.5600, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 38, name: "صيدلية تلاغ الكبرى", area: "وسط المدينة", address: "Centre-ville, Telagh", phone: "048 75 55 66", lat: 34.7833, lng: -0.5833, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 39, name: "صيدلية السلام تلاغ", area: "حي السلام", address: "Cité Essalam, Telagh", phone: null, lat: 34.7850, lng: -0.5800, hours: { open: 8.5, close: 22 }, onDuty: false },
+      { id: 40, name: "صيدلية مناوبة تلاغ", area: "طريق سيدي بلعباس", address: "Route de SBA, Telagh", phone: "0770 55 44 33", lat: 34.7800, lng: -0.5900, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 41, name: "صيدلية رأس الماء", area: "حي الأمير", address: "Cité El Amir, Ras El Ma", phone: "048 73 22 11", lat: 34.5000, lng: -0.8167, hours: { open: 8.5, close: 22 }, onDuty: false },
+      { id: 42, name: "صيدلية الرجاء رأس الماء", area: "نهج الشهداء", address: "Rue des Martyrs, Ras El Ma", phone: null, lat: 34.5020, lng: -0.8140, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 43, name: "صيدلية عين البرد 24", area: "شارع الأمير عبد القادر", address: "Bd Emir Abdelkader, Aïn El Berd", phone: "0550 11 22 33", lat: 35.3667, lng: -0.5167, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 44, name: "صيدلية عين البرد الجديدة", area: "حي 5 جويلية", address: "Cité 5 Juillet, Aïn El Berd", phone: "0660 22 33 44", lat: 35.3680, lng: -0.5140, hours: { open: 8, close: 23 }, onDuty: false },
+      { id: 45, name: "صيدلية النصر عين البرد", area: "الطريق الولائي", address: "CW, Aïn El Berd", phone: null, lat: 35.3700, lng: -0.5200, hours: { open: 8.5, close: 21 }, onDuty: false },
+      { id: 46, name: "صيدلية تسالة", area: "الحي الإداري", address: "Quartier Administratif, Tessala", phone: "048 74 55 77", lat: 35.2500, lng: -0.7667, hours: { open: 8.5, close: 19.5 }, onDuty: false },
+      { id: 47, name: "صيدلية المنار تسالة", area: "نهج فلسطين", address: "Rue Palestine, Tessala", phone: null, lat: 35.2480, lng: -0.7700, hours: { open: 8, close: 20 }, onDuty: false },
+      { id: 48, name: "صيدلية مرين", area: "الطريق الولائي", address: "Route de Wilaya, Merine", phone: "0545 66 77 88", lat: 34.7833, lng: -0.4667, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 49, name: "صيدلية مرين الشرقية", area: "حي النخيل", address: "Cité Ennakhil, Merine", phone: null, lat: 34.7850, lng: -0.4640, hours: { open: 8, close: 21.5 }, onDuty: false },
+      { id: 50, name: "صيدلية مصطفى بن ابراهيم", area: "نهج الشهداء", address: "Rue des Martyrs, M. Ben Brahim", phone: "0540 33 44 55", lat: 35.2000, lng: -0.3667, hours: { open: 8, close: 22.5 }, onDuty: false },
+      { id: 51, name: "صيدلية الأقصى", area: "حي القدس", address: "Cité El Qods, M. Ben Brahim", phone: null, lat: 35.1980, lng: -0.3700, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 52, name: "صيدلية تنيرة", area: "المركز", address: "Centre, Tenira", phone: "0790 55 66 77", lat: 35.0167, lng: -0.5333, hours: { open: 8, close: 20.5 }, onDuty: false },
+      { id: 53, name: "صيدلية تنيرة 24", area: "طريق وهران", address: "Route d'Oran, Tenira", phone: null, lat: 35.0180, lng: -0.5300, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 54, name: "صيدلية الحصايبة", area: "وسط البلدية", address: "Centre, El Hacaiba", phone: "0660 99 88 77", lat: 34.7000, lng: -0.7500, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 55, name: "صيدلية الهدى الحصايبة", area: "الطريق الوطني", address: "RN, El Hacaiba", phone: null, lat: 34.6980, lng: -0.7550, hours: { open: 8.5, close: 20 }, onDuty: false },
+      { id: 56, name: "صيدلية مولاي سليسن", area: "حي النصر", address: "Cité Ennasr, Moulay Slissen", phone: "0770 55 66 77", lat: 34.8167, lng: -0.7667, hours: { open: 8, close: 21.5 }, onDuty: false },
+      { id: 57, name: "صيدلية الرشيد مولاي سليسن", area: "نهج الأمير", address: "Rue Emir, Moulay Slissen", phone: null, lat: 34.8180, lng: -0.7700, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 58, name: "صيدلية بئر الحمام", area: "نهج الجمهورية", address: "Rue de la République, Bir El Hammam", phone: "0548 77 66 55", lat: 34.7500, lng: -0.6500, hours: { open: 9, close: 20 }, onDuty: false },
+      { id: 59, name: "صيدلية وادي السبع", area: "شارع أول نوفمبر", address: "Bd 1er Novembre, Oued Seba", phone: "0560 88 99 00", lat: 34.9500, lng: -0.5500, hours: { open: 8.5, close: 22 }, onDuty: false },
+      { id: 60, name: "صيدلية وادي السبع 24", area: "الطريق الرئيسي", address: "Route Principale, Oued Seba", phone: null, lat: 34.9520, lng: -0.5480, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 61, name: "صيدلية بوجبهة البرج", area: "حي 5 جويلية", address: "Cité 5 Juillet, Boujebha El Bordj", phone: "0790 11 22 33", lat: 35.3167, lng: -0.3167, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 62, name: "صيدلية السلام بوجبهة", area: "نهج الاستقلال", address: "Rue Indépendance, Boujebha", phone: null, lat: 35.3180, lng: -0.3140, hours: { open: 8, close: 22 }, onDuty: false },
+      { id: 63, name: "صيدلية سيدي لحسن", area: "الطريق الرئيسي", address: "Route Nationale, Sidi Lahssen", phone: "0668 44 55 66", lat: 35.1500, lng: -0.7000, hours: { open: 8, close: 20 }, onDuty: false },
+      { id: 64, name: "صيدلية مناوبة سيدي لحسن", area: "وسط", address: "Centre, Sidi Lahssen", phone: null, lat: 35.1520, lng: -0.6980, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 65, name: "صيدلية حاسي زهانة", area: "طريق وهران", address: "Route d'Oran, Hassi Zahana", phone: "0555 99 88 77", lat: 35.0333, lng: -0.7333, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+      { id: 66, name: "صيدلية زروالة", area: "وسط البلد", address: "Centre-ville, Zerouala", phone: "0699 33 22 11", lat: 35.0833, lng: -0.5167, hours: { open: 8, close: 19 }, onDuty: false },
+      { id: 67, name: "صيدلية سيدي دحو", area: "الطريق الوطني", address: "RN, Sidi Dahou", phone: "0699 12 34 56", lat: 35.1000, lng: -0.6833, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 68, name: "صيدلية عين تندامين", area: "حي السلام", address: "Cité Essalam, Aïn Tindamine", phone: "0775 44 33 22", lat: 34.6833, lng: -0.7167, hours: { open: 8, close: 20.5 }, onDuty: false },
+      { id: 69, name: "صيدلية وادي تاوريرة", area: "المركز البلدي", address: "APC, Oued Taourira", phone: "0555 44 33 22", lat: 34.8833, lng: -0.5667, hours: { open: 8.5, close: 21 }, onDuty: false },
+      { id: 70, name: "صيدلية الطابية", area: "نهج العربي بن مهيدي", address: "Rue Larbi Ben M'hidi, Tabia", phone: "0544 33 22 11", lat: 34.7333, lng: -0.6500, hours: { open: 8, close: 22 }, onDuty: false },
+      { id: 71, name: "صيدلية تامزوغة", area: "الحي الجديد", address: "Nouveau Quartier, Tamzoura", phone: "0666 77 88 99", lat: 35.1500, lng: -0.5667, hours: { open: 8, close: 20 }, onDuty: false },
+      { id: 72, name: "صيدلية الضاية", area: "دوار الضاية", address: "Douar Edhaya, Dhaya", phone: null, lat: 34.6833, lng: -0.6167, hours: { open: 8.5, close: 19 }, onDuty: false },
+      { id: 73, name: "صيدلية سيدي علي بن يوب", area: "دوار سيدي علي", address: "Douar Sidi Ali Benyoub", phone: "0558 77 66 55", lat: 34.9333, lng: -0.6667, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 74, name: "صيدلية حاسي دحو", area: "المحطة", address: "La Gare, Hassi Dahou", phone: "0799 66 55 44", lat: 35.0667, lng: -0.5167, hours: { open: 8.5, close: 21 }, onDuty: false },
+      { id: 75, name: "صيدلية مسالم", area: "نهج العقيد", address: "Rue Colonel, Messalm", phone: "0665 44 33 22", lat: 34.8500, lng: -0.5833, hours: { open: 8, close: 20 }, onDuty: false },
+      { id: 76, name: "صيدلية الخميس", area: "نهج المدرسة", address: "Rue de l'École, El Khemis", phone: null, lat: 34.7167, lng: -0.5333, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 77, name: "صيدلية الورود", area: "حي الورود", address: "Cité El Wouroud", phone: "0795 33 22 11", lat: 34.9500, lng: -0.5667, hours: { open: 8, close: 21.5 }, onDuty: false },
+      { id: 78, name: "صيدلية عين الثريد", area: "الطريق الوطني 7", address: "RN7, Aïn Thrid", phone: "0543 22 11 00", lat: 35.2667, lng: -0.6333, hours: { open: 8.5, close: 20 }, onDuty: false },
+      { id: 79, name: "صيدلية سيدي يعقوب", area: "نهج الاستقلال", address: "Rue de l'Indépendance, Sidi Yacoub", phone: "0549 88 77 66", lat: 35.0500, lng: -0.6833, hours: { open: 8, close: 22 }, onDuty: false },
+      { id: 80, name: "صيدلية بلعربي", area: "شارع الشهيد", address: "Rue Chahid, Belarbi", phone: "0771 55 44 33", lat: 34.9000, lng: -0.6500, hours: { open: 8.5, close: 22 }, onDuty: false },
+      { id: 81, name: "صيدلية العمارنة", area: "نهج فلسطين", address: "Rue Palestine, El Amarna", phone: "0545 66 77 88", lat: 34.8000, lng: -0.6000, hours: { open: 8, close: 20.5 }, onDuty: false },
+      { id: 82, name: "صيدلية السهالة", area: "الطريق الولائي 12", address: "CW12, Sahala", phone: "0662 33 44 55", lat: 35.0500, lng: -0.6167, hours: { open: 8, close: 20.5 }, onDuty: false },
+      { id: 83, name: "صيدلية أولاد خالد", area: "دوار أولاد خالد", address: "Douar Ouled Khaled", phone: "0777 88 99 00", lat: 34.9500, lng: -0.3500, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 84, name: "صيدلية أولاد علي", area: "دوار أولاد علي", address: "Douar Ouled Ali", phone: null, lat: 34.9333, lng: -0.4667, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 85, name: "صيدلية سيدي خالد", area: "الطريق الوطني", address: "RN, Sidi Khaled", phone: "0559 77 66 55", lat: 34.9833, lng: -0.6833, hours: { open: 8.5, close: 21.5 }, onDuty: false },
+      { id: 86, name: "صيدلية عين قادة", area: "وسط البلدية", address: "Centre, Aïn Kada", phone: null, lat: 35.1333, lng: -0.5833, hours: { open: 8, close: 20 }, onDuty: false },
+      { id: 87, name: "صيدلية سيدي ابراهيم", area: "نهج الشهيد", address: "Rue Chahid, Sidi Brahim", phone: "0667 88 99 00", lat: 35.1167, lng: -0.6333, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 88, name: "صيدلية بويزرو", area: "وسط البلدية", address: "Centre, Bouizrou", phone: null, lat: 34.7333, lng: -0.5333, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 89, name: "صيدلية المقطع", area: "الحي البلدي", address: "Quartier Communal, El Mactaâ", phone: "0793 44 55 66", lat: 35.0833, lng: -0.6000, hours: { open: 8, close: 19.5 }, onDuty: false },
+      { id: 90, name: "صيدلية رجوم دموش", area: "المركز", address: "Centre, Redjem Demouche", phone: null, lat: 34.4333, lng: -0.8000, hours: { open: 8.5, close: 20.5 }, onDuty: false },
+      { id: 91, name: "صيدلية تغاليمت", area: "دوار تغاليمت", address: "Douar Teghalimet", phone: "0546 77 88 99", lat: 34.8500, lng: -0.6833, hours: { open: 8, close: 20 }, onDuty: false },
+      { id: 92, name: "صيدلية بن عشيبة شلية", area: "الطريق الولائي", address: "CW, Benachiba Chelia", phone: null, lat: 35.0167, lng: -0.4500, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 93, name: "صيدلية الشعيبة", area: "وسط", address: "Centre, Chaiba", phone: "0772 33 44 55", lat: 34.8167, lng: -0.5333, hours: { open: 8, close: 21 }, onDuty: false },
+      { id: 94, name: "صيدلية المكدرة", area: "نهج أول نوفمبر", address: "Rue 1er Novembre, Makedra", phone: null, lat: 35.1167, lng: -0.6667, hours: { open: 8.5, close: 21 }, onDuty: false },
+      { id: 95, name: "صيدلية سيدي عمار", area: "الطريق الوطني 13", address: "RN13, Sidi Amar", phone: "0561 22 33 44", lat: 34.9833, lng: -0.5333, hours: { open: 8, close: 20.5 }, onDuty: false },
+      { id: 96, name: "صيدلية ضرية", area: "المركز البلدي", address: "APC, Dharia", phone: null, lat: 34.7667, lng: -0.5500, hours: { open: 8, close: 19 }, onDuty: false },
+      { id: 97, name: "صيدلية شعيب", area: "نهج الجمهورية", address: "Rue République, Chouaib", phone: "0669 55 66 77", lat: 34.7333, lng: -0.5833, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 98, name: "صيدلية مولاي النبي", area: "حي الرجاء", address: "Cité Erraja, Moulay Ennabi", phone: null, lat: 35.0333, lng: -0.6000, hours: { open: 8.5, close: 21 }, onDuty: false },
+      { id: 99, name: "صيدلية تافسور", area: "نهج الأمير", address: "Rue Emir, Tafessour", phone: "0680 55 44 33", lat: 34.8000, lng: -0.6333, hours: { open: 8, close: 19.5 }, onDuty: false },
+      { id: 100, name: "صيدلية سيدي دحو الزاير", area: "حي النصر", address: "Cité Ennasr, Sidi Dahou Ezzair", phone: null, lat: 34.9833, lng: -0.7167, hours: { open: 8, close: 20.5 }, onDuty: false }
+    ].map(p => ({ ...p, wilaya: "سيدي بلعباس", commune: p.area, verified: true }));
+
+    const ORAN = [
+      { id: 201, name: "صيدلية بوزيان", area: "شارع الشيخ عبد القادر", address: "50 Av. Cheikh Abdelkader, Oran", phone: "041 23 17 75", lat: 35.6903998, lng: -0.6409355, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 202, name: "صيدلية الحاج", area: "وهران", address: "Oran", phone: "041 23 25 78", lat: 35.674515, lng: -0.6503951, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 203, name: "صيدلية بوزيان (الجامع الكبير)", area: "بوليفار عبد الحميد بن باديس", address: "Pole Abdelhamid Ibn Badis, Bir El Djir", phone: "041 23 17 75", lat: 35.6970558, lng: -0.6072521, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 204, name: "صيدلية درڨال", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "041 74 84 16", lat: 35.7149093, lng: -0.6026964, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 205, name: "صيدلية ويس", area: "شارع مولود فرعون", address: "140 Rue Mouloud Feraoun, Oran", phone: "040 57 77 06", lat: 35.6997742, lng: -0.6350941, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 206, name: "صيدلية النبيل", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "0781 84 88 06", lat: 35.7099482, lng: -0.6043301, hours: { open: 7.5, close: 28 }, onDuty: false },
+      { id: 207, name: "صيدلية بن داود", area: "ساحة هوش", address: "9 Rue Sagbi Lakhdar, Place Hoche, Oran", phone: "0560 94 66 32", lat: 35.7022102, lng: -0.6403725, hours: { open: 8.5, close: 24 }, onDuty: false },
+      { id: 208, name: "صيدلية غريياني", area: "بئر الجير", address: "Bir El Djir, Oran", phone: "0774 85 63 93", lat: 35.7121306, lng: -0.6032139, hours: { open: 8, close: 24 }, onDuty: false },
+      { id: 209, name: "صيدلية بروانة H24", area: "شارع العقيد بن عبد الرزاق", address: "07 Av. Colonel Benabderrezak, Oran", phone: "0770 43 44 84", lat: 35.6983949, lng: -0.6307644, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 210, name: "صيدلية بولجراف محمد علي", area: "شارع مغوفل جيلالي", address: "25 Rue Meghoufel Djillali, Oran", phone: "0698 53 21 00", lat: 35.7047249, lng: -0.6245603, hours: { open: 9, close: 26 }, onDuty: false }
+    ].map(p => ({ ...p, wilaya: "وهران", commune: p.area, verified: true }));
+
+    const ALGER = [
+      { id: 401, name: "صيدلية خلدون 24/7", area: "الحراش", address: "12 Rue Si Hanafi, El-Harrach 16004", phone: "020 43 43 34", lat: 36.7172244, lng: 3.1461069, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 402, name: "صيدلية الزيتونة", area: "بئر مراد رايس", address: "Bir Mourad Raïs 16000", phone: "0560 28 51 99", lat: 36.7341897, lng: 3.0359469, hours: { open: 0, close: 24 }, onDuty: true },
+      { id: 403, name: "صيدلية ميمونة", area: "الجزائر الوسطى", address: "115 Rue Didouche Mourad, Alger Centre", phone: "0784 23 03 37", lat: 36.763382, lng: 3.0482317, hours: { open: 7.5, close: 19.5 }, onDuty: false },
+      { id: 404, name: "صيدلية محب الدين نسيمة", area: "الجزائر الوسطى", address: "Rue Didouche Mourad, Alger Centre", phone: "0770 97 38 52", lat: 36.7661213, lng: 3.0520001, hours: { open: 8.5, close: 19 }, onDuty: false },
+      { id: 405, name: "صيدلية شكرون", area: "دالي إبراهيم", address: "140 Hay El Bina, Dély Ibrahim", phone: "0770 07 88 01", lat: 36.7604004, lng: 2.9842351, hours: { open: 0, close: 24 }, onDuty: true }
+    ].map(p => ({ ...p, wilaya: "الجزائر", commune: p.area, verified: true }));
+
+    const RAW = [...SBA, ...ORAN, ...ALGER];
+
+    const COUNTRIES = [
+      { id: "DZ", name: "🇩🇿 الجزائر", nameFr: "Algérie", nameEn: "Algeria" },
+      { id: "FR", name: "🇫🇷 فرنسا", nameFr: "France", nameEn: "France" },
+      { id: "MA", name: "🇲🇦 المغرب", nameFr: "Maroc", nameEn: "Morocco" },
+      { id: "TN", name: "🇹🇳 تونس", nameFr: "Tunisie", nameEn: "Tunisia" },
+      { id: "EG", name: "🇪🇬 مصر", nameFr: "Égypte", nameEn: "Egypt" },
+      { id: "SA", name: "🇸🇦 السعودية", nameFr: "Arabie Saoudite", nameEn: "Saudi Arabia" },
+      { id: "AE", name: "🇦🇪 الإمارات", nameFr: "Émirats", nameEn: "UAE" },
+      { id: "TR", name: "🇹🇷 تركيا", nameFr: "Turquie", nameEn: "Turkey" },
+      { id: "OTHER", name: "🌍 أخرى", nameFr: "Autre", nameEn: "Other" },
+    ];
+
+    const WILAYAS = [
+      { id: 1,  name: "أدرار", nameFr: "Adrar", nameEn: "Adrar", lat: 27.8742, lng: -0.2939, enabled: true },
+      { id: 2,  name: "الشلف", nameFr: "Chlef", nameEn: "Chlef", lat: 36.1652, lng: 1.3345, enabled: true },
+      { id: 16, name: "الجزائر", nameFr: "Alger", nameEn: "Algiers", lat: 36.7538, lng: 3.0588, enabled: true },
+      { id: 22, name: "سيدي بلعباس", nameFr: "Sidi Bel Abbès", nameEn: "Sidi Bel Abbès", lat: 35.1917, lng: -0.6355, enabled: true },
+      { id: 31, name: "وهران", nameFr: "Oran", nameEn: "Oran", lat: 35.6971, lng: -0.6308, enabled: true },
+      { id: 999, name: "🌍 OpenStreetMap", nameFr: "🌍 OpenStreetMap", nameEn: "🌍 OpenStreetMap", lat: null, lng: null, enabled: true },
+    ];
+
+    const COMPLAINT_THRESHOLD = 3;
+    const DEFAULT_LOC = { lat: 35.1917, lng: -0.6355 };
+
+    function useNow() {
+      const [now, setNow] = useState(() => new Date());
+      useEffect(() => {
+        const t = setInterval(() => setNow(new Date()), 30000);
+        return () => clearInterval(t);
+      }, []);
+      return now;
+    }
+
+    function computeStatus(ph, now) {
+      if (ph.onDuty) return { open: true, kind: "onDuty" };
+      const hour = now.getHours() + now.getMinutes() / 60;
+      const { open, close } = ph.hours || { open: 8, close: 21 };
+      const isOpen = close > 24 ? (hour >= open || hour < close - 24) : (hour >= open && hour < close);
+      return { open: isOpen, kind: isOpen ? "closesAt" : "opensAt", time: isOpen ? close % 24 : open };
+    }
+
+    function fmtHour(h) {
+      const hh = Math.floor(h) % 24;
+      const mm = Math.round((h - Math.floor(h)) * 60);
+      return String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+    }
+
+    function haversine(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLng = ((lng2 - lng1) * Math.PI) / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function sanitize(text, max = 100) {
+      if (!text || typeof text !== "string") return null;
+      const cleaned = text.trim().replace(/[<>\x00-\x1F\x7F]/g, "").substring(0, max);
+      return cleaned.length > 0 ? cleaned : null;
+    }
+
+    function isValidPhone(phone) {
+      if (!phone) return true;
+      return /^[+\d\s\-()]{6,20}$/.test(phone.trim());
+    }
+
+    function useDebounce(value, delay) {
+      const [debounced, setDebounced] = useState(value);
+      useEffect(() => {
+        const timer = setTimeout(() => setDebounced(value), delay);
+        return () => clearTimeout(timer);
+      }, [value, delay]);
+      return debounced;
+    }
+
+    function PharisApp() {
+      const now = useNow();
+      const [lang, setLang] = useState(() => {
+        try {
+          const saved = localStorage.getItem("pharis_lang");
+          if (saved && ["ar", "fr", "en"].includes(saved)) return saved;
+        } catch (e) {}
+        const b = (navigator.language || "ar").slice(0, 2);
+        return ["ar", "fr", "en"].includes(b) ? b : "ar";
+      });
+      useEffect(() => {
+        try { localStorage.setItem("pharis_lang", lang); } catch (e) {}
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+      }, [lang]);
+
+      const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+      const [queryInput, setQueryInput] = useState("");
+      const query = useDebounce(queryInput, 300);
+      const [filter, setFilter] = useState("all");
+      const [selected, setSelected] = useState(null);
+      const [toast, setToast] = useState(null);
+      const [showMap, setShowMap] = useState(false);
+      const [emergencyMode, setEmergencyMode] = useState(() => {
+        const h = new Date().getHours();
+        return h >= 20 || h < 8;
+      });
+      const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
+      const [currentPlace, setCurrentPlace] = useState("سيدي بلعباس");
+
+      const t = useCallback((key, vars) => tr(lang, key, vars), [lang]);
+      const dir = lang === "ar" ? "rtl" : "ltr";
+
+      const list = useMemo(() => {
+        return RAW.map(ph => ({
+          ...ph,
+          status: computeStatus(ph, now),
+          distance: haversine(userLoc.lat, userLoc.lng, ph.lat, ph.lng)
+        })).filter(ph => matchesSearch(ph, query));
+      }, [query, now, userLoc]);
+
+      return (
+        <div dir={dir} className={`min-h-screen ${dark ? "dark bg-black text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
+          <header className="sticky top-0 z-20 bg-black text-brand-50 px-4 py-3 rounded-b-xl shadow-lg border-b border-brand-900 flex justify-between items-center">
+            <h1 className="text-xl font-extrabold tracking-tight" dir="ltr"><span className="text-emerald-400">P</span><span className="text-white">haris</span></h1>
+            <div className="flex gap-2">
+              <button onClick={() => setDark(d => !d)} className="p-1.5 rounded-lg bg-brand-900 text-brand-300">
+                {dark ? <Icons.Sun className="w-4 h-4" /> : <Icons.Moon className="w-4 h-4" />}
+              </button>
+            </div>
+          </header>
+          <main className="px-4 py-4 space-y-3 max-w-lg mx-auto">
+            <input
+              value={queryInput}
+              onChange={e => setQueryInput(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="w-full bg-white dark:bg-brand-900 placeholder-stone-400 dark:placeholder-brand-600 rounded-xl px-4 py-3 text-sm outline-none border border-stone-200 dark:border-brand-800 focus:ring-2 focus:ring-brand-500"
+            />
+            <div className="space-y-2">
+              {list.map(ph => (
+                <div key={ph.id} className="bg-white dark:bg-brand-900 p-4 rounded-2xl border border-stone-100 dark:border-brand-800 shadow-sm flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-stone-900 dark:text-brand-50">{ph.name}</h3>
+                    <p className="text-xs text-stone-500 dark:text-brand-300">{ph.area} · {ph.address}</p>
+                    <span className={`text-xs font-semibold mt-1 inline-block ${ph.status.open ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                      {ph.status.open ? t("openNow") : t("closedNow")} ({ph.distance.toFixed(1)} {t("kmAway")})
+                    </span>
+                  </div>
+                  {ph.phone && (
+                    <a href={`tel:${ph.phone.replace(/\s/g, "")}`} className="bg-emerald-600 text-white text-xs px-3 py-2 rounded-xl font-bold">
+                      {t("call")}
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    class ErrorBoundary extends React.Component {
+      constructor(props) { super(props); this.state = { hasError: false }; }
+      static getDerivedStateFromError() { return { hasError: true }; }
+      render() {
+        if (this.state.hasError) {
+          return <div style={{ padding: 24, color: "#7f1d1d", textAlign: "center" }}>حدث خطأ، جرب تحديث الصفحة.</div>;
+        }
+        return this.props.children;
+      }
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(
+      <ErrorBoundary>
+        <PharisApp />
+      </ErrorBoundary>
+    );
+  </script>
+
+  <script>
+    // نظام التحديث الفوري المحدث
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js", { updateViaCache: "none" })
+        .then(function (reg) {
+          // فحص التحديثات فور تشغيل التطبيق
+          reg.update().catch(function () {});
+          setInterval(function () { reg.update().catch(function () {}); }, 3000);
+        })
+        .catch(function () {});
+    }
+  </script>
+</body>
+</html>
