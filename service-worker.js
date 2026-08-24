@@ -1,5 +1,5 @@
 // Pharis Service Worker — offline-capable + fast update
-const CACHE_NAME = "pharis-v69-geoalgeria";
+const CACHE_NAME = "pharis-v68-owner-counter";
 const SHELL = [
   "./",
   "./index.html",

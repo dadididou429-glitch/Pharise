@@ -1903,6 +1903,7 @@ out center tags;`;
       const [loginPassword, setLoginPassword] = useState("");
       const [loginError, setLoginError] = useState(null);
       const [loginLoading, setLoginLoading] = useState(false);
+      const [submittedTotalCount, setSubmittedTotalCount] = useState(null);
 
       // Add form
       const [form, setForm] = useState({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "", activationCode: "" });
@@ -2244,6 +2245,24 @@ out center tags;`;
         const unsub = auth.onAuthStateChanged(u => setAdminUser(u));
         return unsub;
       }, []);
+
+      // عدّاد صيدليات أصحاب الصيدليات — للأدمن فقط
+      useEffect(() => {
+        if (!db || !adminUser) {
+          setSubmittedTotalCount(null);
+          return;
+        }
+        let cancelled = false;
+        db.collection("pharmacies_submitted")
+          .get()
+          .then((snap) => {
+            if (!cancelled) setSubmittedTotalCount(snap.size);
+          })
+          .catch(() => {
+            if (!cancelled) setSubmittedTotalCount(null);
+          });
+        return () => { cancelled = true; };
+      }, [adminUser]);
 
       // Load submitted + removed + featured (مدفوع)
       useEffect(() => {
@@ -2739,6 +2758,10 @@ out center tags;`;
 
           const ref = await db.collection("pharmacies_submitted").add(payload);
 
+          if (adminUser) {
+            setSubmittedTotalCount((c) => (typeof c === "number" ? c + 1 : 1));
+          }
+
           if (codeActivated && db) {
             try {
               const codeRef = db.collection("activation_codes").doc(codeRaw);
@@ -3067,8 +3090,20 @@ out center tags;`;
             <button type="button" onClick={() => setShowMedSearch(true)} className="mt-2 block w-full text-center bg-yellow-400 text-yellow-950 border-2 border-yellow-500 rounded-xl py-2.5 text-xs font-bold hover:bg-yellow-300 transition shadow-md shadow-yellow-500/20">
               💊 {t("medBtn")}
             </button>
-            <button type="button" onClick={() => setShowAddForm(true)} className="mt-2 block w-full text-center bg-sky-500 text-white border-2 border-sky-600 rounded-xl py-2.5 text-xs font-bold hover:bg-sky-400 transition shadow-md shadow-sky-500/20">
+            <button
+              type="button"
+              onClick={() => setShowAddForm(true)}
+              className="mt-2 relative block w-full text-center bg-sky-500 text-white border-2 border-sky-600 rounded-xl py-2.5 text-xs font-bold hover:bg-sky-400 transition shadow-md shadow-sky-500/20"
+            >
               ➕ {t("addPharmacyBtn")}
+              {adminUser && submittedTotalCount != null && (
+                <span
+                  className="absolute -top-2 end-2 min-w-[1.5rem] h-6 px-1.5 rounded-full bg-amber-400 text-amber-950 text-[11px] font-extrabold flex items-center justify-center shadow border border-amber-500"
+                  title={lang === "ar" ? "صيدليات مسجّلة من أصحابها" : lang === "fr" ? "Pharmacies inscrites par les propriétaires" : "Owner-submitted pharmacies"}
+                >
+                  {submittedTotalCount}
+                </span>
+              )}
             </button>
 
             {/* Stats */}
@@ -3824,6 +3859,15 @@ out center tags;`;
                   </div>
                 </div>
                 <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
+                {submittedTotalCount != null && (
+                  <p className="text-xs text-sky-300 mb-3 font-semibold">
+                    ➕ {lang === "ar"
+                      ? `${submittedTotalCount} صيدلية مسجّلة من أصحابها`
+                      : lang === "fr"
+                      ? `${submittedTotalCount} pharmacies inscrites par les propriétaires`
+                      : `${submittedTotalCount} owner-submitted pharmacies`}
+                  </p>
+                )}
 
                 <div className="flex gap-2 mb-3">
                   <button onClick={() => setAdminTab("review")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "review" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
