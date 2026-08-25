@@ -2,26 +2,46 @@ name: Collect Algeria Pharmacies
 
 on:
   workflow_dispatch:
+    inputs:
+      max_detail:
+        description: "Max detail pages to fetch (0 = links only, faster)"
+        required: false
+        default: "0"
 
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install dependencies
         run: pip install -r data-pipeline/requirements.txt
-      - name: Collect AnnuMed
+
+      - name: Collect AnnuMed (list)
         run: |
           cd data-pipeline
+          # يمكن تعديل MAX_DETAIL عبر متغير بيئة لاحقاً
           python scrape_annumed.py
+
+      - name: Convert candidates (if any)
+        run: |
+          cd data-pipeline
+          if [ -f annumed_raw.csv ]; then
+            python convert_to_pharis.py || true
+          fi
+
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
           name: annumed-pharmacies
-          path: data-pipeline/annumed_raw.csv
+          path: |
+            data-pipeline/annumed_raw.csv
+            data-pipeline/pharis_annumed_candidates.json
+          if-no-files-found: warn
