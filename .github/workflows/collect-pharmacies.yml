@@ -2,11 +2,6 @@ name: Collect Algeria Pharmacies
 
 on:
   workflow_dispatch:
-    inputs:
-      max_detail:
-        description: "Max detail pages to fetch (0 = links only, faster)"
-        required: false
-        default: "0"
 
 jobs:
   collect:
@@ -22,17 +17,13 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r data-pipeline/requirements.txt
+        run: pip install -r requirements.txt
 
-      - name: Collect AnnuMed (list)
-        run: |
-          cd data-pipeline
-          # يمكن تعديل MAX_DETAIL عبر متغير بيئة لاحقاً
-          python scrape_annumed.py
+      - name: Collect AnnuMed
+        run: python scrape_annumed.py
 
-      - name: Convert candidates (if any)
+      - name: Convert candidates
         run: |
-          cd data-pipeline
           if [ -f annumed_raw.csv ]; then
             python convert_to_pharis.py || true
           fi
@@ -42,6 +33,6 @@ jobs:
         with:
           name: annumed-pharmacies
           path: |
-            data-pipeline/annumed_raw.csv
-            data-pipeline/pharis_annumed_candidates.json
+            annumed_raw.csv
+            pharis_annumed_candidates.json
           if-no-files-found: warn
