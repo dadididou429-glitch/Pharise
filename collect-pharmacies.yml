@@ -1,0 +1,27 @@
+name: Collect Algeria Pharmacies
+
+on:
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r data-pipeline/requirements.txt
+      - name: Collect AnnuMed
+        run: |
+          cd data-pipeline
+          python scrape_annumed.py
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: annumed-pharmacies
+          path: data-pipeline/annumed_raw.csv
