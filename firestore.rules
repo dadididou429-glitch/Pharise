@@ -3,21 +3,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAdmin() {
-      return request.auth != null
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isPrimaryAdmin() {
+      return isSignedIn()
         && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
     }
 
-    // ─────────────────────────────────────────────
-    // صيدليات مُقدَّمة من المالكين (غير موثّقة تلقائيًا)
-    // ─────────────────────────────────────────────
+    function isAdmin() {
+      return isPrimaryAdmin()
+        || (isSignedIn()
+            && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function validPhone(p) {
+      return p is string && p.size() >= 8 && p.size() <= 20;
+    }
+
     match /pharmacies_submitted/{docId} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly([
-            'name','address','phone','area','lat','lng',
-            'hours','onDuty','verified','featured','createdAt'
-          ])
-        && request.resource.data.name is string
+      allow create: if request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 80
         && request.resource.data.address is string
@@ -25,8 +32,13 @@ service cloud.firestore {
         && request.resource.data.address.size() <= 200
         && request.resource.data.lat is number
         && request.resource.data.lng is number
+        && request.resource.data.lat >= -90 && request.resource.data.lat <= 90
+        && request.resource.data.lng >= -180 && request.resource.data.lng <= 180
         && request.resource.data.verified == false
-        && request.resource.data.featured != true;
+        && request.resource.data.featured == false
+        && (!('phone' in request.resource.data)
+            || request.resource.data.phone == null
+            || validPhone(request.resource.data.phone));
       allow update, delete: if isAdmin();
     }
 
@@ -35,94 +47,77 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // ─────────────────────────────────────────────
-    // شارة "موثّقة/مميزة" — تفعيل من الأدمِن فقط
-    // هذا هو مصدر الدخل الأول، ممنوع يُكتب من العميل
-    // ─────────────────────────────────────────────
     match /pharmacy_features/{docId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    // ─────────────────────────────────────────────
-    // أكواد التفعيل — تُنشأ فقط من طرفك (Admin SDK/Console)
-    // العميل يقدر فقط "يستهلك" كود موجود مسبقًا
-    // ─────────────────────────────────────────────
-    match /activation_codes/{codeId} {
-      allow get: if true;
-      allow list: if false;
-      allow create: if isAdmin();
-      allow update: if resource.data.used == false
-        && request.resource.data.used == true
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedAt', 'usedBy']);
-      allow delete: if isAdmin();
-    }
-
-    match /admins/{uid} {
-      allow read: if request.auth != null;
       allow write: if isAdmin();
     }
 
-    // ─────────────────────────────────────────────
-    // البلاغات — مربوطة بمستخدم مسجّل لمنع بلاغات وهمية جماعية
-    // (يتطلب Anonymous Auth كحد أدنى في التطبيق)
-    // ─────────────────────────────────────────────
+    match /activation_codes/{codeId} {
+      allow get: if true;
+      allow list: if false;
+      allow create, delete: if isAdmin();
+      allow update: if resource.data.used == false
+        && request.resource.data.used == true
+        && request.resource.data.diff(resource.data)
+             .affectedKeys()
+             .hasOnly(['used', 'usedAt', 'usedBy', 'pharmacyId', 'pharmacyName', 'wilaya']);
+    }
+
+    match /admins/{uid} {
+      allow read: if isAdmin();
+      allow write: if isPrimaryAdmin();
+    }
+
     match /complaints/{docId} {
-      allow read: if true;
-      allow create: if request.auth != null
+      allow read: if isAdmin();
+      allow create: if isSignedIn()
         && request.resource.data.keys().hasOnly(['pharmacyId','count','reporterUid','createdAt'])
         && request.resource.data.count == 1
         && request.resource.data.reporterUid == request.auth.uid;
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow update, delete: if isAdmin();
     }
 
-    // ─────────────────────────────────────────────
-    // التقييمات — المجموع/العدّاد للقراءة فقط من العميل
-    // التحديث الفعلي يصير عبر Cloud Function (functions/index.js)
-    // ─────────────────────────────────────────────
     match /ratings/{docId} {
       allow read: if true;
-      allow write: if false; // يُحدَّث فقط من السيرفر (Cloud Function)
-
+      allow write: if false;
       match /reviews/{reviewId} {
         allow read: if true;
-        allow create: if request.auth != null
-          && request.resource.data.keys().hasOnly(['stars','comment','createdAt','uid'])
+        allow create: if isSignedIn()
           && request.resource.data.stars is number
           && request.resource.data.stars >= 1
           && request.resource.data.stars <= 5
-          && request.resource.data.uid == request.auth.uid;
+          && request.resource.data.uid == request.auth.uid
+          && (!('comment' in request.resource.data)
+              || (request.resource.data.comment is string
+                  && request.resource.data.comment.size() <= 300));
         allow update, delete: if isAdmin();
       }
     }
 
-    // ─────────────────────────────────────────────
-    // طلبات الأدوية — القراءة محدودة لحماية أرقام الهواتف
-    // ─────────────────────────────────────────────
     match /medicine_requests/{docId} {
-      allow read: if request.auth != null;
-      allow create: if request.resource.data.keys().hasOnly([
-            'medicineName','whatsapp','active','expiresAtMs','createdAt'
-          ])
-        && request.resource.data.medicineName is string
+      allow read: if isSignedIn();
+      allow create: if request.resource.data.medicineName is string
         && request.resource.data.medicineName.size() >= 2
         && request.resource.data.medicineName.size() <= 80
-        && request.resource.data.whatsapp is string
-        && request.resource.data.whatsapp.size() >= 10
-        && request.resource.data.whatsapp.size() <= 15
+        && validPhone(request.resource.data.whatsapp)
         && request.resource.data.active == true
-        && request.resource.data.expiresAtMs is number;
+        && request.resource.data.expiresAtMs is number
+        && request.resource.data.expiresAtMs > request.time.toMillis()
+        && request.resource.data.expiresAtMs <= request.time.toMillis() + 32 * 24 * 60 * 60 * 1000
+        && (!('city' in request.resource.data)
+            || (request.resource.data.city is string && request.resource.data.city.size() <= 60))
+        && (!('note' in request.resource.data)
+            || (request.resource.data.note is string && request.resource.data.note.size() <= 200));
       allow update, delete: if isAdmin();
     }
 
-    // ─────────────────────────────────────────────
-    // الإحصائيات — أدمِن فقط
-    // ─────────────────────────────────────────────
     match /stats/{docId} {
       allow read: if true;
-      allow create, update: if isAdmin();
-      allow delete: if isAdmin();
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -1917,7 +1917,16 @@ out center tags;`;
       useEffect(() => {
         if (!showMedSearch || !firebaseReady || !db) return;
         setMedLoading(true);
-        const unsub = db.collection("medicine_requests")
+        let unsub = null;
+        let cancelled = false;
+        (async () => {
+          try {
+            if (auth && !auth.currentUser) {
+              await auth.signInAnonymously();
+            }
+          } catch (e) { console.warn("anon for med list", e); }
+          if (cancelled || !db) { setMedLoading(false); return; }
+          unsub = db.collection("medicine_requests")
           .orderBy("createdAt", "desc")
           .limit(50)
           .onSnapshot(
@@ -1936,7 +1945,8 @@ out center tags;`;
             },
             () => { setMedLoading(false); }
           );
-        return () => unsub();
+        })();
+        return () => { cancelled = true; if (unsub) unsub(); };
       }, [showMedSearch]);
 
       const normalizeWa = (raw) => {
@@ -1955,17 +1965,24 @@ out center tags;`;
         if (!firebaseReady || !db) { alert(t("medError")); return; }
         setMedSubmitting(true);
         try {
-          const expiresAt = firebase.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000);
-          await db.collection("medicine_requests").add({
+          // حقول متوافقة مع قواعد Firestore المقوّاة
+          const expMs = Date.now() + 30 * 24 * 60 * 60 * 1000;
+          const city = (medForm.city || "").trim().slice(0, 60);
+          const note = (medForm.note || "").trim().slice(0, 200);
+          const medPayload = {
             medicineName: name.slice(0, 80),
-            city: (medForm.city || "").trim().slice(0, 60),
-            whatsapp: wa,
-            note: (medForm.note || "").trim().slice(0, 200),
+            whatsapp: String(wa).slice(0, 15),
             active: true,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            expiresAt,
-            expiresAtMs: Date.now() + 30 * 24 * 60 * 60 * 1000
-          });
+            expiresAtMs: expMs,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          if (city) medPayload.city = city;
+          if (note) medPayload.note = note;
+          // قراءة الطلبات تتطلب auth — تسجيل مجهول عند الحاجة
+          if (auth && !auth.currentUser) {
+            try { await auth.signInAnonymously(); } catch (eAuth) { console.warn("anon auth", eAuth); }
+          }
+          await db.collection("medicine_requests").add(medPayload);
           setMedForm({ name: "", city: "", whatsapp: "", note: "" });
           alert(t("medSuccess"));
         } catch (e) {
@@ -2201,25 +2218,8 @@ out center tags;`;
           );
         } catch (e) { console.warn(e); }
 
-        const COUNTED_KEY = "pharis_user_counted_v1";
-        const tryIncrement = function () {
-          try {
-            if (localStorage.getItem(COUNTED_KEY)) return;
-            statsRef.set(
-              {
-                count: firebase.firestore.FieldValue.increment(1),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-              },
-              { merge: true }
-            ).then(function () {
-              try { localStorage.setItem(COUNTED_KEY, "1"); } catch (e) {}
-            }).catch(function () {
-              // إعادة محاولة بعد 3 ثوانٍ
-              setTimeout(tryIncrement, 3000);
-            });
-          } catch (e) {}
-        };
-        tryIncrement();
+        // الأمان: لا زيادة للعداد من العميل (القواعد تمنع الكتابة على stats)
+        // حدّث العدد يدوياً من Firebase Console أو Cloud Function لاحقاً.
 
         return () => { if (unsub) unsub(); };
       }, [firebaseReady, db]);
@@ -2765,27 +2765,40 @@ out center tags;`;
           if (codeActivated && db) {
             try {
               const codeRef = db.collection("activation_codes").doc(codeRaw);
+              // استهلاك الكود فقط (مسموح من القواعد)
               await codeRef.set({
                 used: true,
                 usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                usedBy: (auth && auth.currentUser && auth.currentUser.uid) || "public",
                 pharmacyName: payload.name,
                 wilaya: payload.wilaya || "",
                 pharmacyId: ref.id
               }, { merge: true });
-              await db.collection("pharmacy_features").doc(ref.id).set({
-                featured: true,
-                verified: true,
-                activatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                code: codeRaw
-              });
-              setFeaturedMap(prev => ({ ...prev, [ref.id]: true, [String(ref.id)]: true }));
+              // تفعيل الشارة من العميل فقط إن كان أدمن (وإلا يدوي من Console)
+              if (adminUser) {
+                await db.collection("pharmacy_features").doc(ref.id).set({
+                  featured: true,
+                  verified: true,
+                  activatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                  code: codeRaw
+                });
+                setFeaturedMap(prev => ({ ...prev, [ref.id]: true, [String(ref.id)]: true }));
+                showToast(t("activationOk"));
+              } else {
+                showToast(lang === "ar"
+                  ? "تم التسجيل واستهلاك الكود. الشارة تُفعَّل بعد التحقق — راقب واتساب"
+                  : lang === "fr"
+                  ? "Enregistré et code utilisé. Badge après vérification — WhatsApp"
+                  : "Registered & code used. Badge after review — WhatsApp");
+              }
             } catch (e) {
               console.warn("feature activation error", e);
               showToast(lang === "ar" ? "تم التسجيل لكن تعذّر تفعيل الشارة — تواصل عبر واتساب" : lang === "fr" ? "Enregistré mais badge non activé — contactez WhatsApp" : "Saved but badge failed — contact WhatsApp");
             }
+          } else {
+            showToast(t("newPharmacySuccess"));
           }
           setSubmitted(prev => [...prev, { id: ref.id, ...payload }]);
-          showToast(codeActivated ? t("activationOk") : t("newPharmacySuccess"));
           if (analytics) analytics.logEvent("pharmacy_submitted", { country: form.country, featured: codeActivated });
           setShowAddForm(false);
           setForm({ name: "", area: "", address: "", phone: "", open: 8, close: 21, onDuty: false, country: "DZ", city: "", activationCode: "" });
