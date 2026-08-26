@@ -2199,8 +2199,7 @@ out center tags;`;
         return function () { cancelled = true; };
       }, []);
 
-      // عدّاد مستخدمين آمن: كل جهاز/جلسة مجهولة = مستند واحد في unique_users
-      // الزيادة تلقائية؛ العرض للأدمن فقط
+      // تسجيل مستخدم فريد (آمن) — لا يغيّر الرقم المعروض لوحده
       useEffect(() => {
         if (!firebaseReady || !db || !auth) return;
         let cancelled = false;
@@ -2222,20 +2221,34 @@ out center tags;`;
         return function () { cancelled = true; };
       }, [firebaseReady, db]);
 
-      // الأدمن فقط: قراءة عدد المستخدمين الفريدين
+      // الأدمن فقط: الرقم = الأكبر بين (الإحصاء القديم 71+) و (unique_users)
+      // حتى لا يختفي الرقم التاريخي بعد التبديل
       useEffect(() => {
-        if (!firebaseReady || !db || !adminUser) {
-          return;
-        }
+        if (!firebaseReady || !db || !adminUser) return;
         let cancelled = false;
+        var baseline = 0;
+        var unique = 0;
+        function apply() {
+          if (!cancelled) setUserCount(Math.max(baseline, unique));
+        }
+        var unsubStats = null;
+        try {
+          unsubStats = db.collection("stats").doc("users").onSnapshot(function (snap) {
+            if (snap.exists) baseline = Number(snap.data().count) || 0;
+            else baseline = 0;
+            apply();
+          }, function (err) { console.warn("stats", err); });
+        } catch (e) { console.warn(e); }
         db.collection("unique_users").get()
           .then(function (snap) {
-            if (!cancelled) setUserCount(snap.size || 0);
+            unique = snap.size || 0;
+            apply();
           })
-          .catch(function (err) {
-            console.warn("userCount admin", err);
-          });
-        return function () { cancelled = true; };
+          .catch(function (err) { console.warn("unique count", err); });
+        return function () {
+          cancelled = true;
+          if (unsubStats) unsubStats();
+        };
       }, [firebaseReady, db, adminUser]);
 
       // PWA install + offline
