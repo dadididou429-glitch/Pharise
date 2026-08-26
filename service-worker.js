@@ -1,5 +1,5 @@
-// Pharis Service Worker — offline-capable + fast update
-const CACHE_NAME = "pharis-v68-owner-counter";
+// Pharis Service Worker — تحديث فوري + أوفلاين
+const CACHE_NAME = "pharis-v70-fast-adminlock";
 const SHELL = [
   "./",
   "./index.html",
@@ -70,7 +70,6 @@ self.addEventListener("fetch", (event) => {
     url.hostname.includes("tile") ||
     url.hostname.includes("ipapi");
 
-  // APIs: شبكة ثم كاش إن وُجد
   if (isAPI) {
     event.respondWith(
       fetch(event.request)
@@ -86,7 +85,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ملفات التطبيق: شبكة أولاً، عند الفشل كاش (أوفلاين)
+  // التطبيق: شبكة أولاً دائماً (تحديث سريع)
   if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(event.request, { cache: "no-store" })
@@ -100,7 +99,7 @@ self.addEventListener("fetch", (event) => {
         .catch(async () => {
           const cached = await caches.match(event.request);
           if (cached) return cached;
-          if (event.request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/" || url.pathname.endsWith("/")) {
+          if (event.request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname.endsWith("/")) {
             return (await caches.match("./index.html")) || (await caches.match("/index.html"));
           }
           return new Response("", { status: 503, statusText: "Offline" });
@@ -109,7 +108,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // CDN وغيرها: كاش أولاً ثم شبكة (أفضل للأوفلاين)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetched = fetch(event.request)
