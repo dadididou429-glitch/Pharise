@@ -2199,30 +2199,44 @@ out center tags;`;
         return function () { cancelled = true; };
       }, []);
 
-      // عدّاد المستخدمين — يعمل بعد جاهزية Firebase + إعادة محاولة
+      // عدّاد مستخدمين آمن: كل جهاز/جلسة مجهولة = مستند واحد في unique_users
+      // الزيادة تلقائية؛ العرض للأدمن فقط
       useEffect(() => {
-        if (!firebaseReady || !db) return;
-        const statsRef = db.collection("stats").doc("users");
-        let unsub = null;
-        try {
-          unsub = statsRef.onSnapshot(
-            (snap) => {
-              if (snap.exists) {
-                const n = Number(snap.data().count) || 0;
-                setUserCount(n);
-              } else {
-                setUserCount(0);
-              }
-            },
-            (err) => { console.warn("stats snapshot", err); }
-          );
-        } catch (e) { console.warn(e); }
-
-        // الأمان: لا زيادة للعداد من العميل (القواعد تمنع الكتابة على stats)
-        // حدّث العدد يدوياً من Firebase Console أو Cloud Function لاحقاً.
-
-        return () => { if (unsub) unsub(); };
+        if (!firebaseReady || !db || !auth) return;
+        let cancelled = false;
+        (async function () {
+          try {
+            if (!auth.currentUser) {
+              await auth.signInAnonymously();
+            }
+            if (cancelled || !auth.currentUser) return;
+            const uid = auth.currentUser.uid;
+            await db.collection("unique_users").doc(uid).set({
+              lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+              firstSeen: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          } catch (e) {
+            console.warn("unique_users register", e);
+          }
+        })();
+        return function () { cancelled = true; };
       }, [firebaseReady, db]);
+
+      // الأدمن فقط: قراءة عدد المستخدمين الفريدين
+      useEffect(() => {
+        if (!firebaseReady || !db || !adminUser) {
+          return;
+        }
+        let cancelled = false;
+        db.collection("unique_users").get()
+          .then(function (snap) {
+            if (!cancelled) setUserCount(snap.size || 0);
+          })
+          .catch(function (err) {
+            console.warn("userCount admin", err);
+          });
+        return function () { cancelled = true; };
+      }, [firebaseReady, db, adminUser]);
 
       // PWA install + offline
       useEffect(() => {
