@@ -2785,9 +2785,7 @@ out center tags;`;
 
           const ref = await db.collection("pharmacies_submitted").add(payload);
 
-          if (adminUser) {
-            setSubmittedTotalCount((c) => (typeof c === "number" ? c + 1 : 1));
-          }
+          setSubmittedTotalCount((c) => (typeof c === "number" ? c + 1 : 1));
 
           if (codeActivated && db) {
             try {
@@ -3019,6 +3017,16 @@ out center tags;`;
                 <div>
                   <h1 className="text-xl font-extrabold tracking-tight leading-tight" dir="ltr"><span className="text-emerald-400">P</span><span className="text-white">haris</span></h1>
                   <p className="text-[11px] text-brand-300">{typeof currentPlace === "string" ? currentPlace : (currentPlace && (currentPlace.name || currentPlace.country) ? [currentPlace.name, currentPlace.country].filter(Boolean).join(" · ") : "")}</p>
+                  <p className="text-[10px] mt-0.5 flex items-center gap-1 text-emerald-300/90 font-medium tracking-wide">
+                    <span aria-hidden="true">💊</span>
+                    <span>
+                      {(PHARMACY_SOCIAL_BASE + (Number(submittedTotalCount) || 0)).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
+                      {" "}
+                      <span className="opacity-80 font-normal">
+                        {lang === "ar" ? "صيدلية على Pharis" : lang === "fr" ? "pharmacies sur Pharis" : "pharmacies on Pharis"}
+                      </span>
+                    </span>
+                  </p>
                   {adminUser && userCount != null && (
                     <p className="text-[11px] font-semibold text-emerald-400 mt-0.5 flex items-center gap-1">
                       <span aria-hidden="true">👥</span>
