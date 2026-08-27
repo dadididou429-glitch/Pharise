@@ -1837,7 +1837,10 @@ out center tags;`;
       const [showDlShare, setShowDlShare] = useState(false);
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
-      const [adminView, setAdminView] = useState(false);
+      const ADMIN_VIEW_KEY = "pharis_admin_view_open";
+      const [adminView, setAdminView] = useState(() => {
+        try { return localStorage.getItem(ADMIN_VIEW_KEY) === "1"; } catch (e) { return false; }
+      });
       const [adminTab, setAdminTab] = useState("review");
 
       // Location & data
@@ -2306,6 +2309,7 @@ out center tags;`;
           if (!u) {
             setAdminUser(null);
             setAdminView(false);
+            try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch (e) {}
             return;
           }
           // الزائر المجهول ليس أدمن أبداً
@@ -2330,9 +2334,13 @@ out center tags;`;
             try { await auth.signOut(); } catch (e) {}
           }
         });
-        return unsub;
+                return unsub;
       }, [auth, db]);
-
+      // حفظ حالة لوحة الإدارة: تبقى مفتوحة بعد إعادة فتح التطبيق حتى يغلقها الأدمن.
+      useEffect(() => {
+        if (!adminUser) return;
+        try { localStorage.setItem(ADMIN_VIEW_KEY, adminView ? "1" : "0"); } catch (e) {}
+      }, [adminUser, adminView]);
       // عدّاد صيدليات للجميع (رقم تشجيعي + المسجّل فعلياً)
       useEffect(() => {
         if (!db) return;
@@ -3959,7 +3967,7 @@ out center tags;`;
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => { auth.signOut(); setAdminView(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
+                    <button onClick={() => { auth.signOut(); setAdminView(false); try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch (e) {} }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
                     <button onClick={() => setAdminView(false)} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
                   </div>
                 </div>
