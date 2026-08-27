@@ -229,10 +229,15 @@
     let auth = null;
     let analytics = null;
     let firebaseReady = false;
+    let authPersistenceReady = Promise.resolve();
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
       auth = firebase.auth();
+      // حفظ هوية المستخدم المجهول محليًا حتى لا يُحسب نفس الجهاز كمستخدم جديد عند كل عودة.
+      try {
+        authPersistenceReady = auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      } catch (e) { console.warn("auth persistence", e); }
       try { analytics = firebase.analytics(); } catch(e) {}
       try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch(e) {}
       firebaseReady = true;
@@ -1929,7 +1934,8 @@ out center tags;`;
         (async () => {
           try {
             if (auth && !auth.currentUser) {
-              await auth.signInAnonymously();
+              await authPersistenceReady;
+              if (!auth.currentUser) await auth.signInAnonymously();
             }
           } catch (e) { console.warn("anon for med list", e); }
           if (cancelled || !db) { setMedLoading(false); return; }
@@ -1987,7 +1993,10 @@ out center tags;`;
           if (note) medPayload.note = note;
           // قراءة الطلبات تتطلب auth — تسجيل مجهول عند الحاجة
           if (auth && !auth.currentUser) {
-            try { await auth.signInAnonymously(); } catch (eAuth) { console.warn("anon auth", eAuth); }
+            try {
+              await authPersistenceReady;
+              if (!auth.currentUser) await auth.signInAnonymously();
+            } catch (eAuth) { console.warn("anon auth", eAuth); }
           }
           await db.collection("medicine_requests").add(medPayload);
           setMedForm({ name: "", city: "", whatsapp: "", note: "" });
@@ -2212,6 +2221,8 @@ out center tags;`;
         let cancelled = false;
         (async function () {
           try {
+            // انتظر استعادة جلسة Firebase قبل إنشاء Anonymous UID جديد.
+            await authPersistenceReady;
             if (!auth.currentUser) {
               await auth.signInAnonymously();
             }
