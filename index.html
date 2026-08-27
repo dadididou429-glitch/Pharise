@@ -4100,104 +4100,76 @@ out center tags;`;
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
-    // نظام التحديث التلقائي المحسّن
+    // نظام تحديث موحّد: نسخة واحدة حديثة فقط، دون تحديثات متتابعة
     if ("serviceWorker" in navigator) {
       let refreshing = false;
-      navigator.serviceWorker.addEventListener("controllerchange", function () {
+      let updateWorker = null;
+
+      function reloadOnce() {
         if (refreshing) return;
         refreshing = true;
         window.location.reload();
-      });
+      }
 
-      navigator.serviceWorker.addEventListener("message", function (event) {
-        if (event.data && event.data.type === "SW_UPDATED") {
-          if (!refreshing) {
-            refreshing = true;
-            window.location.reload();
-          }
-        }
-      });
+      navigator.serviceWorker.addEventListener("controllerchange", reloadOnce);
 
       window.addEventListener("load", function () {
         navigator.serviceWorker
           .register("./service-worker.js", { updateViaCache: "none" })
           .then(function (reg) {
-            // فحص تحديث قوي وسريع
-            try { reg.update(); } catch (e) {}
-            setInterval(function () { try { reg.update(); } catch (e) {} }, 30000);
-            document.addEventListener("visibilitychange", function () {
-              if (document.visibilityState === "visible") {
-                try { reg.update(); } catch (e) {}
-              }
-            });
-            function pharisUpdateLang() {
+            function updateLabels() {
               var lang = "ar";
               try {
                 var saved = localStorage.getItem("pharis_lang");
-                if (saved && ["ar", "fr", "en"].indexOf(saved) >= 0) lang = saved;
+                if (["ar", "fr", "en"].indexOf(saved) >= 0) lang = saved;
                 else {
-                  var b = (navigator.language || "ar").slice(0, 2).toLowerCase();
-                  if (b === "fr" || b === "en") lang = b;
+                  var browserLang = (navigator.language || "ar").slice(0, 2).toLowerCase();
+                  if (browserLang === "fr" || browserLang === "en") lang = browserLang;
                 }
               } catch (e) {}
-              return lang;
-            }
-            function pharisUpdateLabels() {
-              var lang = pharisUpdateLang();
-              var map = {
-                ar: { text: "تحديث جديد", applying: "جاري التحديث..." },
-                fr: { text: "Nouvelle mise à jour", applying: "Mise à jour..." },
-                en: { text: "New update", applying: "Updating..." }
+              return {
+                text: lang === "fr" ? "Nouvelle mise à jour" : lang === "en" ? "New update" : "تحديث جديد",
+                applying: lang === "fr" ? "Mise à jour..." : lang === "en" ? "Updating..." : "جاري التحديث..."
               };
-              return map[lang] || map.ar;
             }
+
             function showUpdateButton(worker) {
-              if (document.getElementById("pharis-update-btn")) return;
-              var labels = pharisUpdateLabels();
-              var lang = pharisUpdateLang();
-              var dir = lang === "ar" ? "rtl" : "ltr";
-              var ub = document.createElement("button");
-              ub.id = "pharis-update-btn";
-              ub.type = "button";
-              ub.setAttribute("dir", dir);
-              ub.setAttribute("aria-label", labels.text);
-              ub.innerHTML = "🔄 " + labels.text;
-              ub.onclick = function () {
-                var L = pharisUpdateLabels();
-                ub.disabled = true;
-                ub.innerHTML = "⏳ " + L.applying;
-                applyUpdate(worker || reg.waiting || reg.installing);
+              if (worker) updateWorker = worker;
+              var button = document.getElementById("pharis-update-btn");
+              if (button) return;
+              var labels = updateLabels();
+              button = document.createElement("button");
+              button.id = "pharis-update-btn";
+              button.type = "button";
+              button.setAttribute("aria-label", labels.text);
+              button.textContent = "↻ " + labels.text;
+              button.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99998;border:none;border-radius:999px;padding:12px 20px;background:#065f46;color:#ecfdf5;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;font-family:system-ui,-apple-system,sans-serif;white-space:nowrap";
+              button.onclick = function () {
+                if (button.disabled) return;
+                button.disabled = true;
+                button.textContent = "⏳ " + updateLabels().applying;
+                var workerToActivate = updateWorker || reg.waiting || reg.installing;
+                if (workerToActivate) workerToActivate.postMessage({ type: "SKIP_WAITING" });
+                setTimeout(reloadOnce, 1500);
               };
-              ub.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99998;border:none;border-radius:999px;padding:12px 20px;background:#065f46;color:#ecfdf5;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.35);cursor:pointer;font-family:system-ui,-apple-system,sans-serif;white-space:nowrap";
-              document.body.appendChild(ub);
+              document.body.appendChild(button);
             }
-            const applyUpdate = function (worker) {
-              if (worker) {
-                try { worker.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
-              }
-              setTimeout(function () {
-                if (!refreshing) {
-                  refreshing = true;
-                  window.location.reload();
-                }
-              }, 400);
-            };
 
-            // لا زر إلا عند وجود تحديث فعلي
+            // إذا عاد المستخدم بعد عدة إصدارات، reg.waiting/installing هو آخر إصدار متاح فقط.
             if (reg.waiting) showUpdateButton(reg.waiting);
-
             reg.addEventListener("updatefound", function () {
-              const newWorker = reg.installing;
-              if (!newWorker) return;
-              newWorker.addEventListener("statechange", function () {
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                  showUpdateButton(newWorker);
+              var worker = reg.installing;
+              if (!worker) return;
+              worker.addEventListener("statechange", function () {
+                if (worker.state === "installed" && navigator.serviceWorker.controller) {
+                  showUpdateButton(worker);
                 }
               });
             });
 
-            // فحص كل 5 ثوانٍ + عند العودة للتطبيق
-            setInterval(function () { reg.update().catch(function () {}); }, 5 * 1000);
+            // فحص معتدل: لا ننشئ دورة تحديث لكل إصدار فائت، بل نلتقط أحدث service-worker.js مباشرة.
+            try { reg.update(); } catch (e) {}
+            setInterval(function () { reg.update().catch(function () {}); }, 5 * 60 * 1000);
             document.addEventListener("visibilitychange", function () {
               if (document.visibilityState === "visible") reg.update().catch(function () {});
             });
@@ -4208,128 +4180,6 @@ out center tags;`;
           .catch(function (err) {
             console.warn("SW registration failed:", err);
           });
-      });
-    }
-
-    function showUpdateBanner(worker) {
-      if (document.getElementById("pharis-update-banner")) return;
-
-      let lang = "ar";
-      try {
-        const saved = localStorage.getItem("pharis_lang");
-        if (saved && ["ar", "fr", "en"].includes(saved)) lang = saved;
-        else {
-          const b = (navigator.language || "ar").slice(0, 2).toLowerCase();
-          if (b === "fr" || b === "en") lang = b;
-        }
-      } catch (e) {}
-
-      const msg = {
-        ar: { text: "🔄 يوجد تحديث جديد للتطبيق", btn: "تحديث الآن" },
-        fr: { text: "🔄 Une nouvelle mise à jour est disponible", btn: "Mettre à jour" },
-        en: { text: "🔄 A new app update is available", btn: "Update now" }
-      }[lang] || { text: "🔄 يوجد تحديث جديد للتطبيق", btn: "تحديث الآن" };
-      const dir = lang === "ar" ? "rtl" : "ltr";
-      const font = lang === "ar"
-        ? "'IBM Plex Sans Arabic', system-ui, sans-serif"
-        : "system-ui, -apple-system, sans-serif";
-
-      const banner = document.createElement("div");
-      banner.id = "pharis-update-banner";
-      banner.innerHTML = `
-        <div style="
-          position: fixed;
-          bottom: 24px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 99999;
-          background: #064e3b;
-          color: white;
-          padding: 14px 18px;
-          border-radius: 14px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          font-size: 15px;
-          border: 1px solid #047857;
-          min-width: 280px;
-          font-family: ${font};
-          direction: ${dir};
-          animation: pharisSlideUp 0.35s ease;
-        ">
-          <span style="flex:1">${msg.text}</span>
-          <button type="button" id="pharis-update-btn" style="
-            background: #10b981;
-            color: #022c22;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 9px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            pointer-events: auto;
-          ">${msg.btn}</button>
-          <button type="button" id="pharis-close-update-btn" style="
-            background: transparent;
-            color: #6ee7b7;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0 4px;
-            line-height: 1;
-            pointer-events: auto;
-          ">✕</button>
-        </div>
-        <style>
-          @keyframes pharisSlideUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
-            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-          }
-        </style>
-      `;
-
-      document.body.appendChild(banner);
-
-      const doUpdate = function () {
-        const btn = document.getElementById("pharis-update-btn");
-        if (btn) {
-          btn.disabled = true;
-          btn.textContent = lang === "fr" ? "..." : lang === "en" ? "..." : "...";
-        }
-        // 1) أخبر الـ SW بالتخطي
-        try {
-          if (worker) worker.postMessage({ type: "SKIP_WAITING" });
-        } catch (e) {}
-        try {
-          if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({ type: "SKIP_WAITING" });
-            navigator.serviceWorker.controller.postMessage({ type: "CLEAR_CACHE" });
-          }
-        } catch (e) {}
-        // 2) امسح الكاش من الصفحة
-        if (window.caches && caches.keys) {
-          caches.keys().then(function (keys) {
-            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
-          }).catch(function () {}).finally(function () {
-            window.location.reload();
-          });
-        } else {
-          window.location.reload();
-        }
-        // أمان: إعادة تحميل بعد ثانيتين حتى لو علق الكاش
-        setTimeout(function () { window.location.reload(); }, 2000);
-      };
-
-      document.getElementById("pharis-update-btn").addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        doUpdate();
-      });
-
-      document.getElementById("pharis-close-update-btn").addEventListener("click", function (e) {
-        e.preventDefault();
-        banner.remove();
       });
     }
 
