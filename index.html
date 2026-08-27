@@ -2260,12 +2260,12 @@ out center tags;`;
         }
         try {
           // القناة الأساسية: تحديث فوري عند إضافة أو تعديل مستخدم جديد.
-          unsubUnique = uniqueUsersRef.onSnapshot({ includeMetadataChanges: true }, function (snap) {
+          unsubUnique = uniqueUsersRef.onSnapshot(function (snap) {
             unique = snap.size || 0;
             apply();
           }, function (err) { console.warn("unique count", err); });
-          // شبكة أمان: مزامنة مباشرة من الخادم أثناء بقاء الأدمن داخل اللوحة.
-          refreshTimer = setInterval(refreshUniqueFromServer, 15000);
+          // شبكة أمان سريعة: مزامنة مباشرة من الخادم أثناء بقاء الأدمن داخل اللوحة.
+          refreshTimer = setInterval(refreshUniqueFromServer, 3000);
           window.addEventListener("online", refreshUniqueFromServer);
           onVisible = function () {
             if (document.visibilityState === "visible") refreshUniqueFromServer();
