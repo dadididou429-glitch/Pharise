@@ -2245,17 +2245,41 @@ out center tags;`;
           }, function (err) { console.warn("stats", err); });
         } catch (e) { console.warn(e); }
         var unsubUnique = null;
+        var refreshTimer = null;
+        var onVisible = null;
+        var uniqueUsersRef = db.collection("unique_users");
+        function refreshUniqueFromServer() {
+          if (cancelled || !adminUser) return;
+          uniqueUsersRef.get({ source: "server" })
+            .then(function (snap) {
+              if (cancelled) return;
+              unique = snap.size || 0;
+              apply();
+            })
+            .catch(function (err) { console.warn("unique count refresh", err); });
+        }
         try {
-          // اشتراك لحظي: يظهر المستخدم الجديد فور إضافته دون إعادة فتح لوحة الإدارة.
-          unsubUnique = db.collection("unique_users").onSnapshot(function (snap) {
+          // القناة الأساسية: تحديث فوري عند إضافة أو تعديل مستخدم جديد.
+          unsubUnique = uniqueUsersRef.onSnapshot({ includeMetadataChanges: true }, function (snap) {
             unique = snap.size || 0;
             apply();
           }, function (err) { console.warn("unique count", err); });
+          // شبكة أمان: مزامنة مباشرة من الخادم أثناء بقاء الأدمن داخل اللوحة.
+          refreshTimer = setInterval(refreshUniqueFromServer, 15000);
+          window.addEventListener("online", refreshUniqueFromServer);
+          onVisible = function () {
+            if (document.visibilityState === "visible") refreshUniqueFromServer();
+          };
+          document.addEventListener("visibilitychange", onVisible);
+          refreshUniqueFromServer();
         } catch (e) { console.warn(e); }
         return function () {
           cancelled = true;
           if (unsubStats) unsubStats();
           if (unsubUnique) unsubUnique();
+          if (refreshTimer) clearInterval(refreshTimer);
+          window.removeEventListener("online", refreshUniqueFromServer);
+          if (onVisible) document.removeEventListener("visibilitychange", onVisible);
         };
       }, [firebaseReady, db, adminUser]);
 
