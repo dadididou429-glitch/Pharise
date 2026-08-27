@@ -5,9 +5,11 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-  <title>Pharis — Open Pharmacies Near You · auto-geo-v15</title>
+  <title>Pharis</title>
   <meta name="description" content="Find open pharmacies near you in real time. Algeria and worldwide via OpenStreetMap." />
   <meta name="theme-color" content="#022c22" />
+  <meta name="application-name" content="Pharis" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Pharis" />
@@ -2231,7 +2233,8 @@ out center tags;`;
         var baseline = 0;
         var unique = 0;
         function apply() {
-          if (!cancelled) setUserCount(Math.max(baseline, unique));
+          // الأساس التاريخي + كل جهاز فريد بعد التحديث → كل هاتف جديد يزيد +1
+          if (!cancelled) setUserCount(baseline + unique);
         }
         var unsubStats = null;
         try {
@@ -4119,6 +4122,14 @@ out center tags;`;
         navigator.serviceWorker
           .register("./service-worker.js", { updateViaCache: "none" })
           .then(function (reg) {
+            // فحص تحديث قوي وسريع
+            try { reg.update(); } catch (e) {}
+            setInterval(function () { try { reg.update(); } catch (e) {} }, 30000);
+            document.addEventListener("visibilitychange", function () {
+              if (document.visibilityState === "visible") {
+                try { reg.update(); } catch (e) {}
+              }
+            });
             function pharisUpdateLang() {
               var lang = "ar";
               try {
