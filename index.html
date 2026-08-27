@@ -2244,15 +2244,18 @@ out center tags;`;
             apply();
           }, function (err) { console.warn("stats", err); });
         } catch (e) { console.warn(e); }
-        db.collection("unique_users").get()
-          .then(function (snap) {
+        var unsubUnique = null;
+        try {
+          // اشتراك لحظي: يظهر المستخدم الجديد فور إضافته دون إعادة فتح لوحة الإدارة.
+          unsubUnique = db.collection("unique_users").onSnapshot(function (snap) {
             unique = snap.size || 0;
             apply();
-          })
-          .catch(function (err) { console.warn("unique count", err); });
+          }, function (err) { console.warn("unique count", err); });
+        } catch (e) { console.warn(e); }
         return function () {
           cancelled = true;
           if (unsubStats) unsubStats();
+          if (unsubUnique) unsubUnique();
         };
       }, [firebaseReady, db, adminUser]);
 
