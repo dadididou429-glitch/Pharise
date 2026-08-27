@@ -1,37 +1,41 @@
-# تحديث Pharis
+# تحديث Pharis — نسخة اختبار CSP
 
-## التعديلات المطلوبة على index.html
+## ⚠️ المشكلة المحتملة
+إذا قلّ عدد الصيدليات بعد الرفع، فالسبب الأرجح هو **CSP تحظر بعض الاتصالات**.
 
-### 1. CSP (بعد charset)
-```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.nchc.org.tw; frame-src 'self'; manifest-src 'self';" />
+## الحل المؤقت (للاختبار)
+في هذه النسخة، CSP في وضع **Report-Only**:
+- لا تمنع أي شيء
+- تُبلغ في Console عن ما "كان" ستحظره
+
+## خطوات الاختبار
+
+### 1. ارفع الملفات
+```bash
+git add .
+git commit -m "Test CSP Report-Only"
+git push
 ```
 
-### 2. Referrer Policy
-```html
-<meta name="referrer" content="strict-origin-when-cross-origin" />
+### 2. افتح التطبيق في المتصفح
+اضغط **F12** → تبويب **Console**
+
+### 3. ابحث عن رسائل CSP
+إذا رأيتَ:
+```
+[Report Only] Refused to connect to 'https://...'
 ```
 
-### 3. تقليل فترة فحص SW
-ابحث عن: `setInterval(function () { reg.update(); }, 5 * 1000);`
-استبدله بـ: `setInterval(function () { reg.update(); }, 5 * 60 * 1000);`
+انسخ الرسائل وأرسلها لي — سأُصلح CSP فوراً.
 
-### 4. وضع الطوارئ التلقائي
-```javascript
-const [emergencyMode, setEmergencyMode] = useState(() => {
-  const h = new Date().getHours();
-  const d = new Date().getDay();
-  const isWeekend = d === 5 || d === 6;
-  return h >= 20 || h < 8 || (isWeekend && h >= 18);
-});
-```
+### 4. إذا عاد عدد الصيدليات للطبيعي
+السبب مؤكد: CSP. سأُرسل لك نسخة مُصلحة.
 
-### 5. أضف security-patch.js قبل `</body>`
-```html
-<script src="./security-patch.js"></script>
-```
+### 5. إذا لم يتغير العدد
+السبب ليس CSP. ربما:
+- الكاش القديم (جرب Ctrl+Shift+R لتحديث قوي)
+- وقت مختلف (صيدليات مغلقة الآن)
+- موقع مختلف
 
-## إعدادات Firebase (مهمة)
-1. Firebase Console > Project Settings > API Keys > Restrict key
-2. HTTP referrers: `https://dadididou429-glitch.github.io/*`
-3. فعّل App Check (reCAPTCHA v3)
+## ملاحظة مهمة
+لا تترك Report-Only دائماً — بعد التأكد، استخدم النسخة الكاملة مع CSP فعلية.
