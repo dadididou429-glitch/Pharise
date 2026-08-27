@@ -1,0 +1,9 @@
+<script>
+(function(){
+  if(!document.querySelector('meta[http-equiv="Content-Security-Policy"]')){var m=document.createElement('meta');m.httpEquiv='Content-Security-Policy';m.content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://firebaseinstallations.googleapis.com https://www.google-analytics.com https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.nchc.org.tw; frame-src 'self'; manifest-src 'self';";document.head.insertBefore(m,document.head.firstChild);}
+  if(!document.querySelector('meta[name="referrer"]')){var r=document.createElement('meta');r.name='referrer';r.content='strict-origin-when-cross-origin';document.head.appendChild(r);}
+  if("Notification"in window&&Notification.permission==="default"){setTimeout(function(){Notification.requestPermission()},15000);}
+  window.__pharisNotify=function(t,b){if(Notification.permission==="granted"){try{new Notification(t,{body:b,icon:"./icon-192.png"})}catch(e){}}};
+  var _o=window.setInterval;window.setInterval=function(fn,d){if(d===5000&&fn&&fn.toString&&fn.toString().includes('reg.update')){d=300000;console.log('[Pharis] SW check: 5min');}return _o(fn,d);};
+})();
+</script>

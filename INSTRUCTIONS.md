@@ -1,51 +1,37 @@
-# Pharis + OpenStreetMap - تعليمات التركيب
+# تحديث Pharis
 
-## المشكلة
-التطبيق يعتمد على ملفات JSON محلية فقط (alger.json, oran.json, sba.json) ولا يجلب الصيدليات الجديدة من الإنترنت.
+## التعديلات المطلوبة على index.html
 
-## الحل
-إضافة Cloud Functions تستدعي Overpass API (OpenStreetMap) مجاناً.
-
-## الخطوات
-
-### 1. تحديث functions/
-استبدل الملفات في مجلد `functions/` بملفات الـ ZIP:
-- `functions/index.js` ← يحتوي على الـ Functions الجديدة
-- `functions/package.json` ← يحتوي على axios
-
-### 2. تثبيت axios
-```bash
-cd functions
-npm install
-```
-
-### 3. نشر الـ Functions
-```bash
-firebase deploy --only functions
-```
-
-### 4. إضافة كود العميل
-انسخ `osm-client.js` إلى جذر المشروع (`Pharise/osm-client.js`).
-
-في `index.html` أضف:
+### 1. CSP (بعد charset)
 ```html
-<script src="osm-client.js"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.nchc.org.tw; frame-src 'self'; manifest-src 'self';" />
 ```
 
-### 5. استخدام الـ Functions في تطبيقك
+### 2. Referrer Policy
+```html
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+```
 
+### 3. تقليل فترة فحص SW
+ابحث عن: `setInterval(function () { reg.update(); }, 5 * 1000);`
+استبدله بـ: `setInterval(function () { reg.update(); }, 5 * 60 * 1000);`
+
+### 4. وضع الطوارئ التلقائي
 ```javascript
-// جلب صيدليات قريبة
-fetchNearbyPharmaciesFromOSM(36.7538, 3.0588, 5000);
-
-// جلب صيدليات مدينة
-fetchCityPharmacies('Algiers');
+const [emergencyMode, setEmergencyMode] = useState(() => {
+  const h = new Date().getHours();
+  const d = new Date().getDay();
+  const isWeekend = d === 5 || d === 6;
+  return h >= 20 || h < 8 || (isWeekend && h >= 18);
+});
 ```
 
-## المدن المدعومة
-Algiers, Oran, Constantine, Annaba, Blida, Setif, Batna, Bejaia, Tlemcen, Ouargla, Biskra, Tizi Ouzou, Skikda, Djelfa, Mostaganem, Sidi Bel Abbes, Ghardaia, Medea, Tebessa, Tipaza
+### 5. أضف security-patch.js قبل `</body>`
+```html
+<script src="./security-patch.js"></script>
+```
 
-## ملاحظة
-- Overpass API مجاني 100% ولا يحتاج API Key
-- البيانات من OpenStreetMap (مجتمعيّة ومحدّثة)
-- يغطي كل ولايات الجزائر
+## إعدادات Firebase (مهمة)
+1. Firebase Console > Project Settings > API Keys > Restrict key
+2. HTTP referrers: `https://dadididou429-glitch.github.io/*`
+3. فعّل App Check (reCAPTCHA v3)
