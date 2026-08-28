@@ -1846,7 +1846,9 @@ out center tags;`;
       const [showDlShare, setShowDlShare] = useState(false);
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
-      const [adminView, setAdminView] = useState(false);
+      const [adminView, setAdminView] = useState(function () {
+        try { return sessionStorage.getItem("pharis_admin_view") === "1"; } catch (e) { return false; }
+      });
       const [adminTab, setAdminTab] = useState("review");
 
       // Location & data
@@ -2249,21 +2251,53 @@ out center tags;`;
         return function () { cancelled = true; };
       }, []);
 
-      // تسجيل مستخدم فريد (آمن) — لا يغيّر الرقم المعروض لوحده
+      // تسجيل مستخدم فريد — مرة واحدة لكل جهاز (لا يُضاعف عند كل فتح)
       useEffect(() => {
         if (!firebaseReady || !db || !auth) return;
         let cancelled = false;
         (async function () {
           try {
-            if (!auth.currentUser) {
-              await auth.signInAnonymously();
+            // انتظر استعادة الجلسة من Firebase قبل إنشاء مستخدم مجهول جديد
+            const existing = await new Promise(function (resolve) {
+              var done = false;
+              var unsub = auth.onAuthStateChanged(function (u) {
+                if (done) return;
+                done = true;
+                try { unsub(); } catch (e1) {}
+                resolve(u || null);
+              });
+              setTimeout(function () {
+                if (done) return;
+                done = true;
+                try { unsub(); } catch (e2) {}
+                resolve(auth.currentUser || null);
+              }, 2500);
+            });
+            if (cancelled) return;
+
+            var user = existing;
+            if (!user) {
+              var cred = await auth.signInAnonymously();
+              user = cred && cred.user;
             }
-            if (cancelled || !auth.currentUser) return;
-            const uid = auth.currentUser.uid;
+            if (cancelled || !user) return;
+
+            var uid = user.uid;
+            var REG_KEY = "pharis_unique_uid_v2";
+            var storedUid = null;
+            try { storedUid = localStorage.getItem(REG_KEY); } catch (e3) {}
+
+            // نفس الجهاز سجّل سابقاً بـ uid آخر → لا تنشئ مستنداً جديداً (يمنع المستخدمين الوهميين)
+            if (storedUid && storedUid !== uid) {
+              return;
+            }
+
             await db.collection("unique_users").doc(uid).set({
               lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
               firstSeen: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
+
+            try { localStorage.setItem(REG_KEY, uid); } catch (e4) {}
           } catch (e) {
             console.warn("unique_users register", e);
           }
@@ -2303,6 +2337,15 @@ out center tags;`;
       }, [firebaseReady, db, adminUser]);
 
       // PWA install + offline
+            // إبقاء لوحة التحكم مفتوحة عند العودة للتطبيق (نفس الجلسة)
+      useEffect(() => {
+        try {
+          if (adminView && adminUser) sessionStorage.setItem("pharis_admin_view", "1");
+          else if (!adminUser) sessionStorage.removeItem("pharis_admin_view");
+          else if (!adminView) sessionStorage.removeItem("pharis_admin_view");
+        } catch (e) {}
+      }, [adminView, adminUser]);
+
       useEffect(() => {
         const onInstallable = () => setCanInstall(!!window.__pharisInstallPrompt);
         const onOnline = () => setOffline(false);
@@ -4245,7 +4288,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=77";
+      var PHARIS_SW_URL = "./service-worker.js?v=78";
 
       function pharisLang() {
         var lang = "ar";
