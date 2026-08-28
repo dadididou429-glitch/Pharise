@@ -1595,9 +1595,10 @@ out center tags;`;
 
       // Try increasing radius if few results (city centers vs suburbs)
       let result = [];
-      for (const radius of [20000, 35000, 50000]) {
-        result = await fetchOSMPharmacies(cityLat, cityLng, radius);
-        if (result.length >= 12) break;
+      for (const radius of [25000, 40000, 60000]) {
+        const batch = await fetchOSMPharmacies(cityLat, cityLng, radius);
+        if (Array.isArray(batch) && batch.length > result.length) result = batch;
+        if (result.length >= 250) break;
       }
 
       const tagged = result.map(p => ({
@@ -1854,9 +1855,12 @@ out center tags;`;
       const osmFetchSeq = useRef(0);
       const applyOsmPharmacies = (data, seq) => {
         if (seq !== osmFetchSeq.current) return; // تجاهل نتيجة قديمة
-        if (Array.isArray(data) && data.length > 0) {
-          setOsmPharmacies(data);
-        }
+        if (!Array.isArray(data) || data.length === 0) return;
+        setOsmPharmacies(function (prev) {
+          // لا نستبدل قائمة أغنى بنتيجة أضعف لنفس الطلب
+          if (Array.isArray(prev) && prev.length > data.length) return prev;
+          return data;
+        });
       };
       const [loadingOSM, setLoadingOSM] = useState(false);
       const [submitted, setSubmitted] = useState([]);
@@ -2061,7 +2065,18 @@ out center tags;`;
             ).then(function (rr) { return rr.json(); }).catch(function () { return null; });
 
             const seq = ++osmFetchSeq.current;
-            const osmP = fetchOSMPharmacies(lat, lng, 25000).catch(function () { return []; });
+            const osmP = (async function () {
+              let best = [];
+              for (const R of [30000, 45000, 60000]) {
+                if (seq !== osmFetchSeq.current) return best;
+                try {
+                  const batch = await fetchOSMPharmacies(lat, lng, R);
+                  if (Array.isArray(batch) && batch.length > best.length) best = batch;
+                  if (best.length >= 250) break;
+                } catch (eR) {}
+              }
+              return best;
+            })();
 
             const results = await Promise.all([reverseP, osmP]);
             const geoData = results[0];
@@ -2175,9 +2190,19 @@ out center tags;`;
             } catch (e0) {}
             setLoadingOSM(true);
             const seqCache = ++osmFetchSeq.current;
-            fetchOSMPharmacies(cached.lat, cached.lng, 25000).then(function (data) {
-              applyOsmPharmacies(data, seqCache);
-            }).catch(function () {}).finally(function () { setLoadingOSM(false); });
+            (async function () {
+              let best = [];
+              try {
+                for (const R of [30000, 45000, 60000]) {
+                  if (seqCache !== osmFetchSeq.current) break;
+                  const batch = await fetchOSMPharmacies(cached.lat, cached.lng, R);
+                  if (Array.isArray(batch) && batch.length > best.length) best = batch;
+                  if (best.length >= 250) break;
+                }
+                applyOsmPharmacies(best, seqCache);
+              } catch (eC) {}
+              setLoadingOSM(false);
+            })();
           } else {
             // لا كاش موقع — على الأقل آخر صيدليات محفوظة
             try {
@@ -2434,10 +2459,11 @@ out center tags;`;
 
         // OSM: نطاق عرض أوسع (55 كم) حتى تظهر صيدليات الولاية عند الاختيار اليدوي
         let osmFiltered = osmPharmacies.filter(p => !isRemovedPh(p));
-        if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
+        // عند اختيار ولاية محلية نعرض كل نتائج الجلب؛ وإلا ضمن 75 كم
+        if (!localName && Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
           osmFiltered = osmFiltered.filter(p => {
             if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
-            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 55;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 75;
           });
         }
 
@@ -2688,7 +2714,7 @@ out center tags;`;
           (async function () {
             try {
               let best = [];
-              for (const radius of [20000, 35000, 50000]) {
+              for (const radius of [25000, 40000, 60000]) {
                 if (seq !== osmFetchSeq.current) return;
                 const data = await fetchOSMPharmacies(lat, lng, radius);
                 if (Array.isArray(data) && data.length > best.length) best = data;
@@ -2719,7 +2745,7 @@ out center tags;`;
           (async function () {
             try {
               let best = [];
-              for (const radius of [20000, 35000, 50000]) {
+              for (const radius of [25000, 40000, 60000]) {
                 if (seq !== osmFetchSeq.current) return;
                 const data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng, radius);
                 if (Array.isArray(data) && data.length > best.length) best = data;
@@ -4178,7 +4204,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=73";
+      var PHARIS_SW_URL = "./service-worker.js?v=74";
 
       function pharisLang() {
         var lang = "ar";
