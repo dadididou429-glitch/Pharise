@@ -1,5 +1,5 @@
 // Pharis Service Worker — تحديث فوري + أوفلاين
-const CACHE_NAME = "pharis-v76-share-btn";
+const CACHE_NAME = "pharis-v77-owner-badge";
 const SHELL = [
   "./",
   "./index.html",

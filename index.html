@@ -1641,7 +1641,7 @@ out center tags;`;
       return { label: t("sourceLocal"), cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" };
     };
 
-    const PharmacyCard = memo(function PharmacyCard({ ph, lang, t, onSelect, onToggleFav, onReport }) {
+    const PharmacyCard = memo(function PharmacyCard({ ph, lang, t, onSelect, onToggleFav, onReport, adminUser }) {
       const src = sourceBadge(ph, t);
       return (
         <div className={`bg-white dark:bg-brand-900 rounded-2xl p-4 shadow-sm border transition hover:shadow-md ${ph.underReview ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20" : "border-stone-100 dark:border-brand-800"}`}>
@@ -1658,6 +1658,14 @@ out center tags;`;
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-semibold text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
                     {ph.name}
+                    {adminUser && ph.fromOwner && (
+                      <span
+                        className="text-[9px] font-bold bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 rounded-full px-1.5 py-0.5 flex-shrink-0 border border-violet-300/60 dark:border-violet-700"
+                        title={lang === "ar" ? "مسجّلة من صاحبها" : lang === "fr" ? "Inscrite par le propriétaire" : "Registered by owner"}
+                      >
+                        🧾 {lang === "ar" ? "من صاحبها" : lang === "fr" ? "Proprio" : "Owner"}
+                      </span>
+                    )}
                     {ph.featured && (
                       <span className="text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded-full px-1.5 py-0.5 flex-shrink-0">⭐ {t("featuredBadge")}</span>
                     )}
@@ -2436,6 +2444,7 @@ out center tags;`;
           .filter(p => !isRemovedPh(p))
           .map(p => ({
             ...p,
+            fromOwner: true,
             verified: false,
             hours: p.hours || { open: 8, close: 21 },
             complaints: 0,
@@ -3480,6 +3489,7 @@ out center tags;`;
                     onSelect={setSelected}
                     onToggleFav={toggleFavorite}
                     onReport={reportPharmacy}
+                    adminUser={adminUser}
                   />
                 ))}
               </>
@@ -3745,6 +3755,11 @@ out center tags;`;
                   <div className="min-w-0">
                     <h2 className="text-xl font-bold text-stone-900 dark:text-brand-50 flex items-center gap-2 flex-wrap">
                       {selectedLive.name}
+                      {adminUser && selectedLive.fromOwner && (
+                        <span className="text-[10px] font-bold bg-violet-100 dark:bg-violet-950 text-violet-800 dark:text-violet-300 rounded-full px-2 py-0.5 border border-violet-300/50">
+                          🧾 {lang === "ar" ? "من صاحبها" : lang === "fr" ? "Proprio" : "Owner"}
+                        </span>
+                      )}
                       {selectedLive.featured && (
                         <span className="text-[10px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 rounded-full px-2 py-0.5">⭐ {t("featuredBadge")}</span>
                       )}
@@ -4230,7 +4245,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=76";
+      var PHARIS_SW_URL = "./service-worker.js?v=77";
 
       function pharisLang() {
         var lang = "ar";
