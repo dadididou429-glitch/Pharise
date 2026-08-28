@@ -3260,6 +3260,13 @@ out center tags;`;
                 </span>
               )}
             </button>
+            <button
+              type="button"
+              onClick={() => shareApp()}
+              className="mt-2 block w-full text-center bg-emerald-600 text-white border-2 border-emerald-500 rounded-xl py-2.5 text-xs font-bold hover:bg-emerald-500 transition shadow-md shadow-emerald-600/25"
+            >
+              {lang === "ar" ? "📤 شارك التطبيق مع الأصدقاء" : lang === "fr" ? "📤 Partager l'app avec vos amis" : "📤 Share the app with friends"}
+            </button>
 
             {/* Stats */}
             <div className="mt-1.5 flex items-baseline gap-2">
@@ -4223,7 +4230,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=75";
+      var PHARIS_SW_URL = "./service-worker.js?v=76";
 
       function pharisLang() {
         var lang = "ar";
