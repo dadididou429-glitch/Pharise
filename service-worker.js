@@ -1,5 +1,5 @@
 // Pharis Service Worker — تحديث فوري + أوفلاين
-const CACHE_NAME = "pharis-v72-admin-delete";
+const CACHE_NAME = "pharis-v73-fix-delete-geo";
 const SHELL = [
   "./",
   "./index.html",

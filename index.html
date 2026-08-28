@@ -1844,7 +1844,7 @@ out center tags;`;
       const [countryId, setCountryId] = useState("DZ");
       const [wilayaId, setWilayaId] = useState(999);
       const [userLoc, setUserLoc] = useState(DEFAULT_LOC);
-      const [locating, setLocating] = useState(true);
+      const [locating, setLocating] = useState(false);
       const [geoError, setGeoError] = useState(null);
       const [showLocGate, setShowLocGate] = useState(false);
       const [showLocationPicker, setShowLocationPicker] = useState(false);
@@ -2005,16 +2005,24 @@ out center tags;`;
       }, [dark]);
 
       // Geolocation — تلقائي وضروري
-      const requestUserLocation = () => {
+      const geoInFlight = useRef(false);
+      const requestUserLocation = (opts) => {
+        const silent = opts && opts.silent;
         if (!navigator.geolocation) {
-          setLocating(false);
-          setGeoError("unsupported");
-          setShowLocGate(true);
+          if (!silent) {
+            setLocating(false);
+            setGeoError("unsupported");
+            setShowLocGate(true);
+          }
           return;
         }
-        setLocating(true);
-        setGeoError(null);
-        setShowLocGate(false);
+        if (geoInFlight.current && silent) return;
+        geoInFlight.current = true;
+        if (!silent) {
+          setLocating(true);
+          setGeoError(null);
+          setShowLocGate(false);
+        }
 
         const WILAYA_ALIASES = {
           16: ["الجزائر", "alger", "algiers"],
@@ -2043,6 +2051,7 @@ out center tags;`;
             setShowLocGate(false);
             setGeoError(null);
             setLocating(false);
+            geoInFlight.current = false;
             setLoadingOSM(true);
 
             // خلفية: اسم المكان + الصيدليات بالتوازي
@@ -2121,34 +2130,28 @@ out center tags;`;
           setShowLocGate(true);
         };
 
-        // سرعة: شبكة/كاش أولاً (ثوانٍ قليلة) ثم GPS دقيق اختياري
+        // طلب موقع واحد فقط — بدون تكرار يسبب وميض أيقونة 📍
         navigator.geolocation.getCurrentPosition(
           function (pos) {
+            geoInFlight.current = false;
             processPosition(pos);
-            // تحسين دقة فقط إذا تحرّك الموقع بشكل ملحوظ (~300م+) لتجنب إعادة الجلب وتغيّر العدد
-            try {
-              navigator.geolocation.getCurrentPosition(
-                function (pos2) {
-                  if (!pos2 || !pos2.coords) return;
-                  const dLat = Math.abs(pos2.coords.latitude - pos.coords.latitude);
-                  const dLng = Math.abs(pos2.coords.longitude - pos.coords.longitude);
-                  if (dLat > 0.004 || dLng > 0.004) {
-                    processPosition(pos2);
-                  }
-                },
-                function () {},
-                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-              );
-            } catch (e) {}
           },
           function () {
+            // محاولة ثانية بدقة أعلى مرة واحدة فقط
             navigator.geolocation.getCurrentPosition(
-              processPosition,
-              onFail,
-              { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+              function (pos) {
+                geoInFlight.current = false;
+                processPosition(pos);
+              },
+              function () {
+                geoInFlight.current = false;
+                if (!silent) onFail();
+                else setLocating(false);
+              },
+              { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
             );
           },
-          { enableHighAccuracy: false, timeout: 2500, maximumAge: 180000 }
+          { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
         );
       };
 
@@ -2184,7 +2187,17 @@ out center tags;`;
           }
         } catch (e) {}
         if (navigator.onLine !== false) {
-          requestUserLocation();
+          try {
+            const hasCache = JSON.parse(localStorage.getItem("pharis_last_loc") || "null");
+            if (hasCache && hasCache.lat && hasCache.lng) {
+              // تحديث خلفي صامت — بدون إظهار 📍 مرة أخرى
+              requestUserLocation({ silent: true });
+            } else {
+              requestUserLocation();
+            }
+          } catch (e2) {
+            requestUserLocation();
+          }
         } else {
           setLocating(false);
         }
@@ -2974,6 +2987,25 @@ out center tags;`;
           setAdminMgmtMsg(lang === "ar" ? "تم حذف الأدمن" : "Admin removed");
         } catch (e) {
           setAdminMgmtMsg(lang === "ar" ? "فشل الحذف" : "Remove failed");
+        }
+      };
+
+      const deleteMedRequest = async (id) => {
+        if (!adminUser || !db || !id) {
+          showToast(lang === "ar" ? "تسجيل دخول الأدمن مطلوب" : lang === "fr" ? "Connexion admin requise" : "Admin login required");
+          return;
+        }
+        const ok = window.confirm(
+          lang === "ar" ? "حذف طلب الدواء نهائياً؟" : lang === "fr" ? "Supprimer cette demande définitivement ?" : "Delete this medicine request permanently?"
+        );
+        if (!ok) return;
+        try {
+          await db.collection("medicine_requests").doc(String(id)).delete();
+          setMedRequests((prev) => prev.filter((r) => String(r.id) !== String(id)));
+          showToast(lang === "ar" ? "تم حذف طلب الدواء" : lang === "fr" ? "Demande supprimée" : "Request deleted");
+        } catch (e) {
+          console.warn("deleteMedRequest", e);
+          showToast(lang === "ar" ? "فشل الحذف — تحقق من الصلاحيات" : lang === "fr" ? "Échec de suppression" : "Delete failed — check permissions");
         }
       };
 
@@ -4146,7 +4178,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=72";
+      var PHARIS_SW_URL = "./service-worker.js?v=73";
 
       function pharisLang() {
         var lang = "ar";
