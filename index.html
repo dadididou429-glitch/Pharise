@@ -1828,7 +1828,7 @@ out center tags;`;
       }, [lang]);
       const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
       const [queryInput, setQueryInput] = useState("");
-      const query = useDebounce(queryInput, 300);
+      const query = useDebounce(queryInput, 180);
       const [filter, setFilter] = useState("all");
       const [selected, setSelected] = useState(null);
       const [toast, setToast] = useState(null);
@@ -1847,7 +1847,7 @@ out center tags;`;
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
       const [adminView, setAdminView] = useState(function () {
-        try { return sessionStorage.getItem("pharis_admin_view") === "1"; } catch (e) { return false; }
+        try { return localStorage.getItem("pharis_admin_view") === "1"; } catch (e) { return false; }
       });
       const [adminTab, setAdminTab] = useState("review");
 
@@ -2337,14 +2337,13 @@ out center tags;`;
       }, [firebaseReady, db, adminUser]);
 
       // PWA install + offline
-            // إبقاء لوحة التحكم مفتوحة عند العودة للتطبيق (نفس الجلسة)
+            // لوحة التحكم تبقى مفتوحة حتى يغلقها الأدمن يدوياً
       useEffect(() => {
         try {
-          if (adminView && adminUser) sessionStorage.setItem("pharis_admin_view", "1");
-          else if (!adminUser) sessionStorage.removeItem("pharis_admin_view");
-          else if (!adminView) sessionStorage.removeItem("pharis_admin_view");
+          if (adminView) localStorage.setItem("pharis_admin_view", "1");
+          else localStorage.setItem("pharis_admin_view", "0");
         } catch (e) {}
-      }, [adminView, adminUser]);
+      }, [adminView]);
 
       useEffect(() => {
         const onInstallable = () => setCanInstall(!!window.__pharisInstallPrompt);
@@ -2360,6 +2359,15 @@ out center tags;`;
           window.removeEventListener("offline", onOffline);
         };
       }, []);
+
+
+      // استعادة لوحة التحكم بعد تسجيل الدخول إن كانت مفتوحة سابقاً
+      useEffect(() => {
+        if (!adminUser) return;
+        try {
+          if (localStorage.getItem("pharis_admin_view") === "1") setAdminView(true);
+        } catch (e) {}
+      }, [adminUser]);
 
       // Auth — الأدمن فقط (ليس الزائر المجهول)
       useEffect(() => {
@@ -3212,23 +3220,35 @@ out center tags;`;
               </div>
             </div>
 
-            {/* Location button — مدينة + بلد + تغيير يدوي */}
-            <button
-              onClick={() => setShowLocationPicker(s => !s)}
-              className={`mt-2 w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
-            >
-              <span className="flex items-center gap-2 text-sm font-medium min-w-0">
+            {/* موقع + بحث صيدلية — صف واحد لتوسيع قائمة الصيدليات */}
+            <div className="mt-2 flex gap-1.5 items-stretch">
+              <button
+                type="button"
+                onClick={() => setShowLocationPicker(s => !s)}
+                className={`flex-[1.1] min-w-0 flex items-center gap-1.5 rounded-xl px-2.5 py-2 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
+              >
                 <Icons.MapPin className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">
+                <span className="truncate text-[11px] font-medium leading-tight text-start">
                   {locating
-                    ? (lang === "ar" ? "جارٍ تحديد موقعك..." : lang === "fr" ? "Détection de votre position..." : "Detecting your location...")
-                    : (typeof currentPlace === "string" ? currentPlace : (currentPlace && (currentPlace.name || currentPlace.country) ? [currentPlace.name, currentPlace.country].filter(Boolean).join(" · ") : ""))}
+                    ? (lang === "ar" ? "تحديد الموقع..." : lang === "fr" ? "Position..." : "Locating...")
+                    : (typeof currentPlace === "string" ? currentPlace : (currentPlace && (currentPlace.name || currentPlace.country) ? [currentPlace.name, currentPlace.country].filter(Boolean).join(" · ") : (lang === "ar" ? "الموقع" : "Location")))}
                 </span>
-              </span>
-              <span className={`text-xs font-semibold underline flex-shrink-0 ${showLocationPicker ? "text-brand-950" : "text-brand-300"}`}>
-                {lang === "ar" ? "تغيير" : lang === "fr" ? "Changer" : "Change"}
-              </span>
-            </button>
+              </button>
+              <div className="flex-[1.2] min-w-0 relative">
+                <Icons.Search className={`pointer-events-none absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-brand-500 ${dir === "rtl" ? "right-2.5" : "left-2.5"}`} />
+                <input
+                  type="search"
+                  enterKeyHint="search"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={queryInput}
+                  onChange={(e) => setQueryInput(e.target.value)}
+                  placeholder={lang === "ar" ? "صيدلية أو حي..." : lang === "fr" ? "Pharmacie ou quartier..." : "Pharmacy or area..."}
+                  className={`w-full h-full bg-brand-900 border border-brand-700 placeholder-brand-600 text-brand-50 rounded-xl text-[11px] outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 ${dir === "rtl" ? "pr-8 pl-2" : "pl-8 pr-2"} py-2`}
+                />
+              </div>
+            </div>
 
             {/* Languages — العربية | Français | English */}
             <div className="flex gap-1.5 mt-2">
@@ -3326,16 +3346,6 @@ out center tags;`;
               <span className="text-xs text-brand-200">{t("openStat", { total: list.length })}</span>
             </div>
 
-            {/* Search */}
-            <div className="mt-1.5 relative">
-              <Icons.Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-brand-500 ${dir === "rtl" ? "right-3" : "left-3"}`} />
-              <input
-                value={query}
-                onChange={e => setQueryInput(e.target.value)}
-                placeholder={t("searchPlaceholder")}
-                className={`w-full bg-brand-900 placeholder-brand-600 text-brand-50 rounded-xl py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition ${dir === "rtl" ? "pr-10 pl-4" : "pl-10 pr-4"}`}
-              />
-            </div>
 
             {/* Filters */}
             <div className="flex gap-1 mt-1.5 flex-wrap">
@@ -4288,7 +4298,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=78";
+      var PHARIS_SW_URL = "./service-worker.js?v=79";
 
       function pharisLang() {
         var lang = "ar";
