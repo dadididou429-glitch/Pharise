@@ -1082,7 +1082,7 @@
 
     const RAW = [...SBA, ...ORAN, ...ALGER];
 
-    const PHARMACY_SOCIAL_BASE = 4987;
+    const PHARMACY_SOCIAL_BASE = 67981;
 
 
 
@@ -1917,9 +1917,9 @@ out center tags;`;
       const [lastSubmit, setLastSubmit] = useState(0);
 
       
-      // طلبات البحث عن دواء — مدة 30 يوماً
+      // طلبات البحث عن دواء — مدة 30 يوماً (+ لوحة الأدمن)
       useEffect(() => {
-        if (!showMedSearch || !firebaseReady || !db) return;
+        if ((!showMedSearch && !(adminView && adminUser)) || !firebaseReady || !db) return;
         setMedLoading(true);
         let unsub = null;
         let cancelled = false;
@@ -1951,7 +1951,7 @@ out center tags;`;
           );
         })();
         return () => { cancelled = true; if (unsub) unsub(); };
-      }, [showMedSearch]);
+      }, [showMedSearch, adminView, adminUser]);
 
       const normalizeWa = (raw) => {
         let s = String(raw || "").replace(/\D/g, "");
@@ -3461,6 +3461,15 @@ out center tags;`;
                             >
                               {t("medContact")}
                             </a>
+                            {adminUser && (
+                              <button
+                                type="button"
+                                onClick={() => deleteMedRequest(r.id)}
+                                className="mt-2 w-full py-2 rounded-lg bg-rose-700 text-white text-xs font-bold"
+                              >
+                                {lang === "ar" ? "حذف الطلب (أدمن)" : lang === "fr" ? "Supprimer (admin)" : "Delete (admin)"}
+                              </button>
+                            )}
                           </div>
                         );
                       })}
@@ -3957,6 +3966,9 @@ out center tags;`;
                   <button onClick={() => setAdminTab("admins")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "admins" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
                     {t("adminTabAdmins")}
                   </button>
+                  <button onClick={() => setAdminTab("meds")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "meds" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
+                    {lang === "ar" ? "طلبات دواء" : lang === "fr" ? "Médicaments" : "Med requests"} ({medRequests.length})
+                  </button>
                 </div>
 
                 {(adminTab === "review" || adminTab === "all") && (
@@ -4018,6 +4030,37 @@ out center tags;`;
                       )}
                     </div>
                   </>
+                )}
+
+                {adminTab === "meds" && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-brand-400">
+                      {lang === "ar" ? "حذف طلبات البحث عن دواء غير المناسبة" : lang === "fr" ? "Supprimer les demandes inappropriées" : "Delete inappropriate medicine requests"}
+                    </p>
+                    {medLoading && <p className="text-sm text-brand-500">{t("medLoading")}</p>}
+                    {!medLoading && medRequests.length === 0 && (
+                      <p className="text-sm text-brand-500 text-center py-8">
+                        {lang === "ar" ? "لا توجد طلبات" : lang === "fr" ? "Aucune demande" : "No requests"}
+                      </p>
+                    )}
+                    {medRequests.map((r) => (
+                      <div key={r.id} className="bg-brand-900 border border-brand-800 rounded-xl p-3 flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-yellow-200 truncate">{r.medicineName}</p>
+                          {r.city ? <p className="text-[11px] text-brand-400">📍 {r.city}</p> : null}
+                          {r.whatsapp ? <p className="text-[11px] text-brand-500 font-mono" dir="ltr">{r.whatsapp}</p> : null}
+                          {r.note ? <p className="text-[11px] text-brand-300 mt-1">{r.note}</p> : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => deleteMedRequest(r.id)}
+                          className="flex-shrink-0 bg-rose-950 text-rose-300 text-xs font-bold rounded-lg px-3 py-2"
+                        >
+                          {lang === "ar" ? "حذف" : lang === "fr" ? "Suppr." : "Delete"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
 
                 {adminTab === "admins" && (
@@ -4103,7 +4146,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=71";
+      var PHARIS_SW_URL = "./service-worker.js?v=72";
 
       function pharisLang() {
         var lang = "ar";
