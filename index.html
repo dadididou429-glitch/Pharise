@@ -1515,7 +1515,7 @@
       for (const endpoint of OVERPASS_ENDPOINTS) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 14000);
+          const timer = setTimeout(() => controller.abort(), 35000);
           const res = await fetch(endpoint, {
             method: "POST",
             body: "data=" + encodeURIComponent(query),
@@ -1548,7 +1548,7 @@
       }
 
       try {
-        const query = `[out:json][timeout:12];
+        const query = `[out:json][timeout:25];
 (
   node["amenity"="pharmacy"](around:${radius},${lat},${lng});
   way["amenity"="pharmacy"](around:${radius},${lat},${lng});
@@ -1595,7 +1595,7 @@ out center tags;`;
 
       // Try increasing radius if few results (city centers vs suburbs)
       let result = [];
-      for (const radius of [25000, 40000, 60000]) {
+      for (const radius of [40000, 70000, 100000]) {
         const batch = await fetchOSMPharmacies(cityLat, cityLng, radius);
         if (Array.isArray(batch) && batch.length > result.length) result = batch;
         if (result.length >= 250) break;
@@ -2067,12 +2067,12 @@ out center tags;`;
             const seq = ++osmFetchSeq.current;
             const osmP = (async function () {
               let best = [];
-              for (const R of [30000, 45000, 60000]) {
+              for (const R of [40000, 70000, 100000]) {
                 if (seq !== osmFetchSeq.current) return best;
                 try {
                   const batch = await fetchOSMPharmacies(lat, lng, R);
                   if (Array.isArray(batch) && batch.length > best.length) best = batch;
-                  if (best.length >= 250) break;
+                  if (best.length >= 300) break;
                 } catch (eR) {}
               }
               return best;
@@ -2193,11 +2193,11 @@ out center tags;`;
             (async function () {
               let best = [];
               try {
-                for (const R of [30000, 45000, 60000]) {
+                for (const R of [40000, 70000, 100000]) {
                   if (seqCache !== osmFetchSeq.current) break;
                   const batch = await fetchOSMPharmacies(cached.lat, cached.lng, R);
                   if (Array.isArray(batch) && batch.length > best.length) best = batch;
-                  if (best.length >= 250) break;
+                  if (best.length >= 300) break;
                 }
                 applyOsmPharmacies(best, seqCache);
               } catch (eC) {}
@@ -2451,7 +2451,7 @@ out center tags;`;
         } else if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
           rawFiltered = rawFiltered.filter(p => {
             if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
-            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 40;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 80;
           });
         } else {
           rawFiltered = [];
@@ -2459,11 +2459,12 @@ out center tags;`;
 
         // OSM: نطاق عرض أوسع (55 كم) حتى تظهر صيدليات الولاية عند الاختيار اليدوي
         let osmFiltered = osmPharmacies.filter(p => !isRemovedPh(p));
-        // عند اختيار ولاية محلية نعرض كل نتائج الجلب؛ وإلا ضمن 75 كم
-        if (!localName && Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
+        // ولاية مختارة (أي ولاية في الوطن): اعرض كل نتائج الجلب دون قصّ
+        // بدون ولاية: ضمن 80 كم من الموقع
+        if (!(wilayaId && wilayaId !== 999) && Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
           osmFiltered = osmFiltered.filter(p => {
             if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
-            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 75;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 100;
           });
         }
 
@@ -2472,18 +2473,35 @@ out center tags;`;
         if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
           submittedNear = submittedMapped.filter(p => {
             if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return true;
-            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 40;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 80;
           });
         }
 
         // GeoAlgeria: حسب الولاية أو ضمن 55 كم من الموقع
         let geoFiltered = (geoPharmacies || []).filter(p => !isRemovedPh(p));
         if (wilayaId && wilayaId !== 999) {
-          geoFiltered = geoFiltered.filter(p => Number(p.wilayaId) === Number(wilayaId));
+          const byCode = geoFiltered.filter(p => Number(p.wilayaId) === Number(wilayaId));
+          // إن قلّت بيانات الولاية في الملف الثابت: أضف القريبة من مركز الولاية (كل الوطن)
+          if (byCode.length >= 8) {
+            geoFiltered = byCode;
+          } else if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
+            const near = geoFiltered.filter(p => {
+              if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
+              return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 100;
+            });
+            const seen = new Set(byCode.map(p => String(p.id || '') + ',' + Number(p.lat).toFixed(3) + ',' + Number(p.lng).toFixed(3)));
+            geoFiltered = byCode.slice();
+            near.forEach(function (p) {
+              const k = String(p.id || '') + ',' + Number(p.lat).toFixed(3) + ',' + Number(p.lng).toFixed(3);
+              if (!seen.has(k)) { seen.add(k); geoFiltered.push(p); }
+            });
+          } else {
+            geoFiltered = byCode;
+          }
         } else if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
           geoFiltered = geoFiltered.filter(p => {
             if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
-            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 55;
+            return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 100;
           });
         } else {
           geoFiltered = [];
@@ -2713,14 +2731,15 @@ out center tags;`;
           const cityName = w.nameFr || w.nameEn || w.name;
           (async function () {
             try {
+              // تغطية ولاية كاملة في كل الوطن: نطاقات واسعة حتى 100 كم
               let best = [];
-              for (const radius of [25000, 40000, 60000]) {
+              for (const radius of [40000, 70000, 100000]) {
                 if (seq !== osmFetchSeq.current) return;
                 const data = await fetchOSMPharmacies(lat, lng, radius);
                 if (Array.isArray(data) && data.length > best.length) best = data;
-                if (best.length >= 15) break;
+                if (best.length >= 300) break;
               }
-              if (best.length < 8 && seq === osmFetchSeq.current) {
+              if (best.length < 20 && seq === osmFetchSeq.current) {
                 try {
                   const byCity = await fetchOSMByCity(cityName + ", Algeria", lat, lng);
                   if (Array.isArray(byCity) && byCity.length > best.length) best = byCity;
@@ -2745,11 +2764,11 @@ out center tags;`;
           (async function () {
             try {
               let best = [];
-              for (const radius of [25000, 40000, 60000]) {
+              for (const radius of [40000, 70000, 100000]) {
                 if (seq !== osmFetchSeq.current) return;
                 const data = await fetchOSMPharmacies(userLoc.lat, userLoc.lng, radius);
                 if (Array.isArray(data) && data.length > best.length) best = data;
-                if (best.length >= 15) break;
+                if (best.length >= 300) break;
               }
               if (seq !== osmFetchSeq.current) return;
               setOsmPharmacies(best);
@@ -4204,7 +4223,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=74";
+      var PHARIS_SW_URL = "./service-worker.js?v=75";
 
       function pharisLang() {
         var lang = "ar";
