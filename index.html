@@ -229,15 +229,10 @@
     let auth = null;
     let analytics = null;
     let firebaseReady = false;
-    let authPersistenceReady = Promise.resolve();
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
       auth = firebase.auth();
-      // حفظ هوية المستخدم المجهول محليًا حتى لا يُحسب نفس الجهاز كمستخدم جديد عند كل عودة.
-      try {
-        authPersistenceReady = auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      } catch (e) { console.warn("auth persistence", e); }
       try { analytics = firebase.analytics(); } catch(e) {}
       try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch(e) {}
       firebaseReady = true;
@@ -1087,7 +1082,7 @@
 
     const RAW = [...SBA, ...ORAN, ...ALGER];
 
-    const PHARMACY_SOCIAL_BASE = 69745;
+    const PHARMACY_SOCIAL_BASE = 4987;
 
 
 
@@ -1842,10 +1837,7 @@ out center tags;`;
       const [showDlShare, setShowDlShare] = useState(false);
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
-      const ADMIN_VIEW_KEY = "pharis_admin_view_open";
-      const [adminView, setAdminView] = useState(() => {
-        try { return localStorage.getItem(ADMIN_VIEW_KEY) === "1"; } catch (e) { return false; }
-      });
+      const [adminView, setAdminView] = useState(false);
       const [adminTab, setAdminTab] = useState("review");
 
       // Location & data
@@ -1934,8 +1926,7 @@ out center tags;`;
         (async () => {
           try {
             if (auth && !auth.currentUser) {
-              await authPersistenceReady;
-              if (!auth.currentUser) await auth.signInAnonymously();
+              await auth.signInAnonymously();
             }
           } catch (e) { console.warn("anon for med list", e); }
           if (cancelled || !db) { setMedLoading(false); return; }
@@ -1993,10 +1984,7 @@ out center tags;`;
           if (note) medPayload.note = note;
           // قراءة الطلبات تتطلب auth — تسجيل مجهول عند الحاجة
           if (auth && !auth.currentUser) {
-            try {
-              await authPersistenceReady;
-              if (!auth.currentUser) await auth.signInAnonymously();
-            } catch (eAuth) { console.warn("anon auth", eAuth); }
+            try { await auth.signInAnonymously(); } catch (eAuth) { console.warn("anon auth", eAuth); }
           }
           await db.collection("medicine_requests").add(medPayload);
           setMedForm({ name: "", city: "", whatsapp: "", note: "" });
@@ -2221,8 +2209,6 @@ out center tags;`;
         let cancelled = false;
         (async function () {
           try {
-            // انتظر استعادة جلسة Firebase قبل إنشاء Anonymous UID جديد.
-            await authPersistenceReady;
             if (!auth.currentUser) {
               await auth.signInAnonymously();
             }
@@ -2258,42 +2244,15 @@ out center tags;`;
             apply();
           }, function (err) { console.warn("stats", err); });
         } catch (e) { console.warn(e); }
-        var unsubUnique = null;
-        var refreshTimer = null;
-        var onVisible = null;
-        var uniqueUsersRef = db.collection("unique_users");
-        function refreshUniqueFromServer() {
-          if (cancelled || !adminUser) return;
-          uniqueUsersRef.get({ source: "server" })
-            .then(function (snap) {
-              if (cancelled) return;
-              unique = snap.size || 0;
-              apply();
-            })
-            .catch(function (err) { console.warn("unique count refresh", err); });
-        }
-        try {
-          // القناة الأساسية: تحديث فوري عند إضافة أو تعديل مستخدم جديد.
-          unsubUnique = uniqueUsersRef.onSnapshot(function (snap) {
+        db.collection("unique_users").get()
+          .then(function (snap) {
             unique = snap.size || 0;
             apply();
-          }, function (err) { console.warn("unique count", err); });
-          // شبكة أمان سريعة: مزامنة مباشرة من الخادم أثناء بقاء الأدمن داخل اللوحة.
-          refreshTimer = setInterval(refreshUniqueFromServer, 3000);
-          window.addEventListener("online", refreshUniqueFromServer);
-          onVisible = function () {
-            if (document.visibilityState === "visible") refreshUniqueFromServer();
-          };
-          document.addEventListener("visibilitychange", onVisible);
-          refreshUniqueFromServer();
-        } catch (e) { console.warn(e); }
+          })
+          .catch(function (err) { console.warn("unique count", err); });
         return function () {
           cancelled = true;
           if (unsubStats) unsubStats();
-          if (unsubUnique) unsubUnique();
-          if (refreshTimer) clearInterval(refreshTimer);
-          window.removeEventListener("online", refreshUniqueFromServer);
-          if (onVisible) document.removeEventListener("visibilitychange", onVisible);
         };
       }, [firebaseReady, db, adminUser]);
 
@@ -2320,7 +2279,6 @@ out center tags;`;
           if (!u) {
             setAdminUser(null);
             setAdminView(false);
-            try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch (e) {}
             return;
           }
           // الزائر المجهول ليس أدمن أبداً
@@ -2345,13 +2303,9 @@ out center tags;`;
             try { await auth.signOut(); } catch (e) {}
           }
         });
-                return unsub;
+        return unsub;
       }, [auth, db]);
-      // حفظ حالة لوحة الإدارة: تبقى مفتوحة بعد إعادة فتح التطبيق حتى يغلقها الأدمن.
-      useEffect(() => {
-        if (!adminUser) return;
-        try { localStorage.setItem(ADMIN_VIEW_KEY, adminView ? "1" : "0"); } catch (e) {}
-      }, [adminUser, adminView]);
+
       // عدّاد صيدليات للجميع (رقم تشجيعي + المسجّل فعلياً)
       useEffect(() => {
         if (!db) return;
@@ -3978,7 +3932,7 @@ out center tags;`;
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => { auth.signOut(); setAdminView(false); try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch (e) {} }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
+                    <button onClick={() => { auth.signOut(); setAdminView(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
                     <button onClick={() => setAdminView(false)} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
                   </div>
                 </div>
@@ -4146,82 +4100,139 @@ out center tags;`;
   </script>
   <script>
     // ═══════════════════════════════════════════════════════════
-    // نظام تحديث موحّد: نسخة واحدة حديثة فقط، دون تحديثات متتابعة
+    // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
-      let refreshing = false;
-      let updateWorker = null;
+      var pharisRefreshing = false;
+      var PHARIS_SW_URL = "./service-worker.js?v=71";
 
-      function reloadOnce() {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
+      function pharisLang() {
+        var lang = "ar";
+        try {
+          var saved = localStorage.getItem("pharis_lang");
+          if (saved && ["ar", "fr", "en"].indexOf(saved) >= 0) lang = saved;
+          else {
+            var b = (navigator.language || "ar").slice(0, 2).toLowerCase();
+            if (b === "fr" || b === "en") lang = b;
+          }
+        } catch (e) {}
+        return lang;
       }
 
-      navigator.serviceWorker.addEventListener("controllerchange", reloadOnce);
+      function pharisUpdateMsgs() {
+        var lang = pharisLang();
+        var map = {
+          ar: { text: "تحديث جديد متوفر", sub: "اضغط للانتقال لآخر نسخة", btn: "تحديث الآن", applying: "جاري التحديث…" },
+          fr: { text: "Nouvelle mise à jour", sub: "Dernière version uniquement", btn: "Mettre à jour", applying: "Mise à jour…" },
+          en: { text: "New update available", sub: "Get the latest version only", btn: "Update now", applying: "Updating…" }
+        };
+        return map[lang] || map.ar;
+      }
+
+      function pharisShowUpdateButton(worker) {
+        if (document.getElementById("pharis-update-btn")) return;
+        var msg = pharisUpdateMsgs();
+        var lang = pharisLang();
+        var dir = lang === "ar" ? "rtl" : "ltr";
+        var wrap = document.createElement("div");
+        wrap.id = "pharis-update-btn";
+        wrap.setAttribute("dir", dir);
+        wrap.innerHTML =
+          '<div style="display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:260px;max-width:92vw">' +
+          '<div style="font-size:15px;font-weight:800;color:#ecfdf5">🔄 ' + msg.text + '</div>' +
+          '<div style="font-size:12px;color:#a7f3d0;opacity:0.95">' + msg.sub + '</div>' +
+          '<button type="button" id="pharis-update-action" style="border:none;border-radius:12px;padding:12px 16px;background:#10b981;color:#022c22;font-size:15px;font-weight:800;cursor:pointer">' + msg.btn + '</button>' +
+          '</div>';
+        wrap.style.cssText =
+          "position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:99999;" +
+          "background:#064e3b;color:#ecfdf5;padding:14px 16px;border-radius:16px;" +
+          "box-shadow:0 12px 32px rgba(0,0,0,0.4);border:1px solid #047857;" +
+          "font-family:system-ui,-apple-system,'IBM Plex Sans Arabic',sans-serif";
+        document.body.appendChild(wrap);
+
+        document.getElementById("pharis-update-action").onclick = function () {
+          var m = pharisUpdateMsgs();
+          var btn = document.getElementById("pharis-update-action");
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = m.applying;
+          }
+          try {
+            if (worker) worker.postMessage({ type: "SKIP_WAITING" });
+          } catch (e) {}
+          try {
+            if (navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({ type: "SKIP_WAITING" });
+              navigator.serviceWorker.controller.postMessage({ type: "CLEAR_CACHE" });
+            }
+          } catch (e2) {}
+          if (window.caches && caches.keys) {
+            caches.keys().then(function (keys) {
+              return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+            }).catch(function () {}).finally(function () {
+              if (!pharisRefreshing) {
+                pharisRefreshing = true;
+                window.location.reload();
+              }
+            });
+          } else {
+            setTimeout(function () {
+              if (!pharisRefreshing) {
+                pharisRefreshing = true;
+                window.location.reload();
+              }
+            }, 300);
+          }
+          setTimeout(function () {
+            if (!pharisRefreshing) {
+              pharisRefreshing = true;
+              window.location.reload();
+            }
+          }, 2500);
+        };
+      }
+
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
+        if (pharisRefreshing) return;
+        pharisRefreshing = true;
+        window.location.reload();
+      });
+
+      navigator.serviceWorker.addEventListener("message", function (event) {
+        if (event.data && event.data.type === "SW_UPDATED" && !pharisRefreshing) {
+          pharisRefreshing = true;
+          window.location.reload();
+        }
+      });
 
       window.addEventListener("load", function () {
         navigator.serviceWorker
-          .register("./service-worker.js", { updateViaCache: "none" })
+          .register(PHARIS_SW_URL, { updateViaCache: "none" })
           .then(function (reg) {
-            function updateLabels() {
-              var lang = "ar";
-              try {
-                var saved = localStorage.getItem("pharis_lang");
-                if (["ar", "fr", "en"].indexOf(saved) >= 0) lang = saved;
-                else {
-                  var browserLang = (navigator.language || "ar").slice(0, 2).toLowerCase();
-                  if (browserLang === "fr" || browserLang === "en") lang = browserLang;
-                }
-              } catch (e) {}
-              return {
-                text: lang === "fr" ? "Nouvelle mise à jour" : lang === "en" ? "New update" : "تحديث جديد",
-                applying: lang === "fr" ? "Mise à jour..." : lang === "en" ? "Updating..." : "جاري التحديث..."
-              };
+            function checkUpdate() {
+              reg.update().catch(function () {});
+              if (reg.waiting) pharisShowUpdateButton(reg.waiting);
             }
 
-            function showUpdateButton(worker) {
-              if (worker) updateWorker = worker;
-              var button = document.getElementById("pharis-update-btn");
-              if (button) return;
-              var labels = updateLabels();
-              button = document.createElement("button");
-              button.id = "pharis-update-btn";
-              button.type = "button";
-              button.setAttribute("aria-label", labels.text);
-              button.textContent = "↻ " + labels.text;
-              button.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99998;border:none;border-radius:999px;padding:12px 20px;background:#065f46;color:#ecfdf5;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;font-family:system-ui,-apple-system,sans-serif;white-space:nowrap";
-              button.onclick = function () {
-                if (button.disabled) return;
-                button.disabled = true;
-                button.textContent = "⏳ " + updateLabels().applying;
-                var workerToActivate = updateWorker || reg.waiting || reg.installing;
-                if (workerToActivate) workerToActivate.postMessage({ type: "SKIP_WAITING" });
-                setTimeout(reloadOnce, 1500);
-              };
-              document.body.appendChild(button);
-            }
+            checkUpdate();
+            setInterval(checkUpdate, 15000);
+            document.addEventListener("visibilitychange", function () {
+              if (document.visibilityState === "visible") checkUpdate();
+            });
+            window.addEventListener("focus", checkUpdate);
 
-            // إذا عاد المستخدم بعد عدة إصدارات، reg.waiting/installing هو آخر إصدار متاح فقط.
-            if (reg.waiting) showUpdateButton(reg.waiting);
             reg.addEventListener("updatefound", function () {
-              var worker = reg.installing;
-              if (!worker) return;
-              worker.addEventListener("statechange", function () {
-                if (worker.state === "installed" && navigator.serviceWorker.controller) {
-                  showUpdateButton(worker);
+              var nw = reg.installing;
+              if (!nw) return;
+              nw.addEventListener("statechange", function () {
+                // تحديث جاهز: المستخدم لديه نسخة قديمة → أظهر الزر (آخر نسخة فقط)
+                if (nw.state === "installed" && navigator.serviceWorker.controller) {
+                  pharisShowUpdateButton(nw);
                 }
+                // أول تثبيت: لا زر
               });
             });
 
-            // فحص معتدل: لا ننشئ دورة تحديث لكل إصدار فائت، بل نلتقط أحدث service-worker.js مباشرة.
-            try { reg.update(); } catch (e) {}
-            setInterval(function () { reg.update().catch(function () {}); }, 5 * 60 * 1000);
-            document.addEventListener("visibilitychange", function () {
-              if (document.visibilityState === "visible") reg.update().catch(function () {});
-            });
-            window.addEventListener("focus", function () {
-              reg.update().catch(function () {});
-            });
+            if (reg.waiting) pharisShowUpdateButton(reg.waiting);
           })
           .catch(function (err) {
             console.warn("SW registration failed:", err);

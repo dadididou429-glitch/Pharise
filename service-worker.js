@@ -1,5 +1,5 @@
 // Pharis Service Worker — تحديث فوري + أوفلاين
-const CACHE_NAME = "pharis-v72-users-session";
+const CACHE_NAME = "pharis-v71-update-btn";
 const SHELL = [
   "./",
   "./index.html",
@@ -20,6 +20,7 @@ const EXTERNAL = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
