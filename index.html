@@ -2318,38 +2318,52 @@ out center tags;`;
         return function () { cancelled = true; };
       }, [firebaseReady, db]);
 
-// الأدمن فقط: الرقم = الأكبر بين (الإحصاء القديم 71+) و (unique_users)
-      // حتى لا يختفي الرقم التاريخي بعد التبديل
+// الأدمن فقط: لا نعرض الرقم حتى يكتمل المصدران (تجنّب وميض 71 ثم 130)
       useEffect(() => {
-        if (!firebaseReady || !db || !adminUser) return;
+        if (!firebaseReady || !db || !adminUser) {
+          setUserCount(null);
+          return;
+        }
         let cancelled = false;
-        var baseline = 0;
-        var unique = 0;
+        var baseline = null;
+        var unique = null;
         function apply() {
-          // الأساس التاريخي + كل جهاز فريد بعد التحديث → كل هاتف جديد يزيد +1
-          if (!cancelled) setUserCount(baseline + unique);
+          if (cancelled) return;
+          if (baseline === null || unique === null) return;
+          setUserCount(baseline + unique);
         }
         var unsubStats = null;
         try {
           unsubStats = db.collection("stats").doc("users").onSnapshot(function (snap) {
-            if (snap.exists) baseline = Number(snap.data().count) || 0;
-            else baseline = 0;
+            baseline = snap.exists ? (Number(snap.data().count) || 0) : 0;
             apply();
-          }, function (err) { console.warn("stats", err); });
-        } catch (e) { console.warn(e); }
+          }, function (err) {
+            console.warn("stats", err);
+            baseline = 0;
+            apply();
+          });
+        } catch (e) {
+          console.warn(e);
+          baseline = 0;
+          apply();
+        }
         db.collection("unique_users").get()
           .then(function (snap) {
             unique = snap.size || 0;
             apply();
           })
-          .catch(function (err) { console.warn("unique count", err); });
+          .catch(function (err) {
+            console.warn("unique count", err);
+            unique = 0;
+            apply();
+          });
         return function () {
           cancelled = true;
           if (unsubStats) unsubStats();
         };
       }, [firebaseReady, db, adminUser]);
 
-      // PWA install + offline
+// PWA install + offline
                   useEffect(() => {
         const onInstallable = () => setCanInstall(!!window.__pharisInstallPrompt);
         const onOnline = () => setOffline(false);
@@ -4334,7 +4348,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=81";
+      var PHARIS_SW_URL = "./service-worker.js?v=82";
 
       function pharisLang() {
         var lang = "ar";
