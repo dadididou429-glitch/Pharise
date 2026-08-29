@@ -2337,15 +2337,7 @@ out center tags;`;
       }, [firebaseReady, db, adminUser]);
 
       // PWA install + offline
-            // لوحة التحكم تبقى مفتوحة حتى يغلقها الأدمن يدوياً
-      useEffect(() => {
-        try {
-          if (adminView) localStorage.setItem("pharis_admin_view", "1");
-          else localStorage.setItem("pharis_admin_view", "0");
-        } catch (e) {}
-      }, [adminView]);
-
-      useEffect(() => {
+                  useEffect(() => {
         const onInstallable = () => setCanInstall(!!window.__pharisInstallPrompt);
         const onOnline = () => setOffline(false);
         const onOffline = () => setOffline(true);
@@ -2365,9 +2357,18 @@ out center tags;`;
       useEffect(() => {
         if (!adminUser) return;
         try {
-          if (localStorage.getItem("pharis_admin_view") === "1") setAdminView(true);
+          if (localStorage.getItem("pharis_admin_view") === "1") {
+            setAdminView(true);
+          }
         } catch (e) {}
       }, [adminUser]);
+
+      // حفظ حالة اللوحة: تُغلق فقط عندما يغلقها الأدمن (أو يسجّل الخروج)
+      useEffect(() => {
+        try {
+          localStorage.setItem("pharis_admin_view", adminView ? "1" : "0");
+        } catch (e) {}
+      }, [adminView]);
 
       // Auth — الأدمن فقط (ليس الزائر المجهول)
       useEffect(() => {
@@ -2375,7 +2376,7 @@ out center tags;`;
         const unsub = auth.onAuthStateChanged(async (u) => {
           if (!u) {
             setAdminUser(null);
-            setAdminView(false);
+            // لا تغلق لوحة التحكم هنا — قد تكون استعادة الجلسة لحظية
             return;
           }
           // الزائر المجهول ليس أدمن أبداً
@@ -2396,7 +2397,7 @@ out center tags;`;
             setAdminUser(u);
           } else {
             setAdminUser(null);
-            setAdminView(false);
+            // مستخدم غير أدمن: لا نلمس تفضيل اللوحة المحفوظ
             try { await auth.signOut(); } catch (e) {}
           }
         });
@@ -4093,8 +4094,8 @@ out center tags;`;
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => { auth.signOut(); setAdminView(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
-                    <button onClick={() => setAdminView(false)} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
+                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); } catch (e) {} auth.signOut(); setAdminView(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
+                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); } catch (e) {} setAdminView(false); }} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
                   </div>
                 </div>
                 <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
@@ -4298,7 +4299,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=79";
+      var PHARIS_SW_URL = "./service-worker.js?v=80";
 
       function pharisLang() {
         var lang = "ar";
