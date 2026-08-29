@@ -2251,43 +2251,57 @@ out center tags;`;
         return function () { cancelled = true; };
       }, []);
 
-      // تسجيل مستخدم فريد — مرة واحدة لكل جهاز (لا يُضاعف عند كل فتح)
+      // تسجيل مستخدم فريد — بعد استقرار الجلسة فقط (لا يمسح جلسة الأدمن)
       useEffect(() => {
         if (!firebaseReady || !db || !auth) return;
         let cancelled = false;
         (async function () {
           try {
-            // انتظر استعادة الجلسة من Firebase قبل إنشاء مستخدم مجهول جديد
-            const existing = await new Promise(function (resolve) {
-              var done = false;
+            try {
+              await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            } catch (ePers) {}
+
+            // انتظر مستخدماً حقيقياً (جلسة مستعادة) — لا تأخذ null الأول
+            var user = await new Promise(function (resolve) {
+              var settled = false;
               var unsub = auth.onAuthStateChanged(function (u) {
-                if (done) return;
-                done = true;
-                try { unsub(); } catch (e1) {}
-                resolve(u || null);
+                if (u && !settled) {
+                  settled = true;
+                  try { unsub(); } catch (e1) {}
+                  resolve(u);
+                }
               });
               setTimeout(function () {
-                if (done) return;
-                done = true;
+                if (settled) return;
+                settled = true;
                 try { unsub(); } catch (e2) {}
                 resolve(auth.currentUser || null);
-              }, 2500);
+              }, 4000);
             });
             if (cancelled) return;
 
-            var user = existing;
+            // إذا كانت لوحة الأدمن مطلوبة ولم تُستعد الجلسة بعد — لا تسجّل مجهولاً (يحفظ جلسة الأدمن)
+            var wantAdmin = false;
+            try { wantAdmin = localStorage.getItem("pharis_admin_view") === "1"; } catch (e3) {}
+            if (!user && wantAdmin) {
+              return;
+            }
+
             if (!user) {
               var cred = await auth.signInAnonymously();
               user = cred && cred.user;
             }
             if (cancelled || !user) return;
 
+            // لا تسجّل زيارة كـ "مستخدم فريد" من حساب الأدمن (اختياري لكن أوضح)
+            if (!user.isAnonymous && user.uid === PRIMARY_ADMIN_UID) {
+              return;
+            }
+
             var uid = user.uid;
             var REG_KEY = "pharis_unique_uid_v2";
             var storedUid = null;
-            try { storedUid = localStorage.getItem(REG_KEY); } catch (e3) {}
-
-            // نفس الجهاز سجّل سابقاً بـ uid آخر → لا تنشئ مستنداً جديداً (يمنع المستخدمين الوهميين)
+            try { storedUid = localStorage.getItem(REG_KEY); } catch (e4) {}
             if (storedUid && storedUid !== uid) {
               return;
             }
@@ -2296,8 +2310,7 @@ out center tags;`;
               lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
               firstSeen: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
-
-            try { localStorage.setItem(REG_KEY, uid); } catch (e4) {}
+            try { localStorage.setItem(REG_KEY, uid); } catch (e5) {}
           } catch (e) {
             console.warn("unique_users register", e);
           }
@@ -2305,7 +2318,7 @@ out center tags;`;
         return function () { cancelled = true; };
       }, [firebaseReady, db]);
 
-      // الأدمن فقط: الرقم = الأكبر بين (الإحصاء القديم 71+) و (unique_users)
+// الأدمن فقط: الرقم = الأكبر بين (الإحصاء القديم 71+) و (unique_users)
       // حتى لا يختفي الرقم التاريخي بعد التبديل
       useEffect(() => {
         if (!firebaseReady || !db || !adminUser) return;
@@ -2370,6 +2383,23 @@ out center tags;`;
         } catch (e) {}
       }, [adminView]);
 
+
+      // إذا اللوحة محفوظة مفتوحة والجلسة لم تُستعد: أظهر تسجيل الدخول تلقائياً
+      useEffect(() => {
+        if (!firebaseReady || !auth) return;
+        var t = setTimeout(function () {
+          try {
+            if (localStorage.getItem("pharis_admin_view") === "1" && !auth.currentUser) {
+              setAdminView(true);
+              setShowLogin(true);
+            } else if (localStorage.getItem("pharis_admin_view") === "1" && auth.currentUser && !auth.currentUser.isAnonymous) {
+              // الجلسة موجودة — اللوحة تُفتح عبر مستمع الأدمن
+            }
+          } catch (e) {}
+        }, 4500);
+        return function () { clearTimeout(t); };
+      }, [firebaseReady, auth]);
+
       // Auth — الأدمن فقط (ليس الزائر المجهول)
       useEffect(() => {
         if (!auth) return;
@@ -2395,9 +2425,13 @@ out center tags;`;
           }
           if (allowed) {
             setAdminUser(u);
+            try {
+              if (localStorage.getItem("pharis_admin_view") === "1") {
+                setAdminView(true);
+              }
+            } catch (eOpen) {}
           } else {
             setAdminUser(null);
-            // مستخدم غير أدمن: لا نلمس تفضيل اللوحة المحفوظ
             try { await auth.signOut(); } catch (e) {}
           }
         });
@@ -3037,6 +3071,7 @@ out center tags;`;
           }
           setShowLogin(false);
           setAdminView(true);
+          try { localStorage.setItem("pharis_admin_view", "1"); } catch (eL) {}
           setLoginPassword("");
         } catch (e) {
           console.error(e);
@@ -4299,7 +4334,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=80";
+      var PHARIS_SW_URL = "./service-worker.js?v=81";
 
       function pharisLang() {
         var lang = "ar";

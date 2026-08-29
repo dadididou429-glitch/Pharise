@@ -1,5 +1,5 @@
 // Pharis Service Worker — تحديث فوري + أوفلاين
-const CACHE_NAME = "pharis-v80-admin-sticky";
+const CACHE_NAME = "pharis-v81-admin-session";
 const SHELL = [
   "./",
   "./index.html",
