@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharis — صيدليات مفتوحة قريبة منك</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+  body { background:#022c22; color:#fff; }
+  header { padding:16px; text-align:center; background:#022c22; }
+  header h1 { font-size:20px; }
+  header p { font-size:12px; color:#5eead4; margin-top:4px; }
+  #map { width:100%; height:45vh; }
+  #status { text-align:center; padding:12px; font-size:14px; color:#99f6e4; }
+  #results { padding:12px; padding-bottom:40px; }
+  .pharmacy {
+    background:#064e3b; border-radius:12px; padding:14px; margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .pharmacy h3 { font-size:15px; color:#f0fdfa; }
+  .pharmacy p { font-size:12px; color:#86efac; margin-top:4px; }
+  .badge { font-size:12px; font-weight:bold; }
+  .open { color:#4ade80; } .closed { color:#f87171; }
+  .distance { background:#134e4a; color:#5eead4; padding:6px 12px; border-radius:20px;
+              font-weight:bold; font-size:13px; white-space:nowrap; }
+  a.dir-btn {
+    display:inline-block; margin-top:8px; padding:5px 12px; background:#10b981;
+    color:#022c22; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold;
+  }
+  button.refresh {
+    display:block; margin:0 auto 10px; padding:10px 28px; background:#10b981; color:#022c22;
+    border:none; border-radius:25px; font-size:15px; font-weight:bold; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💊 Pharis</h1>
+  <p>الصيدليات المفتوحة القريبة منك — مجاناً عبر OpenStreetMap</p>
+</header>
+
+<div id="map"></div>
+<div id="status">📍 جاري تحديد موقعك...</div>
+<button class="refresh" onclick="findPharmacies()">🔄 تحديث البحث</button>
+<div id="results"></div>
+
+<script>
+let map, userPos;
+let markers = [];
+
+// إنشاء الخريطة
+map = L.map('map').setView([28.0339, 1.6596], 6); // الجزائر افتراضياً
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// تحديد الموقع ثم البحث
+function findPharmacies() {
+  const status = document.getElementById('status');
+  if (!navigator.geolocation) {
+    status.textContent = '❌ المتصفح لا يدعم تحديد الموقع'; return;
+  }
+  status.textContent = '📍 جاري تحديد موقعك...';
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    status.textContent = '🔍 جاري البحث عن الصيدليات...';
+    map.setView([userPos.lat, userPos.lng], 14);
+
+    // مسح العلامات القديمة
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    // علامة موقع المستخدم
+    markers.push(
+      L.marker([userPos.lat, userPos.lng]).addTo(map).bindPopup('📍 موقعك')
+    );
+
+    await searchOverpass();
+
+  }, () => {
+    status.textContent = '❌ تعذر الوصول للموقع — فعّل صلاحية الموقع وأعد المحاولة';
+  }, { enableHighAccuracy: true, timeout: 15000 });
+}
+
+// ⭐ جلب الصيدليات من OpenStreetMap — مجاني وبدون مفتاح
+async function searchOverpass() {
+  const status = document.getElementById('status');
+  const query = `
+    [out:json][timeout:25];
+    (
+      node["amenity"="pharmacy"](around:5000,userPos.lat,{userPos.lat},userPos.lat,{userPos.lng});
+      way["amenity"="pharmacy"](around:5000,userPos.lat,{userPos.lat},userPos.lat,{userPos.lng});
+    );
+    out center;`;
+
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: 'data=' + encodeURIComponent(query),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    const data = await res.json();
+
+    const list = data.elements.map(el => ({
+      name: (el.tags && (el.tags['name:ar'] || el.tags.name)) || 'صيدلية',
+      lat: el.lat || (el.center && el.center.lat),
+      lng: el.lon || (el.center && el.center.lon),
+      opening: el.tags && el.tags.opening_hours || ''
+    })).filter(p => p.lat && p.lng);
+
+    // حساب المسافة والترتيب من الأقرب
+    list.forEach(p => p.distance = getDistance(userPos, p));
+    list.sort((a, b) => a.distance - b.distance);
+
+    status.textContent = list.length
+      ? `✅ وجدنا ${list.length} صيدلية في نطاق 5 كم (مرتبة من الأقرب):`
+      : '⚠️ لا توجد صيدليات قريبة في نطاق 5 كم';
+
+    const box = document.getElementById('results');
+    box.innerHTML = '';
+
+    list.slice(0, 30).forEach(p => {
+      const isOpen = checkOpen(p.opening);
+      markers.push(
+        L.marker([p.lat, p.lng]).addTo(map).bindPopup(`💊 ${p.name}`)
+      );
+
+      box.innerHTML += `
+        <div class="pharmacy">
+          <div>
+            <h3>${p.name}</h3>
+            <p class="badge ${isOpen ? 'open' : 'closed'}">
+              ${isOpen ? '🟢 مفتوحة الآن' : '🔴 مغلقة على الأرجح'}</p>
+            {p.opening ? `<p>🕐{p.opening}</p>` : ''}
+            <a class="dir-btn" target="_blank"
+               href="https://www.google.com/maps/dir/?api=1&destination=p.lat,{p.lat},p.lat,{p.lng}">
+               🧭 الاتجاهات</a>
+          </div>
+          <span class="distance">${p.distance.toFixed(1)} كم</span>
+        </div>`;
+    });
+
+  } catch (e) {
+    status.textContent = '❌ خطأ في جلب البيانات — تحقق من الإنترنت وحاول مجدداً';
+  }
+}
+
+// فحص حالة الفتح حسب ساعات العمل المسجلة
+function checkOpen(hours) {
+  const now = new Date();
+  const h = now.getHours() + now.getMinutes() / 60;
+  if (!hours) return h >= 8 && h < 22; // افتراضي إذا لا توجد معلومات
+  if (/24\/7/.test(hours)) return true;
+  const m = hours.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+  if (m) {
+    const start = +m[1] + m[2]/60, end = +m[3] + m[4]/60;
+    return end > start ? (h >= start && h < end) : (h >= start || h < end);
+  }
+  return false;
+}
+
+// حساب المسافة بالكيلومتر
+function getDistance(p1, p2) {
+  const R = 6371, rad = Math.PI / 180;
+  const dLat = (p2.lat - p1.lat) * rad, dLng = (p2.lng - p1.lng) * rad;
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(p1.lat*rad) * Math.cos(p2.lat*rad) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+</script>
+
+</body>
+</html>
