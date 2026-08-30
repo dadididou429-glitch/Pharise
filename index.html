@@ -1911,6 +1911,8 @@ out center tags;`;
       const [medLoading, setMedLoading] = useState(false);
       const [medSubmitting, setMedSubmitting] = useState(false);
       const [medForm, setMedForm] = useState({ name: "", city: "", whatsapp: "", note: "" });
+      const [medImagePreview, setMedImagePreview] = useState(null);
+      const [medImageFile, setMedImageFile] = useState(null);
 
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
@@ -1948,8 +1950,7 @@ out center tags;`;
           } catch (e) { console.warn("anon for med list", e); }
           if (cancelled || !db) { setMedLoading(false); return; }
           unsub = db.collection("medicine_requests")
-          .orderBy("createdAt", "desc")
-          .limit(50)
+          .limit(80)
           .onSnapshot(
             (snap) => {
               const now = Date.now();
@@ -1961,10 +1962,19 @@ out center tags;`;
                 if (d.active === false) return;
                 list.push({ id: doc.id, ...d });
               });
+              list.sort(function (a, b) {
+                var ta = a.expiresAtMs || 0;
+                var tb = b.expiresAtMs || 0;
+                return tb - ta;
+              });
               setMedRequests(list);
               setMedLoading(false);
             },
-            () => { setMedLoading(false); }
+            function (err) {
+              console.warn("medicine_requests", err);
+              setMedRequests([]);
+              setMedLoading(false);
+            }
           );
         })();
         return () => { cancelled = true; if (unsub) unsub(); };
@@ -4467,7 +4477,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=85";
+      var PHARIS_SW_URL = "./service-worker.js?v=86";
 
       function pharisLang() {
         var lang = "ar";
