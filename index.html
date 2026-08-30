@@ -1907,7 +1907,7 @@ out center tags;`;
       const [showPayModal, setShowPayModal] = useState(false);
       const [showOnboard, setShowOnboard] = useState(true);
       const [showMedSearch, setShowMedSearch] = useState(false);
-      const [showMedListPanel, setShowMedListPanel] = useState(true);
+      const [showMedListPanel, setShowMedListPanel] = useState(false);
       const [medRequests, setMedRequests] = useState([]);
       const [medLoading, setMedLoading] = useState(false);
       const [medSubmitting, setMedSubmitting] = useState(false);
@@ -1925,7 +1925,8 @@ out center tags;`;
         adminView: false,
         emergencyMode: false,
         showLocGate: false,
-        showOnboard: false
+        showOnboard: false,
+        showMedListPanel: false
       });
       layersRef.current = {
         selected: selected,
@@ -1936,7 +1937,8 @@ out center tags;`;
         adminView: adminView,
         emergencyMode: emergencyMode,
         showLocGate: showLocGate,
-        showOnboard: showOnboard
+        showOnboard: showOnboard,
+        showMedListPanel: showMedListPanel
       };
 
       const pushLayer = useCallback((name) => {
@@ -1957,6 +1959,7 @@ out center tags;`;
           const L = layersRef.current;
           if (L.selected) { setSelected(null); return; }
           if (L.showMedSearch) { setShowMedSearch(false); return; }
+          if (L.showMedListPanel) { setShowMedListPanel(false); return; }
           if (L.showAddForm) { setShowAddForm(false); return; }
           if (L.showLogin) { setShowLogin(false); return; }
           if (L.showLocationPicker) { setShowLocationPicker(false); return; }
@@ -1976,6 +1979,7 @@ out center tags;`;
 
       useEffect(() => { if (selected) pushLayer("selected"); }, [!!selected, pushLayer]);
       useEffect(() => { if (showMedSearch) pushLayer("med"); }, [showMedSearch, pushLayer]);
+      useEffect(() => { if (showMedListPanel) pushLayer("medList"); }, [showMedListPanel, pushLayer]);
       useEffect(() => { if (showAddForm) pushLayer("add"); }, [showAddForm, pushLayer]);
       useEffect(() => { if (showLogin) pushLayer("login"); }, [showLogin, pushLayer]);
       useEffect(() => { if (showLocationPicker) pushLayer("loc"); }, [showLocationPicker, pushLayer]);
@@ -3516,62 +3520,14 @@ out center tags;`;
               </button>
               <button
                 type="button"
-                onClick={() => setShowMedListPanel(v => !v)}
-                className={`flex-1 text-center border-2 rounded-xl py-2.5 text-[11px] font-bold transition shadow-md ${showMedListPanel ? "bg-amber-500 text-amber-950 border-amber-600" : "bg-yellow-100 text-yellow-950 border-yellow-400 dark:bg-yellow-950/50 dark:text-yellow-200 dark:border-yellow-600"}`}
+                onClick={() => setShowMedListPanel(true)}
+                className="flex-1 text-center border-2 border-amber-500 bg-amber-400 text-amber-950 rounded-xl py-2.5 text-[11px] font-bold hover:bg-amber-300 transition shadow-md shadow-amber-500/20"
               >
                 📋 {lang === "ar" ? "قائمة الدواء" : lang === "fr" ? "Liste médicaments" : "Med list"}
                 {!medLoading && medRequests.length > 0 ? ` (${medRequests.length})` : ""}
               </button>
             </div>
-            {showMedListPanel && (
-              <section className="mt-1.5 rounded-2xl border-2 border-yellow-400 bg-yellow-50 dark:bg-yellow-950/40 p-2.5 shadow-sm max-h-64 overflow-y-auto">
-                {medLoading && (
-                  <p className="text-[11px] text-center text-yellow-800 dark:text-yellow-300 py-2">
-                    {lang === "ar" ? "جاري التحميل..." : "Loading..."}
-                  </p>
-                )}
-                {!medLoading && medRequests.length === 0 && (
-                  <p className="text-[11px] text-center text-yellow-800/70 dark:text-yellow-300/70 py-2">{t("medEmpty")}</p>
-                )}
-                <div className="space-y-2">
-                  {medRequests.map((r) => {
-                    const expDate = r.expiresAtMs ? new Date(r.expiresAtMs) : (r.expiresAt && r.expiresAt.toDate ? r.expiresAt.toDate() : null);
-                    const expStr = expDate ? expDate.toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB") : "";
-                    const waMsg = encodeURIComponent(
-                      (lang === "ar" ? "مرحبا، بخصوص طلب الدواء: " : lang === "fr" ? "Bonjour, concernant la demande : " : "Hello, about the medicine request: ") + (r.medicineName || "")
-                    );
-                    return (
-                      <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/70 dark:border-yellow-700 rounded-xl p-2.5">
-                        <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
-                        {r.imageUrl ? (
-                          <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1">
-                            <img src={r.imageUrl} alt="" className="max-h-24 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
-                          </a>
-                        ) : null}
-                        {r.city ? <p className="text-[11px] text-stone-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
-                        {r.note ? <p className="text-[11px] text-stone-600 dark:text-brand-200 mt-1 line-clamp-2">{r.note}</p> : null}
-                        {expStr ? <p className="text-[10px] text-stone-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
-                        <div className="flex gap-1.5 mt-2">
-                          <a
-                            href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 inline-flex items-center justify-center py-1.5 rounded-lg bg-[#25D366] text-white text-[11px] font-bold"
-                          >
-                            {t("medContact")}
-                          </a>
-                          {adminUser && (
-                            <button type="button" onClick={() => deleteMedRequest(r.id)} className="px-2.5 py-1.5 rounded-lg bg-rose-600 text-white text-[11px] font-bold">
-                              {lang === "ar" ? "حذف" : "Del"}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+            
             <button
               type="button"
               onClick={() => setShowAddForm(true)}
@@ -3806,6 +3762,78 @@ out center tags;`;
             )}
           </main>
 
+
+          {/* صفحة قائمة طلبات الدواء */}
+          {showMedListPanel && (
+            <div className="fixed inset-0 z-[85] flex flex-col bg-black/60" onClick={() => setShowMedListPanel(false)}>
+              <div
+                className="mt-auto sm:mt-0 sm:m-auto w-full max-w-lg max-h-[92vh] flex flex-col bg-yellow-50 dark:bg-brand-950 border-2 border-yellow-400 rounded-t-2xl sm:rounded-2xl shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+                dir={lang === "ar" ? "rtl" : "ltr"}
+              >
+                <div className="sticky top-0 bg-yellow-400 text-yellow-950 px-4 py-3 flex items-center justify-between z-10 rounded-t-2xl">
+                  <div>
+                    <h3 className="font-bold text-base">📋 {lang === "ar" ? "قائمة طلبات الدواء" : lang === "fr" ? "Demandes de médicaments" : "Medicine requests"}</h3>
+                    <p className="text-[11px] opacity-90">
+                      {medLoading
+                        ? (lang === "ar" ? "جاري التحميل..." : "Loading...")
+                        : (lang === "ar" ? (medRequests.length + " طلب نشط") : lang === "fr" ? (medRequests.length + " demandes") : (medRequests.length + " active"))}
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => setShowMedListPanel(false)} className="w-9 h-9 rounded-full bg-yellow-950/15 font-bold text-lg">✕</button>
+                </div>
+                <div className="p-3 overflow-y-auto flex-1 space-y-2">
+                  {!medLoading && medRequests.length === 0 && (
+                    <p className="text-xs text-center text-yellow-800/70 dark:text-yellow-300/70 py-8">{t("medEmpty")}</p>
+                  )}
+                  {medRequests.map((r) => {
+                    const expDate = r.expiresAtMs ? new Date(r.expiresAtMs) : (r.expiresAt && r.expiresAt.toDate ? r.expiresAt.toDate() : null);
+                    const expStr = expDate ? expDate.toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB") : "";
+                    const waMsg = encodeURIComponent(
+                      (lang === "ar" ? "مرحبا، بخصوص طلب الدواء: " : lang === "fr" ? "Bonjour, concernant la demande : " : "Hello, about the medicine request: ") + (r.medicineName || "")
+                    );
+                    return (
+                      <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/70 dark:border-yellow-700 rounded-xl p-3">
+                        <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
+                        {r.imageUrl ? (
+                          <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
+                            <img src={r.imageUrl} alt="" className="max-h-36 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
+                          </a>
+                        ) : null}
+                        {r.city ? <p className="text-[11px] text-stone-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
+                        {r.note ? <p className="text-[11px] text-stone-600 dark:text-brand-200 mt-1">{r.note}</p> : null}
+                        {expStr ? <p className="text-[10px] text-stone-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
+                        <div className="flex gap-1.5 mt-2">
+                          <a
+                            href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 inline-flex items-center justify-center py-2 rounded-lg bg-[#25D366] text-white text-xs font-bold"
+                          >
+                            {t("medContact")}
+                          </a>
+                          {adminUser && (
+                            <button type="button" onClick={() => deleteMedRequest(r.id)} className="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">
+                              {lang === "ar" ? "حذف" : "Del"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="p-3 border-t border-yellow-300/50">
+                  <button
+                    type="button"
+                    onClick={() => { setShowMedListPanel(false); setShowMedSearch(true); }}
+                    className="w-full py-2.5 rounded-xl bg-yellow-400 text-yellow-950 font-bold text-sm border border-yellow-500"
+                  >
+                    💊 {lang === "ar" ? "أضف طلب دواء" : lang === "fr" ? "Ajouter une demande" : "Add a request"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* خاصية أبحث عن دواء — أصفر مميز · 30 يوماً */}
           {showMedSearch && (
@@ -4559,7 +4587,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=89";
+      var PHARIS_SW_URL = "./service-worker.js?v=90";
 
       function pharisLang() {
         var lang = "ar";
