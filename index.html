@@ -1979,18 +1979,35 @@ out center tags;`;
       };
 
       const compressMedImage = (file) => new Promise(function (resolve) {
+        // بدون Storage: ضغط قوي + Data URL داخل Firestore (حد آمن ~700KB)
         if (!file || !file.type || String(file.type).indexOf("image/") !== 0) { resolve(null); return; }
         var reader = new FileReader();
         reader.onload = function () {
           var img = new Image();
           img.onload = function () {
-            var maxW = 900;
+            var maxW = 640;
             var w = img.width, h = img.height;
             if (w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
             var canvas = document.createElement("canvas");
             canvas.width = w; canvas.height = h;
             canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-            canvas.toBlob(function (blob) { resolve(blob); }, "image/jpeg", 0.72);
+            var quality = 0.55;
+            var dataUrl = canvas.toDataURL("image/jpeg", quality);
+            // إن بقيت كبيرة صغّر أكثر
+            var step = 0;
+            while (dataUrl.length > 700000 && step < 6) {
+              quality = Math.max(0.28, quality - 0.08);
+              if (w > 420) {
+                w = Math.round(w * 0.85);
+                h = Math.round(h * 0.85);
+                canvas.width = w; canvas.height = h;
+                canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+              }
+              dataUrl = canvas.toDataURL("image/jpeg", quality);
+              step++;
+            }
+            if (dataUrl.length > 900000) resolve(null);
+            else resolve(dataUrl);
           };
           img.onerror = function () { resolve(null); };
           img.src = reader.result;
@@ -2026,14 +2043,12 @@ out center tags;`;
           const docRef = db.collection("medicine_requests").doc();
           if (medImageFile) {
             try {
-              const blob = await compressMedImage(medImageFile);
-              if (blob && storage) {
-                const ref = storage.ref("medicine_requests/" + docRef.id + ".jpg");
-                await ref.put(blob, { contentType: "image/jpeg" });
-                medPayload.imageUrl = await ref.getDownloadURL();
+              const dataUrl = await compressMedImage(medImageFile);
+              if (dataUrl && typeof dataUrl === "string" && dataUrl.indexOf("data:image/") === 0) {
+                medPayload.imageUrl = dataUrl;
               }
             } catch (imgErr) {
-              console.warn("med image upload", imgErr);
+              console.warn("med image compress", imgErr);
             }
           }
           await docRef.set(medPayload);
@@ -4452,7 +4467,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=84";
+      var PHARIS_SW_URL = "./service-worker.js?v=85";
 
       function pharisLang() {
         var lang = "ar";
