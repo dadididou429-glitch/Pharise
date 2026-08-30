@@ -1914,6 +1914,74 @@ out center tags;`;
       const [medImagePreview, setMedImagePreview] = useState(null);
       const [medImageFile, setMedImageFile] = useState(null);
 
+      // زر الرجوع: يغلق الشاشة الحالية ويعود للواجهة (لا يخرج من التطبيق)
+      const layersRef = useRef({
+        selected: null,
+        showMedSearch: false,
+        showAddForm: false,
+        showLogin: false,
+        showLocationPicker: false,
+        adminView: false,
+        emergencyMode: false,
+        showLocGate: false,
+        showOnboard: false
+      });
+      layersRef.current = {
+        selected: selected,
+        showMedSearch: showMedSearch,
+        showAddForm: showAddForm,
+        showLogin: showLogin,
+        showLocationPicker: showLocationPicker,
+        adminView: adminView,
+        emergencyMode: emergencyMode,
+        showLocGate: showLocGate,
+        showOnboard: showOnboard
+      };
+
+      const pushLayer = useCallback((name) => {
+        try {
+          if (typeof history !== "undefined" && history.pushState) {
+            history.pushState({ pharisLayer: name }, "");
+          }
+        } catch (e) {}
+      }, []);
+
+      useEffect(() => {
+        try {
+          if (typeof history !== "undefined" && history.replaceState) {
+            history.replaceState({ pharisLayer: "root" }, "");
+          }
+        } catch (e) {}
+        const onPopState = function () {
+          const L = layersRef.current;
+          if (L.selected) { setSelected(null); return; }
+          if (L.showMedSearch) { setShowMedSearch(false); return; }
+          if (L.showAddForm) { setShowAddForm(false); return; }
+          if (L.showLogin) { setShowLogin(false); return; }
+          if (L.showLocationPicker) { setShowLocationPicker(false); return; }
+          if (L.adminView) {
+            setAdminView(false);
+            try { localStorage.setItem("pharis_admin_view", "0"); } catch (e2) {}
+            return;
+          }
+          if (L.emergencyMode) { setEmergencyMode(false); return; }
+          if (L.showLocGate) { setShowLocGate(false); return; }
+          if (L.showOnboard) { setShowOnboard(false); return; }
+          // لا طبقات مفتوحة → السلوك الافتراضي (يمكن الخروج من التطبيق)
+        };
+        window.addEventListener("popstate", onPopState);
+        return function () { window.removeEventListener("popstate", onPopState); };
+      }, []);
+
+      useEffect(() => { if (selected) pushLayer("selected"); }, [!!selected, pushLayer]);
+      useEffect(() => { if (showMedSearch) pushLayer("med"); }, [showMedSearch, pushLayer]);
+      useEffect(() => { if (showAddForm) pushLayer("add"); }, [showAddForm, pushLayer]);
+      useEffect(() => { if (showLogin) pushLayer("login"); }, [showLogin, pushLayer]);
+      useEffect(() => { if (showLocationPicker) pushLayer("loc"); }, [showLocationPicker, pushLayer]);
+      useEffect(() => { if (adminView) pushLayer("admin"); }, [adminView, pushLayer]);
+      useEffect(() => { if (emergencyMode) pushLayer("emergency"); }, [emergencyMode, pushLayer]);
+
+
       // Admin
       const PRIMARY_ADMIN_UID = "vAz85zAbCTX5ipHqDowdCZBROR53";
       const [adminUser, setAdminUser] = useState(null);
@@ -1936,9 +2004,9 @@ out center tags;`;
       const [lastSubmit, setLastSubmit] = useState(0);
 
       
-      // طلبات البحث عن دواء — مدة 30 يوماً (+ لوحة الأدمن)
+      // طلبات الدواء — تُحمَّل للجميع في الواجهة الرئيسية
       useEffect(() => {
-        if ((!showMedSearch && !(adminView && adminUser)) || !firebaseReady || !db) return;
+        if (!firebaseReady || !db) return;
         setMedLoading(true);
         let unsub = null;
         let cancelled = false;
@@ -1978,7 +2046,7 @@ out center tags;`;
           );
         })();
         return () => { cancelled = true; if (unsub) unsub(); };
-      }, [showMedSearch, adminView, adminUser]);
+      }, [firebaseReady]);
 
       const normalizeWa = (raw) => {
         let s = String(raw || "").replace(/\D/g, "");
@@ -3556,6 +3624,79 @@ out center tags;`;
 
           {/* Main */}
           <main className="px-4 py-4 space-y-3 max-w-lg mx-auto safe-bottom">
+            {/* طلبات الدواء — ظاهرة للجميع */}
+            <section className="rounded-2xl border-2 border-yellow-400 bg-yellow-50 dark:bg-yellow-950/40 p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div>
+                  <h2 className="text-sm font-extrabold text-yellow-900 dark:text-yellow-200">
+                    💊 {lang === "ar" ? "طلبات الدواء" : lang === "fr" ? "Demandes de médicaments" : "Medicine requests"}
+                  </h2>
+                  <p className="text-[10px] text-yellow-800/80 dark:text-yellow-300/80">
+                    {medLoading
+                      ? (lang === "ar" ? "جاري التحميل..." : "Loading...")
+                      : (lang === "ar"
+                          ? (medRequests.length + " طلب نشط")
+                          : lang === "fr"
+                          ? (medRequests.length + " demandes")
+                          : (medRequests.length + " active"))}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMedSearch(true)}
+                  className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-yellow-400 text-yellow-950 text-[11px] font-bold border border-yellow-500 hover:bg-yellow-300"
+                >
+                  {lang === "ar" ? "+ أضف طلباً" : lang === "fr" ? "+ Ajouter" : "+ Add"}
+                </button>
+              </div>
+              {!medLoading && medRequests.length === 0 && (
+                <p className="text-xs text-center text-yellow-800/70 dark:text-yellow-300/70 py-3">
+                  {t("medEmpty")}
+                </p>
+              )}
+              <div className="space-y-2 max-h-72 overflow-y-auto">
+                {medRequests.map((r) => {
+                  const expDate = r.expiresAtMs ? new Date(r.expiresAtMs) : (r.expiresAt && r.expiresAt.toDate ? r.expiresAt.toDate() : null);
+                  const expStr = expDate ? expDate.toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB") : "";
+                  const waMsg = encodeURIComponent(
+                    (lang === "ar" ? "مرحبا، بخصوص طلب الدواء: " : lang === "fr" ? "Bonjour, concernant la demande : " : "Hello, about the medicine request: ") + (r.medicineName || "")
+                  );
+                  return (
+                    <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/70 dark:border-yellow-700 rounded-xl p-2.5">
+                      <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
+                      {r.imageUrl ? (
+                        <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
+                          <img src={r.imageUrl} alt="" className="max-h-28 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
+                        </a>
+                      ) : null}
+                      {r.city ? <p className="text-[11px] text-stone-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
+                      {r.note ? <p className="text-[11px] text-stone-600 dark:text-brand-200 mt-1 line-clamp-2">{r.note}</p> : null}
+                      {expStr ? <p className="text-[10px] text-stone-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
+                      <div className="flex gap-1.5 mt-2">
+                        <a
+                          href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 inline-flex items-center justify-center py-2 rounded-lg bg-[#25D366] text-white text-[11px] font-bold"
+                        >
+                          {t("medContact")}
+                        </a>
+                        {adminUser && (
+                          <button
+                            type="button"
+                            onClick={() => deleteMedRequest(r.id)}
+                            className="px-2.5 py-2 rounded-lg bg-rose-600 text-white text-[11px] font-bold"
+                          >
+                            {lang === "ar" ? "حذف" : "Del"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             {showMap ? (
               <div className="h-[60vh] rounded-2xl overflow-hidden border border-stone-200 dark:border-brand-800">
                 <MapView pharmacies={list} userLoc={userLoc} lang={lang} onSelect={setSelected} />
@@ -3745,59 +3886,7 @@ out center tags;`;
                     </button>
                   </div>
 
-                  <div>
-                    <h4 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 mb-2">{t("medList")}</h4>
-                    {medLoading && <p className="text-xs text-brand-300">{t("medLoading")}</p>}
-                    {!medLoading && medRequests.length === 0 && (
-                      <p className="text-xs text-brand-400 bg-brand-900/30 rounded-lg px-3 py-4 text-center">{t("medEmpty")}</p>
-                    )}
-                    <div className="space-y-2">
-                      {medRequests.map((r) => {
-                        const expDate = r.expiresAtMs ? new Date(r.expiresAtMs) : (r.expiresAt && r.expiresAt.toDate ? r.expiresAt.toDate() : null);
-                        const expStr = expDate ? expDate.toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB") : "";
-                        const waMsg = encodeURIComponent(
-                          (lang === "ar" ? "مرحبا، بخصوص طلب الدواء: " : lang === "fr" ? "Bonjour, concernant la demande : " : "Hello, about the medicine request: ") + (r.medicineName || "")
-                        );
-                        return (
-                          <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/80 dark:border-yellow-700 rounded-xl p-3">
-                            <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
-                            {r.imageUrl ? (
-                              <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
-                                <img src={r.imageUrl} alt="" className="max-h-32 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
-                              </a>
-                            ) : null}
-                            {r.imageUrl ? (
-                              <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
-                                <img src={r.imageUrl} alt="" className="max-h-32 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
-                              </a>
-                            ) : null}
-                            {r.city ? <p className="text-[11px] text-brand-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
-                            {r.note ? <p className="text-[11px] text-brand-600 dark:text-brand-200 mt-1">{r.note}</p> : null}
-                            {expStr ? <p className="text-[10px] text-brand-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
-                            <a
-                              href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-2 inline-flex items-center justify-center w-full py-2 rounded-lg bg-[#25D366] text-white text-xs font-bold"
-                            >
-                              {t("medContact")}
-                            </a>
-                            {adminUser && (
-                              <button
-                                type="button"
-                                onClick={() => deleteMedRequest(r.id)}
-                                className="mt-2 w-full py-2 rounded-lg bg-rose-700 text-white text-xs font-bold"
-                              >
-                                {lang === "ar" ? "حذف الطلب (أدمن)" : lang === "fr" ? "Supprimer (admin)" : "Delete (admin)"}
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <button type="button" onClick={() => setShowMedSearch(false)} className="w-full py-2 text-xs text-brand-400 hover:text-brand-200">
+                                    <button type="button" onClick={() => setShowMedSearch(false)} className="w-full py-2 text-xs text-brand-400 hover:text-brand-200">
                     {t("medClose")}
                   </button>
                 </div>
@@ -4477,7 +4566,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=86";
+      var PHARIS_SW_URL = "./service-worker.js?v=88";
 
       function pharisLang() {
         var lang = "ar";
