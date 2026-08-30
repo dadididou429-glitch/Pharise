@@ -768,16 +768,58 @@
         .replace(/[أإآٱ]/g, "ا")
         .replace(/[ىئ]/g, "ي")
         .replace(/ة/g, "ه")
+        .replace(/گ/g, "ك")
         .replace(/[^\p{L}\p{N}\s]/gu, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
+    
+    const SEARCH_STOPWORDS = new Set([
+      "حي", "حى", "الحي", "حاره", "حارة", "تجزئه", "تجزئة", "مدينة", "مدينه",
+      "شارع", "نهج", "طريق", "زنقه", "زنقة",
+      "quartier", "cite", "avenue", "rue", "bd", "boulevard",
+      "al", "el", "la", "le", "les", "de", "du", "des", "the",
+      "سيدي"
+    ]);
+    
     function matchesSearch(ph, qRaw) {
       const q = normalizeSearch(qRaw);
       if (!q) return true;
-      const hay = normalizeSearch([ph.name, ph.area, ph.address, ph.wilaya, ph.commune, ph.phone].filter(Boolean).join(" "));
-      // كل كلمة في البحث يجب أن توجد
-      return q.split(" ").every(w => w && hay.includes(w));
+      const hay = normalizeSearch([
+        ph.name, ph.area, ph.address, ph.wilaya, ph.commune, ph.phone,
+        ph.city, ph.suburb, ph.neighbourhood, ph.brand
+      ].filter(Boolean).join(" "));
+
+      // عبارة كاملة بدون كلمات عامة (مثال: هواري بومدين)
+      const significant = q.split(" ").filter(function (w) {
+        return w && w.length >= 2 && !SEARCH_STOPWORDS.has(w);
+      });
+      const words = significant.length > 0 ? significant : q.split(" ").filter(Boolean);
+
+      // تطابق العبارة متتالية
+      if (words.length >= 2) {
+        const phrase = words.join(" ");
+        if (hay.includes(phrase)) return true;
+      }
+
+      // كل كلمة مهمة موجودة (حي/شارع اختيارية)
+      if (words.every(function (w) { return hay.includes(w); })) return true;
+
+      // تساهل: إن كلمة واحدة طويلة (>=4) تطابق جزءاً من الاسم/الحي
+      if (words.length === 1 && words[0].length >= 4) {
+        return hay.includes(words[0]);
+      }
+
+      // تساهل إضافي: أغلب الكلمات (مثلاً 2 من 3)
+      if (words.length >= 3) {
+        var hit = 0;
+        for (var i = 0; i < words.length; i++) {
+          if (hay.includes(words[i])) hit++;
+        }
+        if (hit >= Math.ceil(words.length * 0.66)) return true;
+      }
+
+      return false;
     }
 
         function tr(lang, key, vars = {}) {
@@ -1455,8 +1497,10 @@
       return {
         id: `osm_${el.type || "n"}_${el.id}`,
         name,
-        area: t["addr:suburb"] || t["addr:city"] || t["addr:district"] || t["addr:municipality"] || defaultCity,
+        area: t["addr:suburb"] || t["addr:neighbourhood"] || t["addr:quarter"] || t["addr:district"] || t["addr:city"] || t["addr:municipality"] || defaultCity,
         address: address || defaultCity,
+        suburb: t["addr:suburb"] || t["addr:neighbourhood"] || t["addr:quarter"] || null,
+        neighbourhood: t["addr:neighbourhood"] || t["addr:suburb"] || null,
         phone: t.phone || t["contact:phone"] || t["contact:mobile"] || t.mobile || null,
         lat,
         lng,
@@ -4587,7 +4631,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=90";
+      var PHARIS_SW_URL = "./service-worker.js?v=91";
 
       function pharisLang() {
         var lang = "ar";
