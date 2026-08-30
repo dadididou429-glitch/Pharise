@@ -56,6 +56,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
@@ -227,12 +228,14 @@
     };
     let db = null;
     let auth = null;
+    let storage = null;
     let analytics = null;
     let firebaseReady = false;
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
       auth = firebase.auth();
+      try { storage = firebase.storage(); } catch (e) { storage = null; }
       try { analytics = firebase.analytics(); } catch(e) {}
       try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch(e) {}
       firebaseReady = true;
@@ -1975,7 +1978,28 @@ out center tags;`;
         return s;
       };
 
-      const submitMedRequest = async () => {
+      const compressMedImage = (file) => new Promise(function (resolve) {
+        if (!file || !file.type || String(file.type).indexOf("image/") !== 0) { resolve(null); return; }
+        var reader = new FileReader();
+        reader.onload = function () {
+          var img = new Image();
+          img.onload = function () {
+            var maxW = 900;
+            var w = img.width, h = img.height;
+            if (w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
+            var canvas = document.createElement("canvas");
+            canvas.width = w; canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            canvas.toBlob(function (blob) { resolve(blob); }, "image/jpeg", 0.72);
+          };
+          img.onerror = function () { resolve(null); };
+          img.src = reader.result;
+        };
+        reader.onerror = function () { resolve(null); };
+        reader.readAsDataURL(file);
+      });
+
+      submitMedRequest = async () => {
         const name = (medForm.name || "").trim();
         const wa = normalizeWa(medForm.whatsapp);
         if (name.length < 2) { alert(t("medNeedName")); return; }
@@ -1996,12 +2020,26 @@ out center tags;`;
           };
           if (city) medPayload.city = city;
           if (note) medPayload.note = note;
-          // قراءة الطلبات تتطلب auth — تسجيل مجهول عند الحاجة
           if (auth && !auth.currentUser) {
             try { await auth.signInAnonymously(); } catch (eAuth) { console.warn("anon auth", eAuth); }
           }
-          await db.collection("medicine_requests").add(medPayload);
+          const docRef = db.collection("medicine_requests").doc();
+          if (medImageFile) {
+            try {
+              const blob = await compressMedImage(medImageFile);
+              if (blob && storage) {
+                const ref = storage.ref("medicine_requests/" + docRef.id + ".jpg");
+                await ref.put(blob, { contentType: "image/jpeg" });
+                medPayload.imageUrl = await ref.getDownloadURL();
+              }
+            } catch (imgErr) {
+              console.warn("med image upload", imgErr);
+            }
+          }
+          await docRef.set(medPayload);
           setMedForm({ name: "", city: "", whatsapp: "", note: "" });
+          setMedImageFile(null);
+          setMedImagePreview(null);
           alert(t("medSuccess"));
         } catch (e) {
           console.warn(e);
@@ -3636,6 +3674,47 @@ out center tags;`;
                     <input value={medForm.whatsapp} onChange={(e) => setMedForm(f => ({...f, whatsapp: e.target.value}))} placeholder={t("medWaPh")} dir="ltr" className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-yellow-500" maxLength={15} />
                     <label className="block text-xs font-bold text-yellow-900 dark:text-yellow-300">{t("medNote")}</label>
                     <textarea value={medForm.note} onChange={(e) => setMedForm(f => ({...f, note: e.target.value}))} placeholder={t("medNotePh")} rows={2} className="w-full rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-yellow-500" maxLength={200} />
+                    <div>
+                      <label className="text-xs font-semibold text-yellow-900 dark:text-yellow-200 mb-1 block">
+                        {lang === "ar" ? "صورة الدواء (اختياري)" : lang === "fr" ? "Photo du médicament (optionnel)" : "Medicine photo (optional)"}
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        disabled={medSubmitting}
+                        onChange={(e) => {
+                          const f = e.target.files && e.target.files[0];
+                          if (!f) {
+                            setMedImageFile(null);
+                            setMedImagePreview(null);
+                            return;
+                          }
+                          if (f.size > 8 * 1024 * 1024) {
+                            alert(lang === "ar" ? "الصورة كبيرة جداً (الحد 8 ميغابايت)" : "Image too large (max 8MB)");
+                            e.target.value = "";
+                            return;
+                          }
+                          setMedImageFile(f);
+                          try {
+                            setMedImagePreview(URL.createObjectURL(f));
+                          } catch (err) {
+                            setMedImagePreview(null);
+                          }
+                        }}
+                        className="w-full text-xs text-yellow-900 dark:text-yellow-200 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-yellow-500 file:text-yellow-950 file:font-bold file:text-xs"
+                      />
+                      {medImagePreview && (
+                        <div className="mt-2 relative inline-block">
+                          <img src={medImagePreview} alt="" className="max-h-28 rounded-lg border border-yellow-300 object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => { setMedImageFile(null); setMedImagePreview(null); }}
+                            className="absolute -top-2 -end-2 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold"
+                          >✕</button>
+                        </div>
+                      )}
+                    </div>
                     <button type="button" disabled={medSubmitting} onClick={submitMedRequest} className="w-full py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 text-yellow-950 font-bold text-sm">
                       {medSubmitting ? "…" : t("medPublish")}
                     </button>
@@ -3657,6 +3736,16 @@ out center tags;`;
                         return (
                           <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/80 dark:border-yellow-700 rounded-xl p-3">
                             <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
+                            {r.imageUrl ? (
+                              <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
+                                <img src={r.imageUrl} alt="" className="max-h-32 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
+                              </a>
+                            ) : null}
+                            {r.imageUrl ? (
+                              <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
+                                <img src={r.imageUrl} alt="" className="max-h-32 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
+                              </a>
+                            ) : null}
                             {r.city ? <p className="text-[11px] text-brand-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
                             {r.note ? <p className="text-[11px] text-brand-600 dark:text-brand-200 mt-1">{r.note}</p> : null}
                             {expStr ? <p className="text-[10px] text-brand-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
@@ -4259,6 +4348,11 @@ out center tags;`;
                       <div key={r.id} className="bg-brand-900 border border-brand-800 rounded-xl p-3 flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="font-bold text-sm text-yellow-200 truncate">{r.medicineName}</p>
+                          {r.imageUrl ? (
+                            <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1">
+                              <img src={r.imageUrl} alt="" className="max-h-20 rounded-md object-cover border border-brand-700" loading="lazy" />
+                            </a>
+                          ) : null}
                           {r.city ? <p className="text-[11px] text-brand-400">📍 {r.city}</p> : null}
                           {r.whatsapp ? <p className="text-[11px] text-brand-500 font-mono" dir="ltr">{r.whatsapp}</p> : null}
                           {r.note ? <p className="text-[11px] text-brand-300 mt-1">{r.note}</p> : null}
@@ -4358,7 +4452,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=83";
+      var PHARIS_SW_URL = "./service-worker.js?v=84";
 
       function pharisLang() {
         var lang = "ar";
