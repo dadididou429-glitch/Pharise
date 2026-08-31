@@ -1762,19 +1762,22 @@ out center tags;`;
       const markersLayer = useRef(null);
       const userMarker = useRef(null);
 
-      // إنشاء الخريطة مرة واحدة
       useEffect(() => {
         if (!mapRef.current || mapInstance.current) return;
-        const map = L.map(mapRef.current, { zoomControl: false }).setView(
-          [userLoc.lat, userLoc.lng],
-          13
-        );
+        const map = L.map(mapRef.current, {
+          zoomControl: false,
+          attributionControl: true
+        }).setView([userLoc.lat, userLoc.lng], 14);
         L.control.zoom({ position: "bottomright" }).addTo(map);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "© OpenStreetMap",
+          maxZoom: 19
         }).addTo(map);
         markersLayer.current = L.layerGroup().addTo(map);
         mapInstance.current = map;
+        setTimeout(function () {
+          try { map.invalidateSize(); } catch (e) {}
+        }, 200);
         return () => {
           map.remove();
           mapInstance.current = null;
@@ -1783,72 +1786,128 @@ out center tags;`;
         };
       }, []);
 
-      // تحديث العلامات والموقع عند التغيير
       useEffect(() => {
         const map = mapInstance.current;
         if (!map || !markersLayer.current) return;
+        try { map.invalidateSize(); } catch (e) {}
 
         markersLayer.current.clearLayers();
         if (userMarker.current) {
-          map.removeLayer(userMarker.current);
+          try { map.removeLayer(userMarker.current); } catch (e2) {}
+          userMarker.current = null;
         }
 
         const youAreHere =
           lang === "ar" ? "📍 أنت هنا" : lang === "fr" ? "📍 Vous êtes ici" : "📍 You are here";
         const openLabel =
-          lang === "ar" ? "🟢 مفتوحة" : lang === "fr" ? "🟢 Ouverte" : "🟢 Open";
+          lang === "ar" ? "🟢 مفتوحة الآن" : lang === "fr" ? "🟢 Ouverte" : "🟢 Open now";
         const closedLabel =
           lang === "ar" ? "🔴 مغلقة" : lang === "fr" ? "🔴 Fermée" : "🔴 Closed";
+        const dutyLabel =
+          lang === "ar" ? "🌙 مناوبة" : lang === "fr" ? "🌙 Garde" : "🌙 On duty";
+        const tapHint =
+          lang === "ar" ? "اضغط للتفاصيل" : lang === "fr" ? "Appuyer pour détails" : "Tap for details";
 
         userMarker.current = L.circleMarker([userLoc.lat, userLoc.lng], {
-          radius: 9,
-          fillColor: "#3b82f6",
+          radius: 10,
+          fillColor: "#2563eb",
           color: "#fff",
-          weight: 2.5,
-          fillOpacity: 0.95,
+          weight: 3,
+          fillOpacity: 1
         })
           .addTo(map)
-          .bindPopup(youAreHere);
+          .bindPopup("<b>" + youAreHere + "</b>");
 
-        const markers = [];
-        pharmacies.forEach((ph) => {
-          if (!ph.lat || !ph.lng) return;
-          const color = ph.status.open ? "#059669" : "#dc2626";
-          const m = L.circleMarker([ph.lat, ph.lng], {
-            radius: 11,
+        const bounds = [];
+        bounds.push([userLoc.lat, userLoc.lng]);
+
+        pharmacies.forEach(function (ph) {
+          if (!Number.isFinite(Number(ph.lat)) || !Number.isFinite(Number(ph.lng))) return;
+          var open = ph.status && ph.status.open;
+          var duty = !!ph.onDuty;
+          var color = duty ? "#7c3aed" : open ? "#059669" : "#dc2626";
+          var statusText = duty ? dutyLabel : open ? openLabel : closedLabel;
+          var dist =
+            Number.isFinite(Number(ph.distance))
+              ? Number(ph.distance).toFixed(1) + " km"
+              : "";
+          var m = L.circleMarker([ph.lat, ph.lng], {
+            radius: duty ? 13 : 11,
             fillColor: color,
             color: "#fff",
             weight: 2,
-            fillOpacity: 0.9,
+            fillOpacity: 0.92
           });
-          m.bindPopup(`<div style="font-family:sans-serif;text-align:${
-            lang === "ar" ? "right" : "left"
-          };direction:${lang === "ar" ? "rtl" : "ltr"};min-width:180px;padding:2px">
-            <b style="color:#064e3b">${ph.name}</b><br/>
-            <span style="font-size:12px;color:#666">${ph.area || ""}</span><br/>
-            <span style="font-size:12px;font-weight:600;color:${
-              ph.status.open ? "#059669" : "#dc2626"
-            }">${ph.status.open ? openLabel : closedLabel}</span>
-          </div>`);
-          m.on("click", () => onSelect && onSelect(ph));
+          var dir = lang === "ar" ? "rtl" : "ltr";
+          var align = lang === "ar" ? "right" : "left";
+          var html =
+            '<div style="font-family:sans-serif;text-align:' +
+            align +
+            ";direction:" +
+            dir +
+            ';min-width:190px;padding:4px">' +
+            '<b style="color:#064e3b;font-size:14px">' +
+            (ph.name || "") +
+            "</b><br/>" +
+            (ph.area
+              ? '<span style="font-size:12px;color:#666">📍 ' + ph.area + "</span><br/>"
+              : "") +
+            (dist
+              ? '<span style="font-size:12px;color:#666">📏 ' + dist + "</span><br/>"
+              : "") +
+            '<span style="font-size:12px;font-weight:700;color:' +
+            color +
+            '">' +
+            statusText +
+            "</span><br/>" +
+            '<span style="font-size:11px;color:#888">' +
+            tapHint +
+            "</span></div>";
+          m.bindPopup(html);
+          m.on("click", function () {
+            if (onSelect) onSelect(ph);
+          });
           markersLayer.current.addLayer(m);
-          markers.push(m);
+          bounds.push([ph.lat, ph.lng]);
         });
 
-        if (markers.length > 0) {
-          const group = L.featureGroup(markers);
-          map.fitBounds(group.getBounds().pad(0.12));
+        if (bounds.length > 1) {
+          try {
+            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+          } catch (e3) {
+            map.setView([userLoc.lat, userLoc.lng], 14);
+          }
         } else {
-          map.setView([userLoc.lat, userLoc.lng], 13);
+          map.setView([userLoc.lat, userLoc.lng], 14);
         }
-      }, [pharmacies, userLoc, lang, onSelect]);
+      }, [pharmacies, userLoc.lat, userLoc.lng, lang, onSelect]);
 
-      return <div ref={mapRef} className="w-full h-full min-h-[50vh] rounded-2xl" />;
+      const recenter = function () {
+        const map = mapInstance.current;
+        if (!map) return;
+        map.setView([userLoc.lat, userLoc.lng], 15);
+      };
+
+      return (
+        <div className="relative w-full h-full">
+          <div ref={mapRef} className="w-full h-full rounded-2xl" />
+          <button
+            type="button"
+            onClick={recenter}
+            className="absolute top-3 start-3 z-[1000] px-3 py-1.5 rounded-xl bg-white dark:bg-brand-900 text-xs font-bold shadow border border-stone-200 dark:border-brand-700 text-stone-700 dark:text-brand-100"
+          >
+            📍 {lang === "ar" ? "موقعي" : lang === "fr" ? "Ma position" : "My location"}
+          </button>
+          <div className="absolute bottom-3 start-3 z-[1000] flex flex-col gap-1 text-[10px] font-semibold bg-white/90 dark:bg-brand-950/90 rounded-lg px-2 py-1.5 shadow border border-stone-200 dark:border-brand-700">
+            <span className="text-emerald-700">🟢 {lang === "ar" ? "مفتوحة" : "Open"}</span>
+            <span className="text-rose-600">🔴 {lang === "ar" ? "مغلقة" : "Closed"}</span>
+            <span className="text-violet-700">🟣 {lang === "ar" ? "مناوبة" : "Duty"}</span>
+          </div>
+        </div>
+      );
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // MAIN APP
-    // ═══════════════════════════════════════════════════════════
+
     function useDebounce(value, delay) {
       const [debounced, setDebounced] = useState(value);
       useEffect(() => {
@@ -1966,7 +2025,6 @@ out center tags;`;
         showAddForm: false,
         showLogin: false,
         showLocationPicker: false,
-        adminView: false,
         emergencyMode: false,
         showLocGate: false,
         showOnboard: false,
@@ -1978,7 +2036,6 @@ out center tags;`;
         showAddForm: showAddForm,
         showLogin: showLogin,
         showLocationPicker: showLocationPicker,
-        adminView: adminView,
         emergencyMode: emergencyMode,
         showLocGate: showLocGate,
         showOnboard: showOnboard,
@@ -2007,11 +2064,6 @@ out center tags;`;
           if (L.showAddForm) { setShowAddForm(false); return; }
           if (L.showLogin) { setShowLogin(false); return; }
           if (L.showLocationPicker) { setShowLocationPicker(false); return; }
-          if (L.adminView) {
-            setAdminView(false);
-            try { localStorage.setItem("pharis_admin_view", "0"); } catch (e2) {}
-            return;
-          }
           if (L.emergencyMode) { setEmergencyMode(false); return; }
           if (L.showLocGate) { setShowLocGate(false); return; }
           if (L.showOnboard) { setShowOnboard(false); return; }
@@ -2027,7 +2079,6 @@ out center tags;`;
       useEffect(() => { if (showAddForm) pushLayer("add"); }, [showAddForm, pushLayer]);
       useEffect(() => { if (showLogin) pushLayer("login"); }, [showLogin, pushLayer]);
       useEffect(() => { if (showLocationPicker) pushLayer("loc"); }, [showLocationPicker, pushLayer]);
-      useEffect(() => { if (adminView) pushLayer("admin"); }, [adminView, pushLayer]);
       useEffect(() => { if (emergencyMode) pushLayer("emergency"); }, [emergencyMode, pushLayer]);
 
 
@@ -2570,10 +2621,11 @@ out center tags;`;
         } catch (e) {}
       }, [adminUser]);
 
-      // حفظ حالة اللوحة: تُغلق فقط عندما يغلقها الأدمن (أو يسجّل الخروج)
+      // حفظ فتح اللوحة فقط — الإغلاق يُكتب عند الضغط على إغلاق/خروج فقط (لا يُمسح تلقائياً)
       useEffect(() => {
+        if (!adminView) return;
         try {
-          localStorage.setItem("pharis_admin_view", adminView ? "1" : "0");
+          localStorage.setItem("pharis_admin_view", "1");
         } catch (e) {}
       }, [adminView]);
 
@@ -3691,7 +3743,7 @@ out center tags;`;
             
 
             {showMap ? (
-              <div className="h-[60vh] rounded-2xl overflow-hidden border border-stone-200 dark:border-brand-800">
+              <div className="h-[70vh] min-h-[420px] rounded-2xl overflow-hidden border border-stone-200 dark:border-brand-800 shadow-lg">
                 <MapView pharmacies={list} userLoc={userLoc} lang={lang} onSelect={setSelected} />
               </div>
             ) : emergencyMode ? (
@@ -4631,7 +4683,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=91";
+      var PHARIS_SW_URL = "./service-worker.js?v=93";
 
       function pharisLang() {
         var lang = "ar";
