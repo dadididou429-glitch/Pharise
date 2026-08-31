@@ -1953,7 +1953,16 @@ out center tags;`;
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
       const [adminView, setAdminView] = useState(function () {
-        try { return localStorage.getItem("pharis_admin_view") === "1"; } catch (e) { return false; }
+        try {
+          return localStorage.getItem("pharis_admin_view") === "1"
+            || localStorage.getItem("pharis_admin_pinned") === "1";
+        } catch (e) { return false; }
+      });
+      const [adminSessionWait, setAdminSessionWait] = useState(function () {
+        try {
+          return localStorage.getItem("pharis_admin_view") === "1"
+            || localStorage.getItem("pharis_admin_pinned") === "1";
+        } catch (e) { return false; }
       });
       const [adminTab, setAdminTab] = useState("review");
 
@@ -2513,7 +2522,7 @@ out center tags;`;
 
             // إذا كانت لوحة الأدمن مطلوبة ولم تُستعد الجلسة بعد — لا تسجّل مجهولاً (يحفظ جلسة الأدمن)
             var wantAdmin = false;
-            try { wantAdmin = localStorage.getItem("pharis_admin_view") === "1"; } catch (e3) {}
+            try { wantAdmin = localStorage.getItem("pharis_admin_view") === "1" || localStorage.getItem("pharis_admin_pinned") === "1"; } catch (e3) {}
             if (!user && wantAdmin) {
               return;
             }
@@ -2611,40 +2620,55 @@ out center tags;`;
       }, []);
 
 
-      // استعادة لوحة التحكم بعد تسجيل الدخول إن كانت مفتوحة سابقاً
+      // استعادة لوحة التحكم بعد تسجيل الدخول
       useEffect(() => {
         if (!adminUser) return;
         try {
-          if (localStorage.getItem("pharis_admin_view") === "1") {
+          var pinned = localStorage.getItem("pharis_admin_view") === "1"
+            || localStorage.getItem("pharis_admin_pinned") === "1";
+          if (pinned) {
             setAdminView(true);
+            setAdminSessionWait(false);
+            localStorage.setItem("pharis_admin_view", "1");
+            localStorage.setItem("pharis_admin_pinned", "1");
           }
         } catch (e) {}
       }, [adminUser]);
 
-      // حفظ فتح اللوحة فقط — الإغلاق يُكتب عند الضغط على إغلاق/خروج فقط (لا يُمسح تلقائياً)
+      // عند فتح اللوحة: ثبّت المفتاحين (لا يُمسحان إلا عند الإغلاق اليدوي)
       useEffect(() => {
         if (!adminView) return;
         try {
           localStorage.setItem("pharis_admin_view", "1");
+          localStorage.setItem("pharis_admin_pinned", "1");
         } catch (e) {}
       }, [adminView]);
 
-
-      // إذا اللوحة محفوظة مفتوحة والجلسة لم تُستعد: أظهر تسجيل الدخول تلقائياً
+      // إن كانت اللوحة مثبتة ولا توجد جلسة أدمن بعد التحميل → شاشة الدخول (لا تُعتبر اللوحة مغلقة)
       useEffect(() => {
         if (!firebaseReady || !auth) return;
         var t = setTimeout(function () {
           try {
-            if (localStorage.getItem("pharis_admin_view") === "1" && !auth.currentUser) {
-              setAdminView(true);
+            var pinned = localStorage.getItem("pharis_admin_view") === "1"
+              || localStorage.getItem("pharis_admin_pinned") === "1";
+            if (!pinned) {
+              setAdminSessionWait(false);
+              return;
+            }
+            setAdminView(true);
+            if (!auth.currentUser || auth.currentUser.isAnonymous) {
+              setAdminSessionWait(false);
               setShowLogin(true);
-            } else if (localStorage.getItem("pharis_admin_view") === "1" && auth.currentUser && !auth.currentUser.isAnonymous) {
-              // الجلسة موجودة — اللوحة تُفتح عبر مستمع الأدمن
+            } else {
+              // قد تكتمل onAuthStateChanged بعد لحظات
+              setAdminSessionWait(true);
             }
           } catch (e) {}
-        }, 4500);
+        }, 2000);
         return function () { clearTimeout(t); };
       }, [firebaseReady, auth]);
+
+
 
       // Auth — الأدمن فقط (ليس الزائر المجهول)
       useEffect(() => {
@@ -2658,6 +2682,15 @@ out center tags;`;
           // الزائر المجهول ليس أدمن أبداً
           if (u.isAnonymous) {
             setAdminUser(null);
+            try {
+              var pinA = localStorage.getItem("pharis_admin_view") === "1"
+                || localStorage.getItem("pharis_admin_pinned") === "1";
+              if (pinA) {
+                setAdminView(true);
+                setAdminSessionWait(false);
+                setShowLogin(true);
+              }
+            } catch (eAnon) {}
             return;
           }
           let allowed = (u.uid === PRIMARY_ADMIN_UID);
@@ -2671,9 +2704,14 @@ out center tags;`;
           }
           if (allowed) {
             setAdminUser(u);
+            setAdminSessionWait(false);
             try {
-              if (localStorage.getItem("pharis_admin_view") === "1") {
+              var pinned = localStorage.getItem("pharis_admin_view") === "1"
+                || localStorage.getItem("pharis_admin_pinned") === "1";
+              if (pinned) {
                 setAdminView(true);
+                localStorage.setItem("pharis_admin_view", "1");
+                localStorage.setItem("pharis_admin_pinned", "1");
               }
             } catch (eOpen) {}
           } else {
@@ -3317,7 +3355,11 @@ out center tags;`;
           }
           setShowLogin(false);
           setAdminView(true);
-          try { localStorage.setItem("pharis_admin_view", "1"); } catch (eL) {}
+          setAdminSessionWait(false);
+          try {
+            localStorage.setItem("pharis_admin_view", "1");
+            localStorage.setItem("pharis_admin_pinned", "1");
+          } catch (eL) {}
           setLoginPassword("");
         } catch (e) {
           console.error(e);
@@ -3505,7 +3547,17 @@ out center tags;`;
                 <button onClick={() => setDark(d => !d)} className="p-1.5 rounded-lg hover:bg-brand-900 transition" title={dark ? t("lightMode") : t("darkMode")}>
                   {dark ? <Icons.Sun className="w-4 h-4 text-brand-300" /> : <Icons.Moon className="w-4 h-4 text-brand-300" />}
                 </button>
-                <button onClick={() => adminUser ? setAdminView(true) : setShowLogin(true)} className="font-mono text-brand-400 text-[10px] border border-brand-800 rounded-md px-2 py-1 hover:bg-brand-900 transition">
+                <button onClick={() => {
+                  if (adminUser) {
+                    setAdminView(true);
+                    try {
+                      localStorage.setItem("pharis_admin_view", "1");
+                      localStorage.setItem("pharis_admin_pinned", "1");
+                    } catch (ePin) {}
+                  } else {
+                    setShowLogin(true);
+                  }
+                }} className="font-mono text-brand-400 text-[10px] border border-brand-800 rounded-md px-2 py-1 hover:bg-brand-900 transition">
                   {t("dashboard")}
                 </button>
                 <div className="font-mono text-brand-400 text-xs border border-brand-800 rounded-md px-2 py-1">{timeStr}</div>
@@ -4466,6 +4518,27 @@ out center tags;`;
             </div>
           )}
 
+          {/* انتظار استعادة جلسة الأدمن */}
+          {adminView && !adminUser && adminSessionWait && (
+            <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4">
+              <div className="bg-brand-900 border border-brand-600 rounded-2xl px-6 py-5 text-center max-w-sm w-full">
+                <p className="text-brand-50 font-bold text-sm mb-1">
+                  {lang === "ar" ? "جاري استعادة لوحة التحكم..." : "Restoring admin panel..."}
+                </p>
+                <p className="text-brand-300 text-xs mb-4">
+                  {lang === "ar" ? "إذا استغرق الأمر طويلاً سجّل الدخول مرة واحدة" : "If it takes too long, sign in once"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setAdminSessionWait(false); setShowLogin(true); }}
+                  className="w-full py-2.5 rounded-xl bg-brand-500 text-brand-950 font-bold text-sm"
+                >
+                  {lang === "ar" ? "تسجيل الدخول" : "Sign in"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Admin Panel */}
           {adminView && adminUser && (
             <div className="fixed inset-0 bg-black z-40 overflow-y-auto">
@@ -4473,8 +4546,8 @@ out center tags;`;
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); } catch (e) {} auth.signOut(); setAdminView(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
-                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); } catch (e) {} setAdminView(false); }} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
+                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); localStorage.setItem("pharis_admin_pinned", "0"); } catch (e) {} auth.signOut(); setAdminView(false); setAdminSessionWait(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
+                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); localStorage.setItem("pharis_admin_pinned", "0"); } catch (e) {} setAdminView(false); setAdminSessionWait(false); }} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
                   </div>
                 </div>
                 <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
@@ -4683,7 +4756,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=93";
+      var PHARIS_SW_URL = "./service-worker.js?v=94";
 
       function pharisLang() {
         var lang = "ar";
