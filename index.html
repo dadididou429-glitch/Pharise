@@ -2581,7 +2581,7 @@ out center tags;`;
               return;
             }
 
-            // مستخدم/تثبيت جديد فقط
+            // مستخدم/تثبيت جديد فقط (merge حتى لا يُمسح مستند قديم إن فشلت القراءة بسبب القواعد)
             try {
               await ref.set({
                 installId: installId,
@@ -2589,9 +2589,9 @@ out center tags;`;
                 firstSeen: firebase.firestore.FieldValue.serverTimestamp(),
                 lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
                 kind: "install"
-              });
+              }, { merge: true });
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
-              console.info("Pharis: new install counted");
+              console.info("Pharis: install register ok");
             } catch (eCreate) {
               console.warn("unique_users create failed", eCreate);
               // لا تضع DONE_KEY عند الفشل حتى تُعاد المحاولة لاحقاً
@@ -4801,7 +4801,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=96";
+      var PHARIS_SW_URL = "./service-worker.js?v=97";
 
       function pharisLang() {
         var lang = "ar";
