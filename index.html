@@ -2491,15 +2491,16 @@ out center tags;`;
         return function () { cancelled = true; };
       }, []);
 
-      // تسجيل تثبيت واحد لكل جهاز (ليس كل فتحة) — عداد حقيقي للتركيبات
+      // تسجيل تثبيت واحد لكل جهاز (ليس كل فتحة)
+      // مستند Firestore: unique_users/{auth.uid} ليتوافق مع القواعد
+      // منع التكرار على الجهاز: pharis_install_registered_v3 + pharis_install_id_v3
       useEffect(() => {
         if (!firebaseReady || !db || !auth) return;
         let cancelled = false;
         (async function () {
+          var DONE_KEY = "pharis_install_registered_v3";
+          var INSTALL_KEY = "pharis_install_id_v3";
           try {
-            // إن سُجّل هذا التثبيت مسبقاً على الجهاز → لا تفعل شيئاً (حتى بدون نت لاحقاً)
-            var DONE_KEY = "pharis_install_registered_v3";
-            var INSTALL_KEY = "pharis_install_id_v3";
             try {
               if (localStorage.getItem(DONE_KEY) === "1") {
                 return;
@@ -2510,7 +2511,6 @@ out center tags;`;
               await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
             } catch (ePers) {}
 
-            // انتظر استقرار الجلسة
             var user = await new Promise(function (resolve) {
               var settled = false;
               var unsub = auth.onAuthStateChanged(function (u) {
@@ -2534,7 +2534,6 @@ out center tags;`;
               wantAdmin = localStorage.getItem("pharis_admin_view") === "1"
                 || localStorage.getItem("pharis_admin_pinned") === "1";
             } catch (e3) {}
-            // لوحة أدمن بانتظار الدخول: لا تسجّل مجهولاً الآن
             if (!user && wantAdmin) {
               return;
             }
@@ -2545,13 +2544,12 @@ out center tags;`;
             }
             if (cancelled || !user) return;
 
-            // لا نحسب جهاز الأدمن الأساسي كـ "تثبيت مستخدم"
+            // الأدمن الأساسي لا يُحسب
             if (!user.isAnonymous && user.uid === PRIMARY_ADMIN_UID) {
               try { localStorage.setItem(DONE_KEY, "1"); } catch (eA) {}
               return;
             }
 
-            // معرّف تثبيت ثابت على الجهاز (يبقى بعد إغلاق التطبيق؛ يُمسح فقط مع بيانات الموقع)
             var installId = null;
             try { installId = localStorage.getItem(INSTALL_KEY); } catch (e4) {}
             if (!installId) {
@@ -2559,12 +2557,13 @@ out center tags;`;
               try { localStorage.setItem(INSTALL_KEY, installId); } catch (e5) {}
             }
 
-            // إن وُجد المستند مسبقاً → تثبيت قديم، حدّث lastSeen فقط ولا يزيد العداد
-            var ref = db.collection("unique_users").doc(installId);
+            // مهم: معرف المستند = auth.uid (يتوافق مع قواعد Firestore)
+            var ref = db.collection("unique_users").doc(user.uid);
             var existing = null;
             try {
               existing = await ref.get();
             } catch (eGet) {
+              // القراءة قد تُرفض لغير الأدمن — نحاول الإنشاء مباشرة
               existing = null;
             }
             if (cancelled) return;
@@ -2572,22 +2571,31 @@ out center tags;`;
             if (existing && existing.exists) {
               try {
                 await ref.set({
-                  lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                  lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                  installId: installId
                 }, { merge: true });
-              } catch (eUp) {}
+              } catch (eUp) {
+                console.warn("unique_users update", eUp);
+              }
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e6) {}
               return;
             }
 
-            // تثبيت جديد فقط
-            await ref.set({
-              installId: installId,
-              uid: user.uid || null,
-              firstSeen: firebase.firestore.FieldValue.serverTimestamp(),
-              lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-              kind: "install"
-            });
-            try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
+            // مستخدم/تثبيت جديد فقط
+            try {
+              await ref.set({
+                installId: installId,
+                uid: user.uid,
+                firstSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                kind: "install"
+              });
+              try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
+              console.info("Pharis: new install counted");
+            } catch (eCreate) {
+              console.warn("unique_users create failed", eCreate);
+              // لا تضع DONE_KEY عند الفشل حتى تُعاد المحاولة لاحقاً
+            }
           } catch (e) {
             console.warn("install register", e);
           }
@@ -4793,7 +4801,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=95";
+      var PHARIS_SW_URL = "./service-worker.js?v=96";
 
       function pharisLang() {
         var lang = "ar";

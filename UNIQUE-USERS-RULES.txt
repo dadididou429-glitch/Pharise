@@ -1,0 +1,13 @@
+// جزء unique_users — انشره داخل rules الكامل
+match /unique_users/{uid} {
+  // إنشاء: صاحب الجلسة فقط ولمعرف نفسه
+  allow create: if request.auth != null
+    && request.auth.uid == uid
+    && request.resource.data.uid == request.auth.uid;
+  // تحديث lastSeen فقط لنفس المستخدم
+  allow update: if request.auth != null
+    && request.auth.uid == uid;
+  // القراءة والقائمة للأدمن فقط (العداد)
+  allow read, list, delete: if request.auth != null
+    && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+}
