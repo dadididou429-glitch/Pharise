@@ -786,7 +786,7 @@
         isDemo: true,
         medicineName: "أموكسيسيلين 500mg",
         city: "سيدي بلعباس",
-        note: "مطلوب عاجلاً إن وُجد — مثال توضيحي",
+        note: "مطلوب عاجلاً إن توفر",
         whatsapp: "",
         active: true,
         expiresAtMs: Date.now() + 25 * 24 * 60 * 60 * 1000
@@ -796,7 +796,7 @@
         isDemo: true,
         medicineName: "أنسولين / Lantus",
         city: "وهران",
-        note: "بحث عن علبة — مثال لتشجيع الطلبات",
+        note: "علبة واحدة تكفي",
         whatsapp: "",
         active: true,
         expiresAtMs: Date.now() + 20 * 24 * 60 * 60 * 1000
@@ -806,7 +806,7 @@
         isDemo: true,
         medicineName: "Ventoline / سالبوتامول",
         city: "الجزائر",
-        note: "للاستنشاق — طلب تجريبي للعرض فقط",
+        note: "للاستنشاق",
         whatsapp: "",
         active: true,
         expiresAtMs: Date.now() + 18 * 24 * 60 * 60 * 1000
@@ -816,12 +816,12 @@
         isDemo: true,
         medicineName: "Doliprane 1000mg",
         city: "تلمسان",
-        note: "مثال: هكذا يظهر طلبك بعد الإضافة",
+        note: "صندوق إن وُجد",
         whatsapp: "",
         active: true,
         expiresAtMs: Date.now() + 15 * 24 * 60 * 60 * 1000
       }
-    ];
+    ]
 
     function mergeDemoMedRequests(list) {
       const real = (list || []).filter(function (r) {
@@ -4044,14 +4044,7 @@ out center tags;`;
                     );
                     return (
                       <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/70 dark:border-yellow-700 rounded-xl p-3">
-                        <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200 flex flex-wrap items-center gap-1.5">
-                          <span>{r.medicineName}</span>
-                          {r.isDemo ? (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-600 dark:bg-brand-800 dark:text-brand-200">
-                              {lang === "ar" ? "مثال" : lang === "fr" ? "Exemple" : "Demo"}
-                            </span>
-                          ) : null}
-                        </p>
+                        <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
                         {r.imageUrl ? (
                           <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
                             <img src={r.imageUrl} alt="" className="max-h-36 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
@@ -4061,11 +4054,7 @@ out center tags;`;
                         {r.note ? <p className="text-[11px] text-stone-600 dark:text-brand-200 mt-1">{r.note}</p> : null}
                         {expStr ? <p className="text-[10px] text-stone-400 mt-1">{t("medExpires")}: {expStr}</p> : null}
                         <div className="flex gap-1.5 mt-2">
-                          {r.isDemo ? (
-                            <span className="flex-1 inline-flex items-center justify-center py-2 rounded-lg bg-stone-200 dark:bg-brand-800 text-stone-600 dark:text-brand-200 text-xs font-bold">
-                              {lang === "ar" ? "أضف طلبك الحقيقي من الزر أعلاه" : lang === "fr" ? "Ajoutez votre vraie demande" : "Add your real request above"}
-                            </span>
-                          ) : r.whatsapp ? (
+                          {!r.isDemo && r.whatsapp ? (
                           <a
                             href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
                             target="_blank"
@@ -4766,10 +4755,7 @@ out center tags;`;
                     {medRequests.map((r) => (
                       <div key={r.id} className="bg-brand-900 border border-brand-800 rounded-xl p-3 flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="font-bold text-sm text-yellow-200 truncate flex items-center gap-1">
-                            <span className="truncate">{r.medicineName}</span>
-                            {r.isDemo ? <span className="shrink-0 text-[9px] px-1 rounded bg-brand-700 text-brand-200">demo</span> : null}
-                          </p>
+                          <p className="font-bold text-sm text-yellow-200 truncate">{r.medicineName}</p>
                           {r.imageUrl ? (
                             <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1">
                               <img src={r.imageUrl} alt="" className="max-h-20 rounded-md object-cover border border-brand-700" loading="lazy" />
@@ -4874,7 +4860,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=99";
+      var PHARIS_SW_URL = "./service-worker.js?v=100";
 
       function pharisLang() {
         var lang = "ar";
