@@ -784,12 +784,16 @@
     // تثبيت لوحة الأدمن عبر localStorage + cookie (يتحمل إغلاق التطبيق بالكامل أكثر)
     function pharisAdminPinRead() {
       try {
+        var q = new URLSearchParams(window.location.search || "");
+        if (q.get("admin") === "1" || q.get("admin") === "true") return true;
+        if ((window.location.hash || "").replace(/^#/, "") === "admin") return true;
+      } catch (e0) {}
+      try {
         if (localStorage.getItem("pharis_admin_view") === "1") return true;
         if (localStorage.getItem("pharis_admin_pinned") === "1") return true;
       } catch (e1) {}
       try {
-        var m = document.cookie.match(/(?:^|; )pharis_admin_pin=1(?:;|$)/);
-        if (m) return true;
+        if (/(?:^|; )pharis_admin_pin=1(?:;|$)/.test(document.cookie || "")) return true;
       } catch (e2) {}
       return false;
     }
@@ -799,54 +803,9 @@
         localStorage.setItem("pharis_admin_pinned", on ? "1" : "0");
       } catch (e1) {}
       try {
-        var exp = on ? "max-age=31536000" : "max-age=0";
-        document.cookie = "pharis_admin_pin=" + (on ? "1" : "0") + "; path=/; " + exp + "; SameSite=Lax";
+        document.cookie = "pharis_admin_pin=" + (on ? "1" : "0") + "; path=/; " + (on ? "max-age=31536000" : "max-age=0") + "; SameSite=Lax";
       } catch (e2) {}
     }
-
-
-    const DEMO_MED_REQUESTS = [
-      {
-        id: "demo_med_1",
-        isDemo: true,
-        medicineName: "أموكسيسيلين 500mg",
-        city: "سيدي بلعباس",
-        note: "مطلوب عاجلاً إن توفر",
-        whatsapp: "",
-        active: true,
-        expiresAtMs: Date.now() + 25 * 24 * 60 * 60 * 1000
-      },
-      {
-        id: "demo_med_2",
-        isDemo: true,
-        medicineName: "أنسولين / Lantus",
-        city: "وهران",
-        note: "علبة واحدة تكفي",
-        whatsapp: "",
-        active: true,
-        expiresAtMs: Date.now() + 20 * 24 * 60 * 60 * 1000
-      },
-      {
-        id: "demo_med_3",
-        isDemo: true,
-        medicineName: "Ventoline / سالبوتامول",
-        city: "الجزائر",
-        note: "للاستنشاق",
-        whatsapp: "",
-        active: true,
-        expiresAtMs: Date.now() + 18 * 24 * 60 * 60 * 1000
-      },
-      {
-        id: "demo_med_4",
-        isDemo: true,
-        medicineName: "Doliprane 1000mg",
-        city: "تلمسان",
-        note: "صندوق إن وُجد",
-        whatsapp: "",
-        active: true,
-        expiresAtMs: Date.now() + 15 * 24 * 60 * 60 * 1000
-      }
-    ]
 
     function mergeDemoMedRequests(list) {
       const real = (list || []).filter(function (r) {
@@ -2759,28 +2718,31 @@ out center tags;`;
       }, [adminView]);
 
 
-      // عند كل فتح للتطبيق: إن كانت اللوحة مثبتة أعد فتحها فوراً (حتى بعد إغلاق كلي)
+      // عند كل فتح: لوحة مثبتة أو رابط ?admin=1 → افتح اللوحة / الدخول
       useEffect(() => {
         if (!pharisAdminPinRead()) return;
         setAdminView(true);
         setAdminSessionWait(true);
-        pharisAdminPinWrite(true);
-        var t1 = setTimeout(function () {
-          // إن لم تُستعد جلسة الأدمن خلال ثوانٍ → شاشة الدخول
-          setAdminSessionWait(function (w) {
-            return w;
-          });
-        }, 500);
+        try { pharisAdminPinWrite(true); } catch (eW) {}
+        var t0 = setTimeout(function () {
+          try {
+            var u = auth && auth.currentUser;
+            if (!u || u.isAnonymous) {
+              setShowLogin(true);
+              setAdminSessionWait(false);
+            }
+          } catch (e) {}
+        }, 600);
         var t2 = setTimeout(function () {
           try {
             if (pharisAdminPinRead() && !(auth && auth.currentUser && !auth.currentUser.isAnonymous)) {
               setShowLogin(true);
               setAdminSessionWait(false);
             }
-          } catch (e) {}
-        }, 2500);
+          } catch (e2) {}
+        }, 2000);
         return function () {
-          clearTimeout(t1);
+          clearTimeout(t0);
           clearTimeout(t2);
         };
       }, [firebaseReady, auth]);
@@ -3529,21 +3491,52 @@ out center tags;`;
       };
 
       const deleteMedRequest = async (id) => {
-        if (!adminUser || !db || !id) {
-          showToast(lang === "ar" ? "تسجيل دخول الأدمن مطلوب" : lang === "fr" ? "Connexion admin requise" : "Admin login required");
+        if (!id) return;
+        if (!adminUser) {
+          showToast(lang === "ar" ? "سجّل دخول الأدمن أولاً" : lang === "fr" ? "Connectez-vous en admin" : "Admin login required");
+          setShowLogin(true);
+          return;
+        }
+        const sid = String(id);
+        // طلبات العرض المحلية فقط
+        if (sid.indexOf("demo_med_") === 0) {
+          setMedRequests((prev) => prev.filter((r) => String(r.id) !== sid));
+          showToast(lang === "ar" ? "تم الإخفاء" : lang === "fr" ? "Masqué" : "Hidden");
+          return;
+        }
+        if (!db) {
+          showToast(lang === "ar" ? "قاعدة البيانات غير متصلة" : "Database offline");
           return;
         }
         const ok = window.confirm(
           lang === "ar" ? "حذف طلب الدواء نهائياً؟" : lang === "fr" ? "Supprimer cette demande définitivement ?" : "Delete this medicine request permanently?"
         );
         if (!ok) return;
+        // إزالة فورية من الواجهة
+        setMedRequests((prev) => prev.filter((r) => String(r.id) !== sid));
         try {
-          await db.collection("medicine_requests").doc(String(id)).delete();
-          setMedRequests((prev) => prev.filter((r) => String(r.id) !== String(id)));
+          await db.collection("medicine_requests").doc(sid).delete();
           showToast(lang === "ar" ? "تم حذف طلب الدواء" : lang === "fr" ? "Demande supprimée" : "Request deleted");
-        } catch (e) {
-          console.warn("deleteMedRequest", e);
-          showToast(lang === "ar" ? "فشل الحذف — تحقق من الصلاحيات" : lang === "fr" ? "Échec de suppression" : "Delete failed — check permissions");
+        } catch (e1) {
+          console.warn("deleteMedRequest hard", e1);
+          // بديل: تعطيل الطلب إن فشل الحذف النهائي
+          try {
+            await db.collection("medicine_requests").doc(sid).set({
+              active: false,
+              deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              deletedByAdmin: true
+            }, { merge: true });
+            showToast(lang === "ar" ? "تم إخفاء الطلب" : lang === "fr" ? "Demande masquée" : "Request hidden");
+          } catch (e2) {
+            console.warn("deleteMedRequest soft", e2);
+            showToast(
+              lang === "ar"
+                ? "فشل الحذف — تأكد من قواعد Firestore وتسجيل الأدمن"
+                : lang === "fr"
+                ? "Échec — vérifiez les règles Firestore"
+                : "Delete failed — check Firestore rules"
+            );
+          }
         }
       };
 
@@ -4069,7 +4062,7 @@ out center tags;`;
                           </a>
                           ) : null}
                           {adminUser && (
-                            <button type="button" onClick={() => deleteMedRequest(r.id)} className="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteMedRequest(r.id); }} className="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold shadow">
                               {lang === "ar" ? "حذف" : "Del"}
                             </button>
                           )}
@@ -4864,7 +4857,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=101";
+      var PHARIS_SW_URL = "./service-worker.js?v=103";
 
       function pharisLang() {
         var lang = "ar";
