@@ -780,6 +780,31 @@
     
     
     // طلبات دواء توضيحية (وهمية) لتشجيع المستخدمين — لا تُحفظ في Firestore
+    
+    // تثبيت لوحة الأدمن عبر localStorage + cookie (يتحمل إغلاق التطبيق بالكامل أكثر)
+    function pharisAdminPinRead() {
+      try {
+        if (localStorage.getItem("pharis_admin_view") === "1") return true;
+        if (localStorage.getItem("pharis_admin_pinned") === "1") return true;
+      } catch (e1) {}
+      try {
+        var m = document.cookie.match(/(?:^|; )pharis_admin_pin=1(?:;|$)/);
+        if (m) return true;
+      } catch (e2) {}
+      return false;
+    }
+    function pharisAdminPinWrite(on) {
+      try {
+        localStorage.setItem("pharis_admin_view", on ? "1" : "0");
+        localStorage.setItem("pharis_admin_pinned", on ? "1" : "0");
+      } catch (e1) {}
+      try {
+        var exp = on ? "max-age=31536000" : "max-age=0";
+        document.cookie = "pharis_admin_pin=" + (on ? "1" : "0") + "; path=/; " + exp + "; SameSite=Lax";
+      } catch (e2) {}
+    }
+
+
     const DEMO_MED_REQUESTS = [
       {
         id: "demo_med_1",
@@ -2010,16 +2035,10 @@ out center tags;`;
       const [showAddForm, setShowAddForm] = useState(false);
       const [showLogin, setShowLogin] = useState(false);
       const [adminView, setAdminView] = useState(function () {
-        try {
-          return localStorage.getItem("pharis_admin_view") === "1"
-            || localStorage.getItem("pharis_admin_pinned") === "1";
-        } catch (e) { return false; }
+        return pharisAdminPinRead();
       });
       const [adminSessionWait, setAdminSessionWait] = useState(function () {
-        try {
-          return localStorage.getItem("pharis_admin_view") === "1"
-            || localStorage.getItem("pharis_admin_pinned") === "1";
-        } catch (e) { return false; }
+        return pharisAdminPinRead();
       });
       const [adminTab, setAdminTab] = useState("review");
 
@@ -2588,8 +2607,7 @@ out center tags;`;
 
             var wantAdmin = false;
             try {
-              wantAdmin = localStorage.getItem("pharis_admin_view") === "1"
-                || localStorage.getItem("pharis_admin_pinned") === "1";
+              wantAdmin = pharisAdminPinRead();
             } catch (e3) {}
             if (!user && wantAdmin) {
               return;
@@ -2726,13 +2744,10 @@ out center tags;`;
       useEffect(() => {
         if (!adminUser) return;
         try {
-          var pinned = localStorage.getItem("pharis_admin_view") === "1"
-            || localStorage.getItem("pharis_admin_pinned") === "1";
-          if (pinned) {
+          if (pharisAdminPinRead()) {
             setAdminView(true);
             setAdminSessionWait(false);
-            localStorage.setItem("pharis_admin_view", "1");
-            localStorage.setItem("pharis_admin_pinned", "1");
+            pharisAdminPinWrite(true);
           }
         } catch (e) {}
       }, [adminUser]);
@@ -2740,35 +2755,37 @@ out center tags;`;
       // عند فتح اللوحة: ثبّت المفتاحين (لا يُمسحان إلا عند الإغلاق اليدوي)
       useEffect(() => {
         if (!adminView) return;
-        try {
-          localStorage.setItem("pharis_admin_view", "1");
-          localStorage.setItem("pharis_admin_pinned", "1");
-        } catch (e) {}
+        pharisAdminPinWrite(true);
       }, [adminView]);
 
-      // إن كانت اللوحة مثبتة ولا توجد جلسة أدمن بعد التحميل → شاشة الدخول (لا تُعتبر اللوحة مغلقة)
+
+      // عند كل فتح للتطبيق: إن كانت اللوحة مثبتة أعد فتحها فوراً (حتى بعد إغلاق كلي)
       useEffect(() => {
-        if (!firebaseReady || !auth) return;
-        var t = setTimeout(function () {
+        if (!pharisAdminPinRead()) return;
+        setAdminView(true);
+        setAdminSessionWait(true);
+        pharisAdminPinWrite(true);
+        var t1 = setTimeout(function () {
+          // إن لم تُستعد جلسة الأدمن خلال ثوانٍ → شاشة الدخول
+          setAdminSessionWait(function (w) {
+            return w;
+          });
+        }, 500);
+        var t2 = setTimeout(function () {
           try {
-            var pinned = localStorage.getItem("pharis_admin_view") === "1"
-              || localStorage.getItem("pharis_admin_pinned") === "1";
-            if (!pinned) {
-              setAdminSessionWait(false);
-              return;
-            }
-            setAdminView(true);
-            if (!auth.currentUser || auth.currentUser.isAnonymous) {
-              setAdminSessionWait(false);
+            if (pharisAdminPinRead() && !(auth && auth.currentUser && !auth.currentUser.isAnonymous)) {
               setShowLogin(true);
-            } else {
-              // قد تكتمل onAuthStateChanged بعد لحظات
-              setAdminSessionWait(true);
+              setAdminSessionWait(false);
             }
           } catch (e) {}
-        }, 2000);
-        return function () { clearTimeout(t); };
+        }, 2500);
+        return function () {
+          clearTimeout(t1);
+          clearTimeout(t2);
+        };
       }, [firebaseReady, auth]);
+
+
 
 
 
@@ -2784,15 +2801,13 @@ out center tags;`;
           // الزائر المجهول ليس أدمن أبداً
           if (u.isAnonymous) {
             setAdminUser(null);
-            try {
-              var pinA = localStorage.getItem("pharis_admin_view") === "1"
-                || localStorage.getItem("pharis_admin_pinned") === "1";
-              if (pinA) {
-                setAdminView(true);
-                setAdminSessionWait(false);
-                setShowLogin(true);
-              }
-            } catch (eAnon) {}
+            if (pharisAdminPinRead()) {
+              setAdminView(true);
+              setAdminSessionWait(false);
+              setShowLogin(true);
+              // أزل الجلسة المجهولة حتى لا تمنع استعادة دخول الأدمن لاحقاً
+              try { auth.signOut(); } catch (eSo) {}
+            }
             return;
           }
           let allowed = (u.uid === PRIMARY_ADMIN_UID);
@@ -2807,15 +2822,10 @@ out center tags;`;
           if (allowed) {
             setAdminUser(u);
             setAdminSessionWait(false);
-            try {
-              var pinned = localStorage.getItem("pharis_admin_view") === "1"
-                || localStorage.getItem("pharis_admin_pinned") === "1";
-              if (pinned) {
-                setAdminView(true);
-                localStorage.setItem("pharis_admin_view", "1");
-                localStorage.setItem("pharis_admin_pinned", "1");
-              }
-            } catch (eOpen) {}
+            if (pharisAdminPinRead()) {
+              setAdminView(true);
+              pharisAdminPinWrite(true);
+            }
           } else {
             setAdminUser(null);
             try { await auth.signOut(); } catch (e) {}
@@ -3458,10 +3468,7 @@ out center tags;`;
           setShowLogin(false);
           setAdminView(true);
           setAdminSessionWait(false);
-          try {
-            localStorage.setItem("pharis_admin_view", "1");
-            localStorage.setItem("pharis_admin_pinned", "1");
-          } catch (eL) {}
+          pharisAdminPinWrite(true);
           setLoginPassword("");
         } catch (e) {
           console.error(e);
@@ -3652,10 +3659,7 @@ out center tags;`;
                 <button onClick={() => {
                   if (adminUser) {
                     setAdminView(true);
-                    try {
-                      localStorage.setItem("pharis_admin_view", "1");
-                      localStorage.setItem("pharis_admin_pinned", "1");
-                    } catch (ePin) {}
+                    pharisAdminPinWrite(true);
                   } else {
                     setShowLogin(true);
                   }
@@ -4650,8 +4654,8 @@ out center tags;`;
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-xl font-bold text-brand-50">{t("adminTitle")}</h2>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); localStorage.setItem("pharis_admin_pinned", "0"); } catch (e) {} auth.signOut(); setAdminView(false); setAdminSessionWait(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
-                    <button onClick={() => { try { localStorage.setItem("pharis_admin_view", "0"); localStorage.setItem("pharis_admin_pinned", "0"); } catch (e) {} setAdminView(false); setAdminSessionWait(false); }} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
+                    <button onClick={() => { pharisAdminPinWrite(false); auth.signOut(); setAdminView(false); setAdminSessionWait(false); }} className="text-xs text-rose-300 border border-rose-900 rounded-md px-2 py-1">{t("logoutBtn")}</button>
+                    <button onClick={() => { pharisAdminPinWrite(false); setAdminView(false); setAdminSessionWait(false); }} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
                   </div>
                 </div>
                 <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
@@ -4860,7 +4864,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=100";
+      var PHARIS_SW_URL = "./service-worker.js?v=101";
 
       function pharisLang() {
         var lang = "ar";
