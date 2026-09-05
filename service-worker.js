@@ -1,5 +1,5 @@
 // Pharis Service Worker — تحديث فوري + أوفلاين
-const CACHE_NAME = "pharis-v115-sba-csv";
+const CACHE_NAME = "pharis-v117-sba-phones";
 const SHELL = [
   "./",
   "./index.html",
