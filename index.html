@@ -3733,27 +3733,7 @@ out center tags;`;
                       </span>
                     </span>
                   </p>
-                  <p className="text-[10px] mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-yellow-400/95 font-medium tracking-wide">
-                    <span className="inline-flex items-center gap-1">
-                      <span aria-hidden="true">📋</span>
-                      <span>
-                        {Number((medRequests || []).filter(function (r) { return r && !r.isDemo; }).length).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
-                        {" "}
-                        <span className="opacity-80 font-normal">{lang === "ar" ? "طلب دواء" : lang === "fr" ? "demandes" : "requests"}</span>
-                      </span>
-                    </span>
-                  </p>
-                  {adminUser && (
-                    <p className="text-[11px] font-semibold text-amber-400 mt-0.5 flex items-center gap-1">
-                      <span aria-hidden="true">💊</span>
-                      <span>
-                        {Number(medRequests.length).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
-                        {" "}
-                        {lang === "ar" ? "طلب دواء" : lang === "fr" ? "demandes médicament" : "medicine requests"}
-                      </span>
-                    </p>
-                  )}
-                </div>
+                                  </div>
               </div>
               <div className="flex items-center gap-1.5">
                 <button onClick={() => shareApp()} className="p-1.5 rounded-lg hover:bg-brand-900 transition text-brand-300" title={lang === "ar" ? "مشاركة التطبيق" : lang === "fr" ? "Partager l'app" : "Share app"}>
@@ -3884,7 +3864,9 @@ out center tags;`;
                 className="flex-1 text-center border-2 border-amber-500 bg-amber-400 text-amber-950 rounded-xl py-2.5 text-[11px] font-bold hover:bg-amber-300 transition shadow-md shadow-amber-500/20"
               >
                 📋 {lang === "ar" ? "قائمة الدواء" : lang === "fr" ? "Liste médicaments" : "Med list"}
-                {!medLoading && medRequests.length > 0 ? ` (${medRequests.length})` : ""}
+                {!medLoading && (medRequests || []).filter(function(r){return r && !r.isDemo;}).length > 0
+                  ? ` (${(medRequests || []).filter(function(r){return r && !r.isDemo;}).length})`
+                  : ""}
               </button>
             </div>
             
@@ -4992,7 +4974,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=108";
+      var PHARIS_SW_URL = "./service-worker.js?v=109";
 
       function pharisLang() {
         var lang = "ar";
