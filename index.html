@@ -2772,51 +2772,41 @@ out center tags;`;
         };
       }, [firebaseReady, db, auth]);
 
-      // الأدمن فقط: عدد المتصلين خلال آخر دقيقتين
+      // عدد المتصلين الآن (آخر دقيقتين) — للواجهة
       useEffect(() => {
-        if (!firebaseReady || !db || !adminUser) {
-          setOnlineCount(null);
+        if (!firebaseReady || !db) {
           return;
         }
         let cancelled = false;
         var unsub = null;
+        function countOnline(snap) {
+          var now = Date.now();
+          var n = 0;
+          snap.forEach(function (doc) {
+            var d = doc.data() || {};
+            var ms = Number(d.lastSeenMs) || 0;
+            if (d.lastSeen && d.lastSeen.toMillis) {
+              try { ms = Math.max(ms, d.lastSeen.toMillis()); } catch (e) {}
+            }
+            if (ms && (now - ms) <= 120000 && !d.offline) n += 1;
+          });
+          return n;
+        }
         try {
           unsub = db.collection("presence").onSnapshot(function (snap) {
             if (cancelled) return;
-            var now = Date.now();
-            var n = 0;
-            snap.forEach(function (doc) {
-              var d = doc.data() || {};
-              var ms = Number(d.lastSeenMs) || 0;
-              if (d.lastSeen && d.lastSeen.toMillis) {
-                try { ms = Math.max(ms, d.lastSeen.toMillis()); } catch (e) {}
-              }
-              if (ms && (now - ms) <= 120000 && !d.offline) n += 1;
-            });
-            setOnlineCount(n);
+            setOnlineCount(countOnline(snap));
           }, function (err) {
             console.warn("presence list", err);
-            if (!cancelled) setOnlineCount(null);
           });
         } catch (e) {
           console.warn(e);
         }
-        // إعادة تقييم كل 30 ثانية لأن الاعتماد على lastSeenMs
         var tick = setInterval(function () {
           if (cancelled || !db) return;
           db.collection("presence").get().then(function (snap) {
             if (cancelled) return;
-            var now = Date.now();
-            var n = 0;
-            snap.forEach(function (doc) {
-              var d = doc.data() || {};
-              var ms = Number(d.lastSeenMs) || 0;
-              if (d.lastSeen && d.lastSeen.toMillis) {
-                try { ms = Math.max(ms, d.lastSeen.toMillis()); } catch (e2) {}
-              }
-              if (ms && (now - ms) <= 120000 && !d.offline) n += 1;
-            });
-            setOnlineCount(n);
+            setOnlineCount(countOnline(snap));
           }).catch(function () {});
         }, 30000);
         return function () {
@@ -2824,7 +2814,7 @@ out center tags;`;
           clearInterval(tick);
           if (unsub) unsub();
         };
-      }, [firebaseReady, db, adminUser]);
+      }, [firebaseReady, db]);
 
 
 
@@ -3786,6 +3776,13 @@ out center tags;`;
                 }} className="font-mono text-brand-400 text-[10px] border border-brand-800 rounded-md px-2 py-1 hover:bg-brand-900 transition">
                   {t("dashboard")}
                 </button>
+                <div
+                  className="font-mono text-emerald-300 text-[11px] border border-emerald-800/80 bg-emerald-950/40 rounded-md px-2 py-1 flex items-center gap-1"
+                  title={lang === "ar" ? "يتصفحون الآن" : lang === "fr" ? "En ligne" : "Online now"}
+                >
+                  <span className="inline-block animate-pulse" aria-hidden="true">👁️</span>
+                  <span className="tabular-nums font-bold">{onlineCount != null ? onlineCount : "-"}</span>
+                </div>
                 <div className="font-mono text-brand-400 text-xs border border-brand-800 rounded-md px-2 py-1">{timeStr}</div>
               </div>
             </div>
@@ -5008,7 +5005,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=110";
+      var PHARIS_SW_URL = "./service-worker.js?v=111";
 
       function pharisLang() {
         var lang = "ar";
