@@ -2150,49 +2150,83 @@ out center tags;`;
       const [lastSubmit, setLastSubmit] = useState(0);
 
       
-      // طلبات الدواء — تُحمَّل للجميع في الواجهة الرئيسية
+      // طلبات الدواء — تُحمَّل للجميع (قراءة عامة، بدون انتظار anon)
       useEffect(() => {
-        if (!firebaseReady || !db) return;
+        if (!firebaseReady || !db) {
+          // اعرض الأمثلة حتى يتوفر الاتصال
+          try {
+            setMedRequests(mergeDemoMedRequests([]));
+          } catch (e0) {}
+          setMedLoading(false);
+          return;
+        }
         setMedLoading(true);
         let unsub = null;
         let cancelled = false;
-        (async () => {
+        var finished = false;
+        function done(list) {
+          if (cancelled || finished) return;
+          finished = true;
           try {
-            if (auth && !auth.currentUser) {
-              await auth.signInAnonymously();
-            }
-          } catch (e) { console.warn("anon for med list", e); }
-          if (cancelled || !db) { setMedLoading(false); return; }
+            setMedRequests(mergeDemoMedRequests(list || []));
+          } catch (eMerge) {
+            setMedRequests(list || []);
+          }
+          setMedLoading(false);
+        }
+        // مهلة أمان: لا تبقَ عالقاً في التحميل
+        var safety = setTimeout(function () {
+          if (!cancelled) done([]);
+        }, 8000);
+        try {
           unsub = db.collection("medicine_requests")
-          .limit(80)
-          .onSnapshot(
-            (snap) => {
-              const now = Date.now();
-              const list = [];
-              snap.forEach((doc) => {
-                const d = doc.data() || {};
-                const exp = d.expiresAt && d.expiresAt.toMillis ? d.expiresAt.toMillis() : (d.expiresAtMs || 0);
-                if (exp && exp < now) return;
-                if (d.active === false) return;
-                list.push({ id: doc.id, ...d });
-              });
-              list.sort(function (a, b) {
-                var ta = a.expiresAtMs || 0;
-                var tb = b.expiresAtMs || 0;
-                return tb - ta;
-              });
-              setMedRequests(mergeDemoMedRequests(list));
-              setMedLoading(false);
-            },
-            function (err) {
-              console.warn("medicine_requests", err);
-              setMedRequests(mergeDemoMedRequests([]));
-              setMedLoading(false);
-            }
-          );
-        })();
-        return () => { cancelled = true; if (unsub) unsub(); };
-      }, [firebaseReady]);
+            .limit(80)
+            .onSnapshot(
+              function (snap) {
+                clearTimeout(safety);
+                var now = Date.now();
+                var list = [];
+                snap.forEach(function (doc) {
+                  var d = doc.data() || {};
+                  var exp = 0;
+                  if (d.expiresAt && d.expiresAt.toMillis) {
+                    try { exp = d.expiresAt.toMillis(); } catch (e1) { exp = 0; }
+                  } else {
+                    exp = d.expiresAtMs || 0;
+                  }
+                  if (exp && exp < now) return;
+                  if (d.active === false) return;
+                  list.push(Object.assign({ id: doc.id }, d));
+                });
+                list.sort(function (a, b) {
+                  return (b.expiresAtMs || 0) - (a.expiresAtMs || 0);
+                });
+                finished = false; // السماح بتحديثات لاحقة
+                try {
+                  setMedRequests(mergeDemoMedRequests(list));
+                } catch (e2) {
+                  setMedRequests(list);
+                }
+                setMedLoading(false);
+              },
+              function (err) {
+                console.warn("medicine_requests", err);
+                clearTimeout(safety);
+                done([]);
+              }
+            );
+        } catch (e) {
+          console.warn("medicine_requests setup", e);
+          clearTimeout(safety);
+          done([]);
+        }
+        return function () {
+          cancelled = true;
+          clearTimeout(safety);
+          if (unsub) unsub();
+        };
+      }, [firebaseReady, db]);
+
 
       const normalizeWa = (raw) => {
         let s = String(raw || "").replace(/\D/g, "");
@@ -4860,7 +4894,7 @@ out center tags;`;
                     <p className="text-xs text-brand-400">
                       {lang === "ar" ? "حذف طلبات البحث عن دواء غير المناسبة" : lang === "fr" ? "Supprimer les demandes inappropriées" : "Delete inappropriate medicine requests"}
                     </p>
-                    {medLoading && <p className="text-sm text-brand-500">{t("medLoading")}</p>}
+                    {medLoading && medRequests.length === 0 && <p className="text-sm text-brand-500">{t("medLoading")}</p>}
                     {!medLoading && medRequests.length === 0 && (
                       <p className="text-sm text-brand-500 text-center py-8">
                         {lang === "ar" ? "لا توجد طلبات" : lang === "fr" ? "Aucune demande" : "No requests"}
@@ -4974,7 +5008,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=109";
+      var PHARIS_SW_URL = "./service-worker.js?v=110";
 
       function pharisLang() {
         var lang = "ar";
