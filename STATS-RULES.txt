@@ -1,0 +1,15 @@
+// استبدل مقطع stats في Firestore Rules بهذا:
+
+match /stats/{docId} {
+  allow read: if true;
+  allow create, update, delete: if request.auth != null
+    && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+  allow update: if request.auth != null
+    && docId == 'users'
+    && request.resource.data.count is number
+    && resource.data.count is number
+    && request.resource.data.count == resource.data.count + 1;
+  allow create: if request.auth != null
+    && docId == 'users'
+    && request.resource.data.count is number;
+}

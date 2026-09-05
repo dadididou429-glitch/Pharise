@@ -2624,6 +2624,12 @@ out center tags;`;
                 lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
                 kind: "install"
               }, { merge: true });
+              try {
+                await db.collection("stats").doc("users").set({
+                  count: firebase.firestore.FieldValue.increment(1),
+                  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+              } catch (eInc) { console.warn("stats increment", eInc); }
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
               console.info("Pharis: install register ok");
             } catch (eCreate) {
@@ -2637,50 +2643,27 @@ out center tags;`;
         return function () { cancelled = true; };
       }, [firebaseReady, db]);
 
-// الأدمن فقط: لا نعرض الرقم حتى يكتمل المصدران (تجنّب وميض 71 ثم 130)
+// عداد المستخدمين ظاهر للجميع — من stats/users
       useEffect(() => {
-        if (!firebaseReady || !db || !adminUser) {
-          setUserCount(null);
-          return;
-        }
+        if (!firebaseReady || !db) return;
         let cancelled = false;
-        var baseline = null;
-        var unique = null;
-        function apply() {
-          if (cancelled) return;
-          if (baseline === null || unique === null) return;
-          setUserCount(baseline + unique);
-        }
         var unsubStats = null;
         try {
           unsubStats = db.collection("stats").doc("users").onSnapshot(function (snap) {
-            baseline = snap.exists ? (Number(snap.data().count) || 0) : 0;
-            apply();
+            if (cancelled) return;
+            setUserCount(snap.exists ? (Number(snap.data().count) || 0) : 0);
           }, function (err) {
-            console.warn("stats", err);
-            baseline = 0;
-            apply();
+            console.warn("stats users", err);
           });
         } catch (e) {
           console.warn(e);
-          baseline = 0;
-          apply();
         }
-        db.collection("unique_users").get()
-          .then(function (snap) {
-            unique = snap.size || 0;
-            apply();
-          })
-          .catch(function (err) {
-            console.warn("unique count", err);
-            unique = 0;
-            apply();
-          });
         return function () {
           cancelled = true;
           if (unsubStats) unsubStats();
         };
-      }, [firebaseReady, db, adminUser]);
+      }, [firebaseReady, db]);
+
 
 // PWA install + offline
                   useEffect(() => {
@@ -3620,13 +3603,25 @@ out center tags;`;
                       </span>
                     </span>
                   </p>
-                  {adminUser && userCount != null && (
-                    <p className="text-[11px] font-semibold text-emerald-400 mt-0.5 flex items-center gap-1">
-                      <span aria-hidden="true">👥</span>
-                      <span>
-                        {Number(userCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
-                        {" "}
-                        {lang === "ar" ? "مستخدم" : lang === "fr" ? "utilisateurs" : "users"}
+                  {((userCount != null && userCount > 0) || (medRequests && medRequests.filter(function(r){return !r.isDemo;}).length > 0)) && (
+                    <p className="text-[11px] font-semibold text-emerald-400 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                      {userCount != null && userCount > 0 && (
+                        <span className="inline-flex items-center gap-1">
+                          <span aria-hidden="true">👥</span>
+                          <span>
+                            {Number(userCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
+                            {" "}
+                            {lang === "ar" ? "مستخدم" : lang === "fr" ? "utilisateurs" : "users"}
+                          </span>
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1 text-yellow-500">
+                        <span aria-hidden="true">💊</span>
+                        <span>
+                          {Number((medRequests || []).filter(function(r){ return !r.isDemo; }).length).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
+                          {" "}
+                          {lang === "ar" ? "طلب دواء" : lang === "fr" ? "demandes" : "requests"}
+                        </span>
                       </span>
                     </p>
                   )}
@@ -4651,7 +4646,20 @@ out center tags;`;
                     <button onClick={() => { pharisAdminPinWrite(false); setAdminView(false); setAdminSessionWait(false); }} className="text-brand-400 p-1"><Icons.X className="w-5 h-5" /></button>
                   </div>
                 </div>
-                <p className="text-xs text-brand-500 mb-4 font-mono" dir="ltr">{adminUser?.email}</p>
+                <p className="text-xs text-brand-500 mb-2 font-mono" dir="ltr">{adminUser?.email}</p>
+                <div className="mb-4 rounded-xl border border-emerald-700/60 bg-emerald-950/50 px-4 py-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] text-emerald-400/90 font-semibold">
+                      {lang === "ar" ? "مستخدمو التطبيق" : lang === "fr" ? "Utilisateurs" : "App users"}
+                    </p>
+                    <p className="text-2xl font-black text-emerald-300 tabular-nums tracking-tight">
+                      {userCount != null
+                        ? Number(userCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")
+                        : "…"}
+                    </p>
+                  </div>
+                  <span className="text-3xl" aria-hidden="true">👥</span>
+                </div>
                 {submittedTotalCount != null && (
                   <p className="text-xs text-sky-300 mb-3 font-semibold">
                     ➕ {lang === "ar"
@@ -4857,7 +4865,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=103";
+      var PHARIS_SW_URL = "./service-worker.js?v=105";
 
       function pharisLang() {
         var lang = "ar";
