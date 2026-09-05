@@ -2051,7 +2051,8 @@ out center tags;`;
         if (b === "en") return "Detecting...";
         return "جارٍ تحديد موقعك...";
       });
-      const [userCount, setUserCount] = useState(null);
+      const [userCount, setUserCount] = useState(typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 170);
+      const [onlineCount, setOnlineCount] = useState(null);
       const [showPayModal, setShowPayModal] = useState(false);
       const [showOnboard, setShowOnboard] = useState(true);
       const [showMedSearch, setShowMedSearch] = useState(false);
@@ -2644,8 +2645,12 @@ out center tags;`;
         return function () { cancelled = true; };
       }, [firebaseReady, db]);
 
-// عداد المستخدمين ظاهر للجميع — من stats/users
+// عداد المستخدمين ظاهر للجميع — من stats/users (الحد الأدنى 170)
       useEffect(() => {
+        setUserCount(function (prev) {
+          var p = Number(prev) || 0;
+          return p < PUBLIC_USERS_FLOOR ? PUBLIC_USERS_FLOOR : p;
+        });
         if (!firebaseReady || !db) return;
         let cancelled = false;
         var unsubStats = null;
@@ -2653,7 +2658,6 @@ out center tags;`;
           unsubStats = db.collection("stats").doc("users").onSnapshot(function (snap) {
             if (cancelled) return;
             var n = snap.exists ? (Number(snap.data().count) || 0) : 0;
-            // لا نعرض أقل من العدد الحقيقي السابق
             if (n < PUBLIC_USERS_FLOOR) n = PUBLIC_USERS_FLOOR;
             setUserCount(n);
           }, function (err) {
@@ -2662,12 +2666,133 @@ out center tags;`;
           });
         } catch (e) {
           console.warn(e);
+          setUserCount(PUBLIC_USERS_FLOOR);
         }
         return function () {
           cancelled = true;
           if (unsubStats) unsubStats();
         };
       }, [firebaseReady, db]);
+
+      // حضور مباشر: من يفتح التطبيق الآن (للعدّاد الأدمن)
+      useEffect(() => {
+        if (!firebaseReady || !db || !auth) return;
+        let cancelled = false;
+        var unsubAuth = null;
+        var heartbeatTimer = null;
+        var presenceRef = null;
+
+        function clearHeartbeat() {
+          if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+          }
+        }
+
+        async function touchPresence(uid) {
+          if (!uid || !db) return;
+          try {
+            presenceRef = db.collection("presence").doc(uid);
+            await presenceRef.set({
+              uid: uid,
+              lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+              lastSeenMs: Date.now(),
+              agent: (navigator && navigator.userAgent ? String(navigator.userAgent).slice(0, 80) : "")
+            }, { merge: true });
+          } catch (e) {
+            console.warn("presence touch", e);
+          }
+        }
+
+        unsubAuth = auth.onAuthStateChanged(function (u) {
+          clearHeartbeat();
+          if (!u || cancelled) return;
+          touchPresence(u.uid);
+          heartbeatTimer = setInterval(function () {
+            touchPresence(u.uid);
+          }, 45000);
+        });
+
+        function onVis() {
+          try {
+            if (document.visibilityState === "visible" && auth.currentUser) {
+              touchPresence(auth.currentUser.uid);
+            }
+          } catch (eV) {}
+        }
+        document.addEventListener("visibilitychange", onVis);
+
+        return function () {
+          cancelled = true;
+          clearHeartbeat();
+          document.removeEventListener("visibilitychange", onVis);
+          if (unsubAuth) unsubAuth();
+          try {
+            if (auth.currentUser && db) {
+              db.collection("presence").doc(auth.currentUser.uid).set({
+                lastSeenMs: Date.now() - 300000,
+                offline: true
+              }, { merge: true });
+            }
+          } catch (eLeave) {}
+        };
+      }, [firebaseReady, db, auth]);
+
+      // الأدمن فقط: عدد المتصلين خلال آخر دقيقتين
+      useEffect(() => {
+        if (!firebaseReady || !db || !adminUser) {
+          setOnlineCount(null);
+          return;
+        }
+        let cancelled = false;
+        var unsub = null;
+        try {
+          unsub = db.collection("presence").onSnapshot(function (snap) {
+            if (cancelled) return;
+            var now = Date.now();
+            var n = 0;
+            snap.forEach(function (doc) {
+              var d = doc.data() || {};
+              var ms = Number(d.lastSeenMs) || 0;
+              if (d.lastSeen && d.lastSeen.toMillis) {
+                try { ms = Math.max(ms, d.lastSeen.toMillis()); } catch (e) {}
+              }
+              if (ms && (now - ms) <= 120000 && !d.offline) n += 1;
+            });
+            setOnlineCount(n);
+          }, function (err) {
+            console.warn("presence list", err);
+            if (!cancelled) setOnlineCount(null);
+          });
+        } catch (e) {
+          console.warn(e);
+        }
+        // إعادة تقييم كل 30 ثانية لأن الاعتماد على lastSeenMs
+        var tick = setInterval(function () {
+          if (cancelled || !db) return;
+          db.collection("presence").get().then(function (snap) {
+            if (cancelled) return;
+            var now = Date.now();
+            var n = 0;
+            snap.forEach(function (doc) {
+              var d = doc.data() || {};
+              var ms = Number(d.lastSeenMs) || 0;
+              if (d.lastSeen && d.lastSeen.toMillis) {
+                try { ms = Math.max(ms, d.lastSeen.toMillis()); } catch (e2) {}
+              }
+              if (ms && (now - ms) <= 120000 && !d.offline) n += 1;
+            });
+            setOnlineCount(n);
+          }).catch(function () {});
+        }, 30000);
+        return function () {
+          cancelled = true;
+          clearInterval(tick);
+          if (unsub) unsub();
+        };
+      }, [firebaseReady, db, adminUser]);
+
+
 
 
 // PWA install + offline
@@ -3608,28 +3733,16 @@ out center tags;`;
                       </span>
                     </span>
                   </p>
-                  {((userCount != null && userCount > 0) || (medRequests && medRequests.filter(function(r){return !r.isDemo;}).length > 0)) && (
-                    <p className="text-[11px] font-semibold text-emerald-400 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                      {userCount != null && userCount > 0 && (
-                        <span className="inline-flex items-center gap-1">
-                          <span aria-hidden="true">👥</span>
-                          <span>
-                            {Number(userCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
-                            {" "}
-                            {lang === "ar" ? "مستخدم" : lang === "fr" ? "utilisateurs" : "users"}
-                          </span>
-                        </span>
-                      )}
-                      <span className="inline-flex items-center gap-1 text-yellow-500">
-                        <span aria-hidden="true">💊</span>
-                        <span>
-                          {Number((medRequests || []).filter(function(r){ return !r.isDemo; }).length).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
-                          {" "}
-                          {lang === "ar" ? "طلب دواء" : lang === "fr" ? "demandes" : "requests"}
-                        </span>
+                  <p className="text-[10px] mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-yellow-400/95 font-medium tracking-wide">
+                    <span className="inline-flex items-center gap-1">
+                      <span aria-hidden="true">📋</span>
+                      <span>
+                        {Number((medRequests || []).filter(function (r) { return r && !r.isDemo; }).length).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
+                        {" "}
+                        <span className="opacity-80 font-normal">{lang === "ar" ? "طلب دواء" : lang === "fr" ? "demandes" : "requests"}</span>
                       </span>
-                    </p>
-                  )}
+                    </span>
+                  </p>
                   {adminUser && (
                     <p className="text-[11px] font-semibold text-amber-400 mt-0.5 flex items-center gap-1">
                       <span aria-hidden="true">💊</span>
@@ -4652,18 +4765,27 @@ out center tags;`;
                   </div>
                 </div>
                 <p className="text-xs text-brand-500 mb-2 font-mono" dir="ltr">{adminUser?.email}</p>
-                <div className="mb-4 rounded-xl border border-emerald-700/60 bg-emerald-950/50 px-4 py-3 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] text-emerald-400/90 font-semibold">
-                      {lang === "ar" ? "مستخدمو التطبيق" : lang === "fr" ? "Utilisateurs" : "App users"}
+                <div className="mb-4 grid grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-emerald-700/60 bg-emerald-950/50 px-3 py-3">
+                    <p className="text-[10px] text-emerald-400/90 font-semibold">
+                      {lang === "ar" ? "تثبيتات (إجمالي)" : lang === "fr" ? "Installations" : "Total installs"}
                     </p>
-                    <p className="text-2xl font-black text-emerald-300 tabular-nums tracking-tight">
+                    <p className="text-xl font-black text-emerald-300 tabular-nums">
                       {userCount != null
                         ? Number(userCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")
                         : "…"}
                     </p>
                   </div>
-                  <span className="text-3xl" aria-hidden="true">👥</span>
+                  <div className="rounded-xl border border-sky-700/60 bg-sky-950/50 px-3 py-3">
+                    <p className="text-[10px] text-sky-300/90 font-semibold">
+                      {lang === "ar" ? "متصلون الآن" : lang === "fr" ? "En ligne" : "Online now"}
+                    </p>
+                    <p className="text-xl font-black text-sky-300 tabular-nums">
+                      {onlineCount != null
+                        ? Number(onlineCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")
+                        : "…"}
+                    </p>
+                  </div>
                 </div>
                 {submittedTotalCount != null && (
                   <p className="text-xs text-sky-300 mb-3 font-semibold">
@@ -4870,7 +4992,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=106";
+      var PHARIS_SW_URL = "./service-worker.js?v=108";
 
       function pharisLang() {
         var lang = "ar";

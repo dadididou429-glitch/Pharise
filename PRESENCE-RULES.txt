@@ -1,0 +1,10 @@
+// ——— متصلون الآن ———
+    match /presence/{uid} {
+      allow read: if request.auth != null
+        && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid;
+      allow delete: if request.auth != null
+        && (request.auth.uid == uid
+          || request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53');
+    }
