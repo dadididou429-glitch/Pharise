@@ -1,0 +1,26 @@
+# ليعمل العداد بشكل سليم — مقطع unique_users الموصى به:
+
+match /unique_users/{uid} {
+  allow get: if request.auth != null && request.auth.uid == uid;
+  allow list: if request.auth != null
+    && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+  allow create: if request.auth != null && request.auth.uid == uid;
+  allow update: if request.auth != null && request.auth.uid == uid;
+  allow delete: if request.auth != null
+    && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+}
+
+# و stats:
+match /stats/{docId} {
+  allow read: if true;
+  allow write: if request.auth != null
+    && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+  allow create: if request.auth != null
+    && docId == 'users'
+    && request.resource.data.count is number;
+  allow update: if request.auth != null
+    && docId == 'users'
+    && request.resource.data.count is number
+    && resource.data.count is number
+    && request.resource.data.count == resource.data.count + 1;
+}

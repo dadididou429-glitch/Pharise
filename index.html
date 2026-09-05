@@ -2562,22 +2562,15 @@ out center tags;`;
         return function () { cancelled = true; };
       }, []);
 
-      // تسجيل تثبيت واحد لكل جهاز (ليس كل فتحة)
-      // مستند Firestore: unique_users/{auth.uid} ليتوافق مع القواعد
-      // منع التكرار على الجهاز: pharis_install_registered_v3 + pharis_install_id_v3
+      // تسجيل تثبيت واحد + زيادة عداد stats مرة واحدة لكل جهاز
       useEffect(() => {
         if (!firebaseReady || !db || !auth) return;
         let cancelled = false;
         (async function () {
-          var DONE_KEY = "pharis_install_registered_v3";
+          var DONE_KEY = "pharis_install_registered_v4";
+          var INC_KEY = "pharis_stats_inc_v1";
           var INSTALL_KEY = "pharis_install_id_v3";
           try {
-            try {
-              if (localStorage.getItem(DONE_KEY) === "1") {
-                return;
-              }
-            } catch (eDone) {}
-
             try {
               await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
             } catch (ePers) {}
@@ -2596,27 +2589,31 @@ out center tags;`;
                 settled = true;
                 try { unsub(); } catch (e2) {}
                 resolve(auth.currentUser || null);
-              }, 4000);
+              }, 3500);
             });
             if (cancelled) return;
 
             var wantAdmin = false;
-            try {
-              wantAdmin = pharisAdminPinRead();
-            } catch (e3) {}
-            if (!user && wantAdmin) {
-              return;
-            }
+            try { wantAdmin = pharisAdminPinRead(); } catch (e3) {}
+            if (!user && wantAdmin) return;
 
             if (!user) {
-              var cred = await auth.signInAnonymously();
-              user = cred && cred.user;
+              try {
+                var cred = await auth.signInAnonymously();
+                user = cred && cred.user;
+              } catch (eAnon) {
+                console.warn("anon install", eAnon);
+                return;
+              }
             }
             if (cancelled || !user) return;
 
             // الأدمن الأساسي لا يُحسب
             if (!user.isAnonymous && user.uid === PRIMARY_ADMIN_UID) {
-              try { localStorage.setItem(DONE_KEY, "1"); } catch (eA) {}
+              try {
+                localStorage.setItem(DONE_KEY, "1");
+                localStorage.setItem(INC_KEY, "admin");
+              } catch (eA) {}
               return;
             }
 
@@ -2627,31 +2624,29 @@ out center tags;`;
               try { localStorage.setItem(INSTALL_KEY, installId); } catch (e5) {}
             }
 
-            // مهم: معرف المستند = auth.uid (يتوافق مع قواعد Firestore)
             var ref = db.collection("unique_users").doc(user.uid);
-            var existing = null;
+            var already = false;
             try {
-              existing = await ref.get();
+              var existing = await ref.get();
+              already = !!(existing && existing.exists);
             } catch (eGet) {
-              // القراءة قد تُرفض لغير الأدمن — نحاول الإنشاء مباشرة
-              existing = null;
+              already = false;
             }
             if (cancelled) return;
 
-            if (existing && existing.exists) {
+            if (already) {
               try {
                 await ref.set({
                   lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
                   installId: installId
                 }, { merge: true });
-              } catch (eUp) {
-                console.warn("unique_users update", eUp);
-              }
+              } catch (eUp) {}
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e6) {}
+              // لا نزيد العداد لمستخدم معروف مسبقاً
               return;
             }
 
-            // مستخدم/تثبيت جديد فقط (merge حتى لا يُمسح مستند قديم إن فشلت القراءة بسبب القواعد)
+            // مستند جديد
             try {
               await ref.set({
                 installId: installId,
@@ -2660,24 +2655,34 @@ out center tags;`;
                 lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
                 kind: "install"
               }, { merge: true });
-              try {
-                await db.collection("stats").doc("users").set({
-                  count: firebase.firestore.FieldValue.increment(1),
-                  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-              } catch (eInc) { console.warn("stats increment", eInc); }
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
-              console.info("Pharis: install register ok");
             } catch (eCreate) {
               console.warn("unique_users create failed", eCreate);
-              // لا تضع DONE_KEY عند الفشل حتى تُعاد المحاولة لاحقاً
+              return;
+            }
+
+            // زيادة العداد مرة واحدة لكل installId
+            var incDone = null;
+            try { incDone = localStorage.getItem(INC_KEY); } catch (e8) {}
+            if (incDone === installId) return;
+
+            try {
+              await db.collection("stats").doc("users").set({
+                count: firebase.firestore.FieldValue.increment(1),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+              try { localStorage.setItem(INC_KEY, installId); } catch (e9) {}
+              console.info("Pharis: user count +1");
+            } catch (eInc) {
+              console.warn("stats increment failed", eInc);
+              // لا نحفظ INC_KEY حتى تنجح لاحقاً
             }
           } catch (e) {
             console.warn("install register", e);
           }
         })();
         return function () { cancelled = true; };
-      }, [firebaseReady, db]);
+      }, [firebaseReady, db, auth]);
 
 // عداد المستخدمين ظاهر للجميع — من stats/users (الحد الأدنى 170)
       useEffect(() => {
@@ -5005,7 +5010,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=111";
+      var PHARIS_SW_URL = "./service-worker.js?v=112";
 
       function pharisLang() {
         var lang = "ar";
