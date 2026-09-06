@@ -828,7 +828,7 @@
       const q = normalizeSearch(qRaw);
       if (!q) return true;
       const hay = normalizeSearch([
-        ph.name, ph.area, ph.address, ph.wilaya, ph.commune, ph.phone,
+        ph.name, ph.nameAr, ph.area, ph.address, ph.wilaya, ph.commune, ph.phone,
         ph.city, ph.suburb, ph.neighbourhood, ph.brand
       ].filter(Boolean).join(" "));
 
@@ -2968,14 +2968,20 @@ out center tags;`;
         // GeoAlgeria: حسب الولاية أو ضمن 55 كم من الموقع
         let geoFiltered = (geoPharmacies || []).filter(p => !isRemovedPh(p));
         if (wilayaId && wilayaId !== 999) {
-          const byCode = geoFiltered.filter(p => Number(p.wilayaId) === Number(wilayaId));
-          // إن قلّت بيانات الولاية في الملف الثابت: أضف القريبة من مركز الولاية (كل الوطن)
-          if (byCode.length >= 8) {
-            geoFiltered = byCode;
-          } else if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
+          const byCode = geoFiltered.filter(p => {
+            if (Number(p.wilayaId) === Number(wilayaId)) return true;
+            // مطابقة بالاسم أيضاً (نسخ قديمة بدون wilayaId)
+            const w = String(p.wilaya || "");
+            if (Number(wilayaId) === 22 && (w.indexOf("بلعباس") >= 0 || w.toLowerCase().indexOf("bel abb") >= 0)) return true;
+            if (Number(wilayaId) === 31 && (w.indexOf("وهران") >= 0 || w.toLowerCase().indexOf("oran") >= 0)) return true;
+            if (Number(wilayaId) === 16 && (w.indexOf("الجزائر") >= 0 || w.toLowerCase().indexOf("alger") >= 0)) return true;
+            return false;
+          });
+          // دائماً: صيدليات الولاية + القريبة من موقعك (حتى 30 كم) حتى لو تغيّرت الإحداثيات قليلاً
+          if (Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng))) {
             const near = geoFiltered.filter(p => {
               if (!Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return false;
-              return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 100;
+              return haversine(userLoc.lat, userLoc.lng, Number(p.lat), Number(p.lng)) <= 30;
             });
             const seen = new Set(byCode.map(p => String(p.id || '') + ',' + Number(p.lat).toFixed(3) + ',' + Number(p.lng).toFixed(3)));
             geoFiltered = byCode.slice();
@@ -4897,7 +4903,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=124";
+      var PHARIS_SW_URL = "./service-worker.js?v=127";
 
       function pharisLang() {
         var lang = "ar";
