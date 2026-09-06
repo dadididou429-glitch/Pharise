@@ -798,6 +798,19 @@
       } catch (e2) {}
       return false;
     }
+    // معرّف ثابت للجهاز لتسجيل الشكاوى (منفصل عن حساب الأدمن)
+    function pharisReporterId() {
+      var KEY = "pharis_reporter_id";
+      try {
+        var existing = localStorage.getItem(KEY);
+        if (existing) return existing;
+        var id = "rep_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+        localStorage.setItem(KEY, id);
+        return id;
+      } catch (e) {
+        return "rep_fallback_" + Math.random().toString(36).slice(2, 12);
+      }
+    }
     function pharisAdminPinWrite(on) {
       try {
         localStorage.setItem("pharis_admin_view", on ? "1" : "0");
@@ -807,6 +820,39 @@
         document.cookie = "pharis_admin_pin=" + (on ? "1" : "0") + "; path=/; " + (on ? "max-age=31536000" : "max-age=0") + "; SameSite=Lax";
       } catch (e2) {}
     }
+
+    const DEMO_MED_REQUESTS = [
+      {
+        id: "demo_med_1",
+        isDemo: true,
+        medicineName: "Doliprane 1000mg",
+        city: "سيدي بلعباس",
+        note: "مثال توضيحي — اضغط \"طلب دواء\" لإضافة طلبك الحقيقي",
+        imageUrl: null,
+        whatsapp: null,
+        expiresAtMs: Date.now() + 365 * 24 * 3600 * 1000
+      },
+      {
+        id: "demo_med_2",
+        isDemo: true,
+        medicineName: "Ventoline",
+        city: "وهران",
+        note: "مثال توضيحي — طلبك الحقيقي يظهر هنا لباقي المستخدمين",
+        imageUrl: null,
+        whatsapp: null,
+        expiresAtMs: Date.now() + 365 * 24 * 3600 * 1000
+      },
+      {
+        id: "demo_med_3",
+        isDemo: true,
+        medicineName: "Augmentin 1g",
+        city: "الجزائر",
+        note: "مثال توضيحي",
+        imageUrl: null,
+        whatsapp: null,
+        expiresAtMs: Date.now() + 365 * 24 * 3600 * 1000
+      }
+    ];
 
     function mergeDemoMedRequests(list) {
       const real = (list || []).filter(function (r) {
@@ -2028,7 +2074,9 @@ out center tags;`;
       const [removedIds, setRemovedIds] = useState(new Set());
       const [featuredMap, setFeaturedMap] = useState({}); // id -> true من Firestore
       const [complaints, setComplaints] = useState({});
-      const [reportedByMe, setReportedByMe] = useState(new Set());
+      const [reportedByMe, setReportedByMe] = useState(() => {
+        try { return new Set(JSON.parse(localStorage.getItem("pharis_reported") || "[]")); } catch { return new Set(); }
+      });
       const [favorites, setFavorites] = useState(() => {
         try {
           const arr = JSON.parse(localStorage.getItem("pharis_favorites") || "[]");
@@ -2224,6 +2272,28 @@ out center tags;`;
           clearTimeout(safety);
           if (unsub) unsub();
         };
+      }, [firebaseReady, db]);
+
+      // شكاوى/بلاغات الصيدليات — من Firestore (تتجمّع من كل المستخدمين، لا تتصفّر بإعادة التحميل)
+      useEffect(() => {
+        if (!firebaseReady || !db) return;
+        let cancelled = false;
+        let unsub = null;
+        try {
+          unsub = db.collection("complaint_counts").onSnapshot(
+            function (snap) {
+              if (cancelled) return;
+              var map = {};
+              snap.forEach(function (doc) {
+                var d = doc.data() || {};
+                map[doc.id] = Number(d.count) || 0;
+              });
+              setComplaints(map);
+            },
+            function (err) { console.warn("complaint_counts", err); }
+          );
+        } catch (e) { console.warn("complaint_counts setup", e); }
+        return function () { cancelled = true; if (unsub) unsub(); };
       }, [firebaseReady, db]);
 
 
@@ -2623,58 +2693,51 @@ out center tags;`;
               try { localStorage.setItem(INSTALL_KEY, installId); } catch (e5) {}
             }
 
-            var ref = db.collection("unique_users").doc(user.uid);
-            var already = false;
-            try {
-              var existing = await ref.get();
-              already = !!(existing && existing.exists);
-            } catch (eGet) {
-              already = false;
-            }
-            if (cancelled) return;
+            var userRef = db.collection("unique_users").doc(user.uid);
+            var statsRef = db.collection("stats").doc("users");
 
-            if (already) {
-              try {
-                await ref.set({
+            // معاملة واحدة ذرّية: التحقق من "counted" في نفس المستند مرجعها السيرفر (لا localStorage)
+            // هذا يمنع حالة: إنشاء مستند unique_users ينجح لكن زيادة العداد تفشل → مستخدم حقيقي لا يُحسب أبداً
+            var didIncrement = false;
+            try {
+              await db.runTransaction(async function (tx) {
+                var snap = await tx.get(userRef);
+                var data = snap.exists ? (snap.data() || {}) : null;
+
+                if (data && data.counted === true) {
+                  // مستخدم معروف ومحسوب مسبقاً — فقط حدّث آخر ظهور
+                  tx.set(userRef, {
+                    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                    installId: installId
+                  }, { merge: true });
+                  return;
+                }
+
+                // مستخدم جديد، أو مستخدم قديم لم تكتمل عملية عدّه سابقاً (إعادة محاولة آمنة)
+                var statsSnap = await tx.get(statsRef);
+                var current = statsSnap.exists ? (Number(statsSnap.data().count) || 0) : 0;
+                tx.set(userRef, {
+                  installId: installId,
+                  uid: user.uid,
+                  counted: true,
+                  firstSeen: (data && data.firstSeen) || firebase.firestore.FieldValue.serverTimestamp(),
                   lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                  installId: installId
+                  kind: "install"
                 }, { merge: true });
-              } catch (eUp) {}
+                tx.set(statsRef, {
+                  count: current + 1,
+                  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                didIncrement = true;
+              });
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e6) {}
-              // لا نزيد العداد لمستخدم معروف مسبقاً
-              return;
-            }
-
-            // مستند جديد
-            try {
-              await ref.set({
-                installId: installId,
-                uid: user.uid,
-                firstSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                kind: "install"
-              }, { merge: true });
-              try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
-            } catch (eCreate) {
-              console.warn("unique_users create failed", eCreate);
-              return;
-            }
-
-            // زيادة العداد مرة واحدة لكل installId
-            var incDone = null;
-            try { incDone = localStorage.getItem(INC_KEY); } catch (e8) {}
-            if (incDone === installId) return;
-
-            try {
-              await db.collection("stats").doc("users").set({
-                count: firebase.firestore.FieldValue.increment(1),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-              }, { merge: true });
-              try { localStorage.setItem(INC_KEY, installId); } catch (e9) {}
-              console.info("Pharis: user count +1");
-            } catch (eInc) {
-              console.warn("stats increment failed", eInc);
-              // لا نحفظ INC_KEY حتى تنجح لاحقاً
+              if (didIncrement) {
+                try { localStorage.setItem(INC_KEY, installId); } catch (e9) {}
+                console.info("Pharis: user count +1");
+              }
+            } catch (eTx) {
+              console.warn("install register transaction failed", eTx);
+              // لا نكتب DONE_KEY/INC_KEY حتى تنجح المعاملة — يُعاد المحاولة في الجلسة القادمة
             }
           } catch (e) {
             console.warn("install register", e);
@@ -3073,12 +3136,10 @@ out center tags;`;
       }, [allComputed]);
 
       const reviewQueue = useMemo(() => {
-        return RAW
-          .filter(ph => !removedIds.has(ph.id))
-          .map(ph => ({ ...ph, complaintCount: complaints[ph.id] || 0 }))
-          .filter(ph => ph.complaintCount >= COMPLAINT_THRESHOLD)
+        return allComputed
+          .filter(ph => ph.underReview)
           .sort((a, b) => b.complaintCount - a.complaintCount);
-      }, [complaints, removedIds]);
+      }, [allComputed]);
 
       const selectedLive = selected ? allComputed.find(p => p.id === selected.id) || selected : null;
       const timeStr = now.toLocaleTimeString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -3149,17 +3210,74 @@ out center tags;`;
         showToast(t("thanksConfirm"));
       };
 
-      const reportPharmacy = (id, name) => {
-        if (reportedByMe.has(id)) {
+      const reportPharmacy = async (id, name) => {
+        if (reportedByMe.has(id) || reportedByMe.has(String(id))) {
           showToast(t("alreadyReported"));
           return;
         }
-        setComplaints(prev => {
-          const next = { ...prev, [id]: (prev[id] || 0) + 1 };
-          showToast(next[id] === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+        // وضع الأدمن/بدون اتصال: احتفظ بسلوك محلي فقط كحل احتياطي
+        if (!firebaseReady || !db) {
+          setComplaints(prev => {
+            const next = { ...prev, [id]: (prev[id] || 0) + 1 };
+            showToast(next[id] === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+            return next;
+          });
+          setReportedByMe(prev => {
+            const next = new Set(prev).add(id);
+            try { localStorage.setItem("pharis_reported", JSON.stringify([...next])); } catch {}
+            return next;
+          });
+          return;
+        }
+
+        const pid = String(id);
+        const reporterId = pharisReporterId();
+        const reportRef = db.collection("complaints").doc(pid + "_" + reporterId);
+        const countRef = db.collection("complaint_counts").doc(pid);
+
+        // تعليم محلي فوري لمنع نقرات مزدوجة أثناء الانتظار
+        setReportedByMe(prev => {
+          const next = new Set(prev).add(id);
+          try { localStorage.setItem("pharis_reported", JSON.stringify([...next])); } catch {}
           return next;
         });
-        setReportedByMe(prev => new Set(prev).add(id));
+
+        try {
+          let newCount = 0;
+          await db.runTransaction(async (tx) => {
+            const reportSnap = await tx.get(reportRef);
+            if (reportSnap.exists) {
+              const countSnap = await tx.get(countRef);
+              newCount = countSnap.exists ? (Number(countSnap.data().count) || 0) : 0;
+              return; // هذا الجهاز بلّغ عنها من قبل — لا تكرار
+            }
+            const countSnap = await tx.get(countRef);
+            const current = countSnap.exists ? (Number(countSnap.data().count) || 0) : 0;
+            newCount = current + 1;
+            tx.set(reportRef, {
+              pharmacyId: pid,
+              reporterId,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            tx.set(countRef, {
+              count: newCount,
+              pharmacyName: name || "",
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          });
+          showToast(newCount === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+        } catch (e) {
+          console.warn("reportPharmacy", e);
+          // فشل الاتصال بالسيرفر: لا نُبقي العلامة المحلية حتى تُتاح إعادة المحاولة لاحقاً
+          setReportedByMe(prev => {
+            const next = new Set(prev);
+            next.delete(id);
+            next.delete(String(id));
+            try { localStorage.setItem("pharis_reported", JSON.stringify([...next])); } catch {}
+            return next;
+          });
+          showToast(t("thanksReport"));
+        }
       };
 
       const submitRating = (id) => {
@@ -3625,9 +3743,20 @@ out center tags;`;
         }
       };
 
-      const dismissComplaints = (id, name) => {
+      const dismissComplaints = async (id, name) => {
         setComplaints(prev => ({ ...prev, [id]: 0 }));
         showToast(t("dismissedToast", { name }));
+        try {
+          if (db) {
+            await db.collection("complaint_counts").doc(String(id)).set({
+              count: 0,
+              resetAt: firebase.firestore.FieldValue.serverTimestamp(),
+              resetBy: (adminUser && adminUser.uid) || null
+            }, { merge: true });
+          }
+        } catch (e) {
+          console.warn("dismissComplaints", e);
+        }
       };
 
       // ═══════════════════════════════════════════════════════════
