@@ -287,7 +287,7 @@
         dashboard: "لوحة التحكم",
         openStat: "مفتوحة من أصل {total}",
         searchPlaceholder: "ابحث باسم الصيدلية أو الحي...",
-        filterAll: "الكل", filterOpen: "مفتوحة", filterUrgent: "مناوبة 24س",
+        filterAll: "الجميع", filterOpen: "مفتوحة", filterUrgent: "مناوبة 24س",
         filterFavorites: "المفضلة", filterLate: "مفتوحة ليلاً",
         emergency: "طوارئ", emergencyTitle: "مفتوح الآن بالقرب منك",
         emergencySubtitle: "أقرب الصيدليات المفتوحة · اضغط للاتصال أو الاتجاهات",
@@ -3053,13 +3053,15 @@ out center tags;`;
           .filter(ph => filter === "favorites" ? ph.isFavorite : true)
           .filter(ph => filter === "late" ? (ph.status.open && (ph.hours?.close > 22 || ph.onDuty)) : true)
           .sort((a, b) => {
-            // 1) المميزة أولاً (اشتراك)
+            // فلتر الجميع: الأقرب → الأبعد (مع إظهار مفتوحة/مغلقة في البطاقة)
+            if (filter === "all") {
+              if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
+              return (a.distance ?? 99999) - (b.distance ?? 99999);
+            }
+            // باقي الفلاتر: مميزة ثم مفتوحة ثم مناوبة ثم مسافة
             if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
-            // 2) المفتوحة قبل المغلقة
             if (!!a.status?.open !== !!b.status?.open) return a.status?.open ? -1 : 1;
-            // 3) المناوبة 24س
             if (!!a.onDuty !== !!b.onDuty) return a.onDuty ? -1 : 1;
-            // 4) الأقرب فالأقرب
             return (a.distance ?? 99999) - (b.distance ?? 99999);
           });
       }, [allComputed, query, filter]);
@@ -3847,7 +3849,7 @@ out center tags;`;
                 🚨 {t("emergency")}
               </button>
               {[
-                { id: "all", label: t("filterAll") },
+                { id: "all", label: "📋 " + t("filterAll") },
                 { id: "open", label: t("filterOpen") },
                 { id: "urgent", label: t("filterUrgent"), urgent: true },
                 { id: "favorites", label: t("filterFavorites") },
@@ -4903,7 +4905,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=129";
+      var PHARIS_SW_URL = "./service-worker.js?v=130";
 
       function pharisLang() {
         var lang = "ar";
