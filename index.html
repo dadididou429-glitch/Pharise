@@ -798,6 +798,19 @@
       } catch (e2) {}
       return false;
     }
+    // معرّف ثابت للجهاز لتسجيل الشكاوى (منفصل عن حساب الأدمن)
+    function pharisReporterId() {
+      var KEY = "pharis_reporter_id";
+      try {
+        var existing = localStorage.getItem(KEY);
+        if (existing) return existing;
+        var id = "rep_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+        localStorage.setItem(KEY, id);
+        return id;
+      } catch (e) {
+        return "rep_fallback_" + Math.random().toString(36).slice(2, 12);
+      }
+    }
     function pharisAdminPinWrite(on) {
       try {
         localStorage.setItem("pharis_admin_view", on ? "1" : "0");
@@ -807,6 +820,39 @@
         document.cookie = "pharis_admin_pin=" + (on ? "1" : "0") + "; path=/; " + (on ? "max-age=31536000" : "max-age=0") + "; SameSite=Lax";
       } catch (e2) {}
     }
+
+    const DEMO_MED_REQUESTS = [
+      {
+        id: "demo_med_1",
+        isDemo: true,
+        medicineName: "Doliprane 1000mg",
+        city: "سيدي بلعباس",
+        note: "مثال توضيحي — اضغط \"طلب دواء\" لإضافة طلبك الحقيقي",
+        imageUrl: null,
+        whatsapp: null,
+        expiresAtMs: Date.now() + 365 * 24 * 3600 * 1000
+      },
+      {
+        id: "demo_med_2",
+        isDemo: true,
+        medicineName: "Ventoline",
+        city: "وهران",
+        note: "مثال توضيحي — طلبك الحقيقي يظهر هنا لباقي المستخدمين",
+        imageUrl: null,
+        whatsapp: null,
+        expiresAtMs: Date.now() + 365 * 24 * 3600 * 1000
+      },
+      {
+        id: "demo_med_3",
+        isDemo: true,
+        medicineName: "Augmentin 1g",
+        city: "الجزائر",
+        note: "مثال توضيحي",
+        imageUrl: null,
+        whatsapp: null,
+        expiresAtMs: Date.now() + 365 * 24 * 3600 * 1000
+      }
+    ];
 
     function mergeDemoMedRequests(list) {
       const real = (list || []).filter(function (r) {
@@ -1029,57 +1075,6 @@
   { id: 353, name: "صيدلية مصطفى بن ابراهيم 24", area: "حي الفتح", address: "Cité El Feth, M. Ben Brahim", phone: null, lat: 35.1970, lng: -0.3680, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 354, name: "صيدلية بئر الحمام 24", area: "طريق تلمسان", address: "Route de Tlemcen, Bir El Hammam", phone: "0698 44 55 66", lat: 34.7480, lng: -0.6480, hours: { open: 0, close: 24 }, onDuty: true },
   { id: 355, name: "صيدلية بن عشيبة 24", area: "الطريق الوطني 7", address: "RN7, Benachiba", phone: null, lat: 35.0140, lng: -0.4480, hours: { open: 0, close: 24 }, onDuty: true },
-  { id: 500, name: "صيدلية بنيل شكيب", area: "نهج خير نبية", address: "8 Avenue Kheire Nebia, Sidi Bel Abbès", phone: "0553 74 47 49", lat: 35.1920, lng: -0.6320, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 501, name: "صيدلية كنوني عبد الحق", area: "حي 253 مسكن", address: "Cité 253 Logts, Rue El Mazani, Sidi Bel Abbès", phone: "0550 01 51 61", lat: 35.1980, lng: -0.6280, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 502, name: "صيدلية بنحرة فريدة", area: "حي ميموسا 558 مسكن", address: "Cité Mimosa 558 Logts, Sidi Bel Abbès", phone: "0558 46 53 59", lat: 35.1960, lng: -0.6400, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 503, name: "صيدلية بلفضال فاطمة", area: "سيدي جيلالي", address: "N°114 1er Tranche, Sidi Djilali, Sidi Bel Abbès", phone: "0781 81 22 79", lat: 35.2100, lng: -0.6300, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 504, name: "صيدلية الهلال", area: "نهج الكولونيل عميروش", address: "08 Rue Colonel Amirouche, Sidi Bel Abbès", phone: "0669 46 67 49", lat: 35.1930, lng: -0.6250, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 505, name: "صيدلية عتبان حمزة", area: "نهج حواورية عبد القادر", address: "39 Rue Houaouria Abdelkader, Sidi Bel Abbès", phone: "048 68 18 36", lat: 35.1880, lng: -0.6460, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 506, name: "صيدلية عصاد محمد طارق", area: "نهج الخميستي", address: "04 Rue Khemisti, Sidi Bel Abbès", phone: "0770 74 33 07", lat: 35.1870, lng: -0.6330, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 507, name: "صيدلية هديبي نوال", area: "حي 366 مسكن", address: "Cité 366 Logts, Sidi Bel Abbès", phone: "044 79 76 03", lat: 35.2150, lng: -0.6320, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 508, name: "صيدلية بادسي عبد الإله", area: "بوليفار محمد الخامس", address: "22 Bd Mohamed V, Sidi Bel Abbès", phone: "0558 51 34 54", lat: 35.1940, lng: -0.6200, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 509, name: "صيدلية بن خالد بهيجة", area: "بوليفار الخميستي", address: "01 Bd Mohamed Khemisti, Sidi Bel Abbès", phone: "048 75 09 35", lat: 35.1860, lng: -0.6330, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 510, name: "صيدلية سليمان سيدي أحمد", area: "شارع موليير", address: "25 Rue Molière, Sidi Bel Abbès", phone: "048 69 74 21", lat: 35.1950, lng: -0.6420, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 511, name: "صيدلية بوعبد الله", area: "بوليفار الصومام", address: "30 Bd De la Soumam, Sidi Bel Abbès", phone: "0540 52 11 27", lat: 35.1970, lng: -0.6180, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 512, name: "صيدلية خدة جليلة", area: "سيدي جيلالي", address: "Zone S lot 63 local 2, Sidi Djilali, Sidi Bel Abbès", phone: "048 72 21 88", lat: 35.2120, lng: -0.6340, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 513, name: "صيدلية هني محمد إبراهيم", area: "حي البدر", address: "El Idrisi, Hai El Badr, Sidi Bel Abbès", phone: "048 75 00 10", lat: 35.1990, lng: -0.6360, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 514, name: "صيدلية بتاش نذير", area: "حي 72 مسكن روشيه", address: "26-27 Cité 72 Logts Rochet, Sidi Bel Abbès", phone: "048 70 23 50", lat: 35.1910, lng: -0.6380, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 515, name: "صيدلية بغدادي أمينة", area: "نهج عاصم الإسلامي", address: "34 Rue Assem El Islami CPR, Sidi Bel Abbès", phone: "0661 11 01 87", lat: 35.1930, lng: -0.6440, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 516, name: "صيدلية زفيزف عبد الحق", area: "وسط المدينة", address: "46 Lot, Sidi Bel Abbès", phone: null, lat: 35.1950, lng: -0.6350, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 517, name: "صيدلية الشروق", area: "حي النصر", address: "Cité Ennasr, Sidi Bel Abbès", phone: "0550 11 22 33", lat: 35.1980, lng: -0.6300, hours: { open: 8, close: 23 }, onDuty: false },
-  { id: 518, name: "صيدلية الروضة", area: "حي الروضة", address: "Cité Erroudha, Sidi Bel Abbès", phone: "0660 22 33 44", lat: 35.2000, lng: -0.6380, hours: { open: 8, close: 22 }, onDuty: false },
-  { id: 519, name: "صيدلية الفلاح", area: "حي الفلاح", address: "Cité El Fellah, Sidi Bel Abbès", phone: null, lat: 35.2020, lng: -0.6250, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 520, name: "صيدلية السعادة", area: "حي السعادة", address: "Cité Esaada, Sidi Bel Abbès", phone: "0770 33 44 55", lat: 35.1940, lng: -0.6400, hours: { open: 8, close: 21.5 }, onDuty: false },
-  { id: 521, name: "صيدلية المستقبل", area: "حي المستقبل", address: "Cité El Moustakbel, Sidi Bel Abbès", phone: null, lat: 35.1960, lng: -0.6220, hours: { open: 8, close: 22 }, onDuty: false },
-  { id: 522, name: "صيدلية النخيل", area: "حي النخيل", address: "Cité Ennakhil, Sidi Bel Abbès", phone: "0555 44 33 22", lat: 35.2030, lng: -0.6320, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 523, name: "صيدلية الزيتون", area: "حي الزيتون", address: "Cité Ezzitoune, Sidi Bel Abbès", phone: null, lat: 35.1980, lng: -0.6450, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 524, name: "صيدلية الأمل", area: "حي الأمل", address: "Cité El Amel, Sidi Bel Abbès", phone: "0666 77 88 99", lat: 35.2010, lng: -0.6280, hours: { open: 8, close: 22 }, onDuty: false },
-  { id: 525, name: "صيدلية السلام", area: "حي السلام", address: "Cité Essalam, Sidi Bel Abbès", phone: "0540 55 66 77", lat: 35.1930, lng: -0.6180, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 526, name: "صيدلية الفتح", area: "حي الفتح", address: "Cité El Feth, Sidi Bel Abbès", phone: null, lat: 35.2040, lng: -0.6350, hours: { open: 8, close: 23 }, onDuty: false },
-  { id: 527, name: "صيدلية القدس", area: "حي القدس", address: "Cité El Qods, Sidi Bel Abbès", phone: "0790 11 22 33", lat: 35.1970, lng: -0.6200, hours: { open: 8, close: 21.5 }, onDuty: false },
-  { id: 528, name: "صيدلية التوفيق", area: "حي التوفيق", address: "Cité Ettawfik, Sidi Bel Abbès", phone: null, lat: 35.1990, lng: -0.6420, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 529, name: "صيدلية الرحمة", area: "حي الرحمة", address: "Cité Errahma, Sidi Bel Abbès", phone: "0558 22 33 44", lat: 35.2010, lng: -0.6380, hours: { open: 0, close: 24 }, onDuty: true },
-  { id: 530, name: "صيدلية الإيمان", area: "حي الإيمان", address: "Cité El Iman, Sidi Bel Abbès", phone: null, lat: 35.1950, lng: -0.6250, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 531, name: "صيدلية الصباح", area: "حي الصباح", address: "Cité Essebah, Sidi Bel Abbès", phone: "0660 33 44 55", lat: 35.2030, lng: -0.6400, hours: { open: 8, close: 22 }, onDuty: false },
-  { id: 532, name: "صيدلية الهدى", area: "حي الهدى", address: "Cité El Houda, Sidi Bel Abbès", phone: null, lat: 35.1970, lng: -0.6320, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 533, name: "صيدلية الاستقلال", area: "نهج الاستقلال", address: "Rue de l'Indépendance, Sidi Bel Abbès", phone: "048 70 11 22", lat: 35.1920, lng: -0.6360, hours: { open: 8, close: 21.5 }, onDuty: false },
-  { id: 534, name: "صيدلية الشهداء", area: "ساحة الشهداء", address: "Place des Martyrs, Sidi Bel Abbès", phone: "0770 44 55 66", lat: 35.1940, lng: -0.6340, hours: { open: 8, close: 22 }, onDuty: false },
-  { id: 535, name: "صيدلية الوحدة", area: "حي الوحدة", address: "Cité El Wahda, Sidi Bel Abbès", phone: null, lat: 35.2000, lng: -0.6260, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 536, name: "صيدلية الجزائر", area: "حي الجزائر", address: "Cité El Djazaïr, Sidi Bel Abbès", phone: "0550 66 77 88", lat: 35.1960, lng: -0.6440, hours: { open: 8, close: 23 }, onDuty: false },
-  { id: 537, name: "صيدلية النصر", area: "حي النصر", address: "Cité Ennasr, Sidi Bel Abbès", phone: null, lat: 35.2020, lng: -0.6180, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 538, name: "صيدلية المجاهد", area: "حي المجاهد", address: "Cité El Moudjahid, Sidi Bel Abbès", phone: "0666 11 22 33", lat: 35.1980, lng: -0.6380, hours: { open: 8, close: 22.5 }, onDuty: false },
-  { id: 539, name: "صيدلية العروبة", area: "حي العروبة", address: "Cité El Orouba, Sidi Bel Abbès", phone: null, lat: 35.2010, lng: -0.6300, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 540, name: "صيدلية اليرموك", area: "حي اليرموك", address: "Cité Yarmouk, Sidi Bel Abbès", phone: "0790 33 44 55", lat: 35.1950, lng: -0.6220, hours: { open: 8, close: 21.5 }, onDuty: false },
-  { id: 541, name: "صيدلية الأندلس", area: "حي الأندلس", address: "Cité El Andalous, Sidi Bel Abbès", phone: null, lat: 35.2030, lng: -0.6360, hours: { open: 8, close: 22 }, onDuty: false },
-  { id: 542, name: "صيدلية ابن خلدون", area: "حي ابن خلدون", address: "Cité Ibn Khaldoun, Sidi Bel Abbès", phone: "0555 22 33 44", lat: 35.1970, lng: -0.6400, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 543, name: "صيدلية ابن سينا", area: "حي ابن سينا", address: "Cité Ibn Sina, Sidi Bel Abbès", phone: null, lat: 35.1990, lng: -0.6260, hours: { open: 8, close: 23 }, onDuty: false },
-  { id: 544, name: "صيدلية الجامعة", area: "حي الجامعة", address: "Cité Universitaire, Sidi Bel Abbès", phone: "0660 44 55 66", lat: 35.2010, lng: -0.6420, hours: { open: 0, close: 24 }, onDuty: true },
-  { id: 545, name: "صيدلية الزهراء", area: "حي الزهراء", address: "Cité Ezzahra, Sidi Bel Abbès", phone: null, lat: 35.1950, lng: -0.6340, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 546, name: "صيدلية الأقصى", area: "حي الأقصى", address: "Cité El Aqsa, Sidi Bel Abbès", phone: "0770 55 66 77", lat: 35.1980, lng: -0.6200, hours: { open: 8, close: 22 }, onDuty: false },
-  { id: 547, name: "صيدلية عين الفكر", area: "حي عين الفكر", address: "Cité Ain El Fikr, Sidi Bel Abbès", phone: null, lat: 35.2020, lng: -0.6280, hours: { open: 8, close: 21.5 }, onDuty: false },
-  { id: 548, name: "صيدلية السلام الجديدة", area: "حي السلام الجديد", address: "Nouvelle Cité Essalam, Sidi Bel Abbès", phone: "0558 33 44 55", lat: 35.1960, lng: -0.6180, hours: { open: 8, close: 21 }, onDuty: false },
-  { id: 549, name: "صيدلية البدر", area: "حي البدر", address: "Cité El Badr, Sidi Bel Abbès", phone: null, lat: 35.2000, lng: -0.6400, hours: { open: 8, close: 22.5 }, onDuty: false },
-  { id: 550, name: "صيدلية الفارابي", area: "حي الفارابي", address: "Cité El Farabi, Sidi Bel Abbès", phone: "0666 22 33 44", lat: 35.1940, lng: -0.6260, hours: { open: 8, close: 21 }, onDuty: false },
     ].map(p => ({ ...p, wilaya: "سيدي بلعباس", commune: p.area, verified: true }));
 
     const ORAN = [
@@ -2079,7 +2074,9 @@ out center tags;`;
       const [removedIds, setRemovedIds] = useState(new Set());
       const [featuredMap, setFeaturedMap] = useState({}); // id -> true من Firestore
       const [complaints, setComplaints] = useState({});
-      const [reportedByMe, setReportedByMe] = useState(new Set());
+      const [reportedByMe, setReportedByMe] = useState(() => {
+        try { return new Set(JSON.parse(localStorage.getItem("pharis_reported") || "[]")); } catch { return new Set(); }
+      });
       const [favorites, setFavorites] = useState(() => {
         try {
           const arr = JSON.parse(localStorage.getItem("pharis_favorites") || "[]");
@@ -2102,8 +2099,7 @@ out center tags;`;
         if (b === "en") return "Detecting...";
         return "جارٍ تحديد موقعك...";
       });
-      const [realUserCount, setRealUserCount] = useState(PUBLIC_USERS_FLOOR);
-      const publicUserCount = PUBLIC_USERS_FLOOR;
+      const [userCount, setUserCount] = useState(typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 170);
       const [showPayModal, setShowPayModal] = useState(false);
       const [showOnboard, setShowOnboard] = useState(true);
       const [showMedSearch, setShowMedSearch] = useState(false);
@@ -2276,6 +2272,28 @@ out center tags;`;
           clearTimeout(safety);
           if (unsub) unsub();
         };
+      }, [firebaseReady, db]);
+
+      // شكاوى/بلاغات الصيدليات — من Firestore (تتجمّع من كل المستخدمين، لا تتصفّر بإعادة التحميل)
+      useEffect(() => {
+        if (!firebaseReady || !db) return;
+        let cancelled = false;
+        let unsub = null;
+        try {
+          unsub = db.collection("complaint_counts").onSnapshot(
+            function (snap) {
+              if (cancelled) return;
+              var map = {};
+              snap.forEach(function (doc) {
+                var d = doc.data() || {};
+                map[doc.id] = Number(d.count) || 0;
+              });
+              setComplaints(map);
+            },
+            function (err) { console.warn("complaint_counts", err); }
+          );
+        } catch (e) { console.warn("complaint_counts setup", e); }
+        return function () { cancelled = true; if (unsub) unsub(); };
       }, [firebaseReady, db]);
 
 
@@ -2675,58 +2693,51 @@ out center tags;`;
               try { localStorage.setItem(INSTALL_KEY, installId); } catch (e5) {}
             }
 
-            var ref = db.collection("unique_users").doc(user.uid);
-            var already = false;
-            try {
-              var existing = await ref.get();
-              already = !!(existing && existing.exists);
-            } catch (eGet) {
-              already = false;
-            }
-            if (cancelled) return;
+            var userRef = db.collection("unique_users").doc(user.uid);
+            var statsRef = db.collection("stats").doc("users");
 
-            if (already) {
-              try {
-                await ref.set({
+            // معاملة واحدة ذرّية: التحقق من "counted" في نفس المستند مرجعها السيرفر (لا localStorage)
+            // هذا يمنع حالة: إنشاء مستند unique_users ينجح لكن زيادة العداد تفشل → مستخدم حقيقي لا يُحسب أبداً
+            var didIncrement = false;
+            try {
+              await db.runTransaction(async function (tx) {
+                var snap = await tx.get(userRef);
+                var data = snap.exists ? (snap.data() || {}) : null;
+
+                if (data && data.counted === true) {
+                  // مستخدم معروف ومحسوب مسبقاً — فقط حدّث آخر ظهور
+                  tx.set(userRef, {
+                    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                    installId: installId
+                  }, { merge: true });
+                  return;
+                }
+
+                // مستخدم جديد، أو مستخدم قديم لم تكتمل عملية عدّه سابقاً (إعادة محاولة آمنة)
+                var statsSnap = await tx.get(statsRef);
+                var current = statsSnap.exists ? (Number(statsSnap.data().count) || 0) : 0;
+                tx.set(userRef, {
+                  installId: installId,
+                  uid: user.uid,
+                  counted: true,
+                  firstSeen: (data && data.firstSeen) || firebase.firestore.FieldValue.serverTimestamp(),
                   lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                  installId: installId
+                  kind: "install"
                 }, { merge: true });
-              } catch (eUp) {}
+                tx.set(statsRef, {
+                  count: current + 1,
+                  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                didIncrement = true;
+              });
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e6) {}
-              // لا نزيد العداد لمستخدم معروف مسبقاً
-              return;
-            }
-
-            // مستند جديد
-            try {
-              await ref.set({
-                installId: installId,
-                uid: user.uid,
-                firstSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                kind: "install"
-              }, { merge: true });
-              try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
-            } catch (eCreate) {
-              console.warn("unique_users create failed", eCreate);
-              return;
-            }
-
-            // زيادة العداد مرة واحدة لكل installId
-            var incDone = null;
-            try { incDone = localStorage.getItem(INC_KEY); } catch (e8) {}
-            if (incDone === installId) return;
-
-            try {
-              await db.collection("stats").doc("users").set({
-                count: firebase.firestore.FieldValue.increment(1),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-              }, { merge: true });
-              try { localStorage.setItem(INC_KEY, installId); } catch (e9) {}
-              console.info("Pharis: user count +1");
-            } catch (eInc) {
-              console.warn("stats increment failed", eInc);
-              // لا نحفظ INC_KEY حتى تنجح لاحقاً
+              if (didIncrement) {
+                try { localStorage.setItem(INC_KEY, installId); } catch (e9) {}
+                console.info("Pharis: user count +1");
+              }
+            } catch (eTx) {
+              console.warn("install register transaction failed", eTx);
+              // لا نكتب DONE_KEY/INC_KEY حتى تنجح المعاملة — يُعاد المحاولة في الجلسة القادمة
             }
           } catch (e) {
             console.warn("install register", e);
@@ -2737,7 +2748,10 @@ out center tags;`;
 
 // عداد المستخدمين ظاهر للجميع — من stats/users (الحد الأدنى 170)
       useEffect(() => {
-        // العدد العام ثابت للمستخدمين العاديين
+        setUserCount(function (prev) {
+          var p = Number(prev) || 0;
+          return p < PUBLIC_USERS_FLOOR ? PUBLIC_USERS_FLOOR : p;
+        });
         if (!firebaseReady || !db) return;
         let cancelled = false;
         var unsubStats = null;
@@ -2746,14 +2760,14 @@ out center tags;`;
             if (cancelled) return;
             var n = snap.exists ? (Number(snap.data().count) || 0) : 0;
             if (n < PUBLIC_USERS_FLOOR) n = PUBLIC_USERS_FLOOR;
-            setRealUserCount(n); // العدد الحقيقي للأدمن فقط
+            setUserCount(n);
           }, function (err) {
             console.warn("stats users", err);
-            if (!cancelled) setRealUserCount(PUBLIC_USERS_FLOOR);
+            if (!cancelled) setUserCount(PUBLIC_USERS_FLOOR);
           });
         } catch (e) {
           console.warn(e);
-          setRealUserCount(PUBLIC_USERS_FLOOR);
+          setUserCount(PUBLIC_USERS_FLOOR);
         }
         return function () {
           cancelled = true;
@@ -3122,12 +3136,10 @@ out center tags;`;
       }, [allComputed]);
 
       const reviewQueue = useMemo(() => {
-        return RAW
-          .filter(ph => !removedIds.has(ph.id))
-          .map(ph => ({ ...ph, complaintCount: complaints[ph.id] || 0 }))
-          .filter(ph => ph.complaintCount >= COMPLAINT_THRESHOLD)
+        return allComputed
+          .filter(ph => ph.underReview)
           .sort((a, b) => b.complaintCount - a.complaintCount);
-      }, [complaints, removedIds]);
+      }, [allComputed]);
 
       const selectedLive = selected ? allComputed.find(p => p.id === selected.id) || selected : null;
       const timeStr = now.toLocaleTimeString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -3198,17 +3210,74 @@ out center tags;`;
         showToast(t("thanksConfirm"));
       };
 
-      const reportPharmacy = (id, name) => {
-        if (reportedByMe.has(id)) {
+      const reportPharmacy = async (id, name) => {
+        if (reportedByMe.has(id) || reportedByMe.has(String(id))) {
           showToast(t("alreadyReported"));
           return;
         }
-        setComplaints(prev => {
-          const next = { ...prev, [id]: (prev[id] || 0) + 1 };
-          showToast(next[id] === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+        // وضع الأدمن/بدون اتصال: احتفظ بسلوك محلي فقط كحل احتياطي
+        if (!firebaseReady || !db) {
+          setComplaints(prev => {
+            const next = { ...prev, [id]: (prev[id] || 0) + 1 };
+            showToast(next[id] === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+            return next;
+          });
+          setReportedByMe(prev => {
+            const next = new Set(prev).add(id);
+            try { localStorage.setItem("pharis_reported", JSON.stringify([...next])); } catch {}
+            return next;
+          });
+          return;
+        }
+
+        const pid = String(id);
+        const reporterId = pharisReporterId();
+        const reportRef = db.collection("complaints").doc(pid + "_" + reporterId);
+        const countRef = db.collection("complaint_counts").doc(pid);
+
+        // تعليم محلي فوري لمنع نقرات مزدوجة أثناء الانتظار
+        setReportedByMe(prev => {
+          const next = new Set(prev).add(id);
+          try { localStorage.setItem("pharis_reported", JSON.stringify([...next])); } catch {}
           return next;
         });
-        setReportedByMe(prev => new Set(prev).add(id));
+
+        try {
+          let newCount = 0;
+          await db.runTransaction(async (tx) => {
+            const reportSnap = await tx.get(reportRef);
+            if (reportSnap.exists) {
+              const countSnap = await tx.get(countRef);
+              newCount = countSnap.exists ? (Number(countSnap.data().count) || 0) : 0;
+              return; // هذا الجهاز بلّغ عنها من قبل — لا تكرار
+            }
+            const countSnap = await tx.get(countRef);
+            const current = countSnap.exists ? (Number(countSnap.data().count) || 0) : 0;
+            newCount = current + 1;
+            tx.set(reportRef, {
+              pharmacyId: pid,
+              reporterId,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            tx.set(countRef, {
+              count: newCount,
+              pharmacyName: name || "",
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          });
+          showToast(newCount === COMPLAINT_THRESHOLD ? t("thresholdReached", { n: COMPLAINT_THRESHOLD, name }) : t("thanksReport"));
+        } catch (e) {
+          console.warn("reportPharmacy", e);
+          // فشل الاتصال بالسيرفر: لا نُبقي العلامة المحلية حتى تُتاح إعادة المحاولة لاحقاً
+          setReportedByMe(prev => {
+            const next = new Set(prev);
+            next.delete(id);
+            next.delete(String(id));
+            try { localStorage.setItem("pharis_reported", JSON.stringify([...next])); } catch {}
+            return next;
+          });
+          showToast(t("thanksReport"));
+        }
       };
 
       const submitRating = (id) => {
@@ -3674,9 +3743,20 @@ out center tags;`;
         }
       };
 
-      const dismissComplaints = (id, name) => {
+      const dismissComplaints = async (id, name) => {
         setComplaints(prev => ({ ...prev, [id]: 0 }));
         showToast(t("dismissedToast", { name }));
+        try {
+          if (db) {
+            await db.collection("complaint_counts").doc(String(id)).set({
+              count: 0,
+              resetAt: firebase.firestore.FieldValue.serverTimestamp(),
+              resetBy: (adminUser && adminUser.uid) || null
+            }, { merge: true });
+          }
+        } catch (e) {
+          console.warn("dismissComplaints", e);
+        }
       };
 
       // ═══════════════════════════════════════════════════════════
@@ -3707,7 +3787,7 @@ out center tags;`;
                   <p className="text-[10px] mt-0.5 flex items-center gap-1 text-sky-300/95 font-medium tracking-wide">
                     <span aria-hidden="true">👥</span>
                     <span>
-                      {Number(publicUserCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
+                      {Number(userCount != null && userCount > 0 ? userCount : (typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 170)).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
                       {" "}
                       <span className="opacity-80 font-normal">
                         {lang === "ar" ? "مستخدم" : lang === "fr" ? "utilisateurs" : "users"}
