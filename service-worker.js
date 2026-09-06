@@ -1,5 +1,5 @@
 // Pharis Service Worker — تحديث فوري + أوفلاين
-const CACHE_NAME = "pharis-v128-djouhara";
+const CACHE_NAME = "pharis-v129-final-plus";
 const SHELL = [
   "./",
   "./index.html",
