@@ -1,153 +1,103 @@
-// ===== PHARIS 3D SPLASH + FAST GEOLOCATION =====
-
-// Scatter letters with randomness on each load
-const letters = document.querySelectorAll('.pharis-name .letter');
-letters.forEach((letter) => {
-    const x = (Math.random() - 0.5) * 300;
-    const y = (Math.random() - 0.5) * 200;
-    const r = (Math.random() - 0.5) * 120;
-    letter.style.setProperty('--scatter-x', x + 'px');
-    letter.style.setProperty('--scatter-y', y + 'px');
-    letter.style.setProperty('--scatter-r', r + 'deg');
-});
-
-// Auto transition to welcome after animation (3.8s total)
-setTimeout(() => {
-    const splash = document.getElementById('splash');
-    splash.classList.add('exit');
-    setTimeout(() => {
-        splash.style.display = 'none';
-        document.getElementById('welcome').classList.add('active');
-    }, 800);
-}, 3800);
-
 /**
- * Fast Geolocation with timeout fallback
- * Tries high accuracy first, then falls back to low accuracy for speed
- * @param {Function} successCallback
- * @param {Function} errorCallback
- * @param {number} timeoutMs - default 5000ms
+ * Pharis Core Application System Patch
+ * Designed for High-Precision GPS Emergency Sorting
  */
-function fastGeolocation(successCallback, errorCallback, timeoutMs = 5000) {
-    const geoStatus = document.getElementById('geoStatus');
-    const geoText = document.getElementById('geoText');
 
-    geoStatus.classList.add('active');
-    geoText.textContent = 'Detecting location...';
+function calculatePreciseDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; 
+}
 
-    let finished = false;
-
-    const timeout = setTimeout(() => {
-        if (!finished) {
-            finished = true;
-            geoStatus.classList.remove('active');
-            if (errorCallback) errorCallback(new Error('Timeout'));
+function isPharmacyOpenNow(openingHoursStr) {
+    if (!openingHoursStr || openingHoursStr.includes("24/24")) return true;
+    try {
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const parts = openingHoursStr.split('-');
+        if (parts.length !== 2) return true; 
+        
+        const [startHours, startMinutes] = parts[0].trim().split(':').map(Number);
+        const [endHours, endMinutes] = parts[1].trim().split(':').map(Number);
+        
+        const startTotal = startHours * 60 + startMinutes;
+        let endTotal = endHours * 60 + endMinutes;
+        
+        if (endTotal < startTotal) {
+            if (currentMinutes >= startTotal || currentMinutes <= endTotal) return true;
+            return false;
         }
-    }, timeoutMs);
+        return currentMinutes >= startTotal && currentMinutes <= endTotal;
+    } catch (e) {
+        console.error("Time parsing exception:", e);
+        return true; 
+    }
+}
 
-    if (!navigator.geolocation) {
-        clearTimeout(timeout);
-        finished = true;
-        geoStatus.classList.remove('active');
-        if (errorCallback) errorCallback(new Error('Geolocation not supported'));
+async function triggerEmergencyMode(userLat, userLng) {
+    try {
+        const response = await fetch('sba_city.json');
+        const pharmacies = await response.json();
+        
+        const emergencyList = pharmacies
+            .map(pharmacy => {
+                const distance = calculatePreciseDistance(userLat, userLng, pharmacy.lat, pharmacy.lng);
+                const openNow = isPharmacyOpenNow(pharmacy.opening_hours);
+                return { ...pharmacy, distance, openNow };
+            })
+            .filter(pharmacy => pharmacy.openNow || pharmacy.opening_hours.includes("24/24"))
+            .sort((a, b) => a.distance - b.distance);
+            
+        console.log("⚡ Sorted Emergency Pharmacies:", emergencyList);
+        renderEmergencyView(emergencyList);
+    } catch (error) {
+        console.error("Emergency pipeline execution failed:", error);
+    }
+}
+
+function renderEmergencyView(list) {
+    const container = document.getElementById('pharmacies-container');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (list.length === 0) {
+        container.innerHTML = '<div class="no-results">لا توجد صيدليات مناوبة مفتوحة حالياً في هذا النطاق.</div>';
         return;
     }
-
-    // Try high accuracy first
-    const options = {
-        enableHighAccuracy: true,
-        timeout: timeoutMs,
-        maximumAge: 60000 // Accept cached position up to 1 minute old
-    };
-
-    navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            if (finished) return;
-            finished = true;
-            clearTimeout(timeout);
-            geoText.textContent = 'Location found! ✓';
-            setTimeout(() => geoStatus.classList.remove('active'), 1000);
-            if (successCallback) successCallback(pos);
-        },
-        (err) => {
-            // Fallback: try again with low accuracy for faster result
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    if (finished) return;
-                    finished = true;
-                    clearTimeout(timeout);
-                    geoText.textContent = 'Location found! ✓';
-                    setTimeout(() => geoStatus.classList.remove('active'), 1000);
-                    if (successCallback) successCallback(pos);
-                },
-                (err2) => {
-                    if (finished) return;
-                    finished = true;
-                    clearTimeout(timeout);
-                    geoStatus.classList.remove('active');
-                    if (errorCallback) errorCallback(err2);
-                },
-                { enableHighAccuracy: false, timeout: 3000, maximumAge: 300000 }
-            );
-        },
-        options
-    );
-}
-
-// Detect button handler
-document.getElementById('detectBtn').addEventListener('click', () => {
-    fastGeolocation(
-        (pos) => {
-            console.log('Location:', pos.coords.latitude, pos.coords.longitude);
-            // TODO: Redirect to pharmacy list or fetch nearest pharmacies
-            alert(`Location found!\nLat: ${pos.coords.latitude.toFixed(4)}\nLng: ${pos.coords.longitude.toFixed(4)}\n\nNow showing nearest pharmacies...`);
-        },
-        (err) => {
-            console.error('Geolocation error:', err);
-            alert('Could not detect location. Please enable location permissions or search manually.');
-        },
-        4000 // 4 second timeout for faster UX
-    );
-});
-
-/**
- * Utility: Replay splash animation (for testing)
- */
-function replaySplash() {
-    const splash = document.getElementById('splash');
-    const welcome = document.getElementById('welcome');
-    splash.style.display = 'flex';
-    splash.classList.remove('exit');
-    welcome.classList.remove('active');
-
-    // Reset capsule animation
-    const capsule = document.getElementById('capsule3d');
-    const newCapsule = capsule.cloneNode(true);
-    capsule.parentNode.replaceChild(newCapsule, capsule);
-
-    // Reset name animation with new random scatter
-    const name = document.getElementById('pharisName');
-    const newName = name.cloneNode(true);
-    name.parentNode.replaceChild(newName, name);
-
-    const newLetters = newName.querySelectorAll('.letter');
-    newLetters.forEach((letter) => {
-        const x = (Math.random() - 0.5) * 300;
-        const y = (Math.random() - 0.5) * 200;
-        const r = (Math.random() - 0.5) * 120;
-        letter.style.setProperty('--scatter-x', x + 'px');
-        letter.style.setProperty('--scatter-y', y + 'px');
-        letter.style.setProperty('--scatter-r', r + 'deg');
+    
+    list.forEach(ph => {
+        const distanceStr = ph.distance < 1 ? `${Math.round(ph.distance * 1000)} متر` : `${ph.distance.toFixed(2)} كم`;
+        const card = document.createElement('div');
+        card.className = 'pharmacy-card emergency';
+        card.innerHTML = `
+            <h3>${ph.name_ar} <span class="hours-badge">🕒 ${ph.opening_hours}</span></h3>
+            <p class="address">📍 ${ph.address}</p>
+            <p class="distance">🎯 تبعد عنك: <strong>${distanceStr}</strong></p>
+            <a href="tel:${ph.phone}" class="call-btn">📞 اتصل الآن: ${ph.phone}</a>
+        `;
+        container.appendChild(card);
     });
-
-    setTimeout(() => {
-        splash.classList.add('exit');
-        setTimeout(() => {
-            splash.style.display = 'none';
-            welcome.classList.add('active');
-        }, 800);
-    }, 3800);
 }
 
-// Expose for console testing
-window.replaySplash = replaySplash;
+function activateEmergencyLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                triggerEmergencyMode(position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                console.error("GPS Access Denied, fallback to default simulation.", error);
+                // Fallback simulation near Village Errih / Cité Mimosa
+                triggerEmergencyMode(35.1952, -0.6358);
+            }
+        );
+    } else {
+        triggerEmergencyMode(35.1952, -0.6358);
+    }
+}
