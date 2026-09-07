@@ -2330,6 +2330,8 @@ out center tags;`;
 
       // Geolocation — تلقائي وضروري
       const geoInFlight = useRef(false);
+      const geoWatchId = useRef(null);
+      const lastGeoRef = useRef(null); // {lat,lng,ts} آخر موقع مُعتمد
       const requestUserLocation = (opts) => {
         const silent = opts && opts.silent;
         if (!navigator.geolocation) {
@@ -2366,16 +2368,30 @@ out center tags;`;
           20: ["سعيدة", "saida"]
         };
 
-        const processPosition = async (pos) => {
+        const processPosition = async (pos, fromWatch) => {
           try {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
+            const acc = Number(pos.coords.accuracy) || 9999;
+            const prev = lastGeoRef.current;
+            let movedM = 0;
+            if (prev && Number.isFinite(prev.lat) && Number.isFinite(prev.lng)) {
+              try { movedM = haversine(prev.lat, prev.lng, lat, lng) * 1000; } catch (eM) { movedM = 999; }
+            }
+            // تجاهل اهتزاز GPS الصغير أثناء المراقبة (< 35م) إلا إذا تحسّنت الدقة كثيراً
+            if (fromWatch && prev && movedM < 35 && acc >= (prev.acc || 9999)) {
+              return;
+            }
+            lastGeoRef.current = { lat: lat, lng: lng, acc: acc, ts: Date.now() };
             // إظهار الموقع فوراً — لا ننتظر Nominatim / OSM
             setUserLoc({ lat: lat, lng: lng });
             setShowLocGate(false);
             setGeoError(null);
             setLocating(false);
             geoInFlight.current = false;
+            // إعادة جلب OSM فقط عند أول تثبيت أو انتقال معتبر (> 120م)
+            const needOsm = !fromWatch || !prev || movedM >= 120;
+            if (!needOsm) return;
             setLoadingOSM(true);
 
             // خلفية: اسم المكان + الصيدليات بالتوازي
@@ -2465,30 +2481,61 @@ out center tags;`;
           setShowLocGate(true);
         };
 
-        // طلب موقع واحد فقط — بدون تكرار يسبب وميض أيقونة 📍
+        // 1) قراءة فورية بدقة عالية
+        // 2) ثم watchPosition لتحديث الموقع أثناء التحرك
+        const startWatch = function () {
+          if (geoWatchId.current != null) {
+            try { navigator.geolocation.clearWatch(geoWatchId.current); } catch (eW) {}
+            geoWatchId.current = null;
+          }
+          try {
+            geoWatchId.current = navigator.geolocation.watchPosition(
+              function (pos) {
+                processPosition(pos, true);
+              },
+              function () { /* نُبقي آخر موقع معروف */ },
+              { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+            );
+          } catch (eWatch) {}
+        };
+
         navigator.geolocation.getCurrentPosition(
           function (pos) {
             geoInFlight.current = false;
-            processPosition(pos);
+            processPosition(pos, false);
+            startWatch();
           },
           function () {
-            // محاولة ثانية بدقة أعلى مرة واحدة فقط
+            // محاولة ثانية بدقة عالية
             navigator.geolocation.getCurrentPosition(
               function (pos) {
                 geoInFlight.current = false;
-                processPosition(pos);
+                processPosition(pos, false);
+                startWatch();
               },
               function () {
                 geoInFlight.current = false;
                 if (!silent) onFail();
                 else setLocating(false);
+                // حتى بعد الفشل نحاول المراقبة إن أمكن لاحقاً
+                startWatch();
               },
-              { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+              { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
             );
           },
-          { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
       };
+
+      // إيقاف مراقبة الموقع عند إغلاق الصفحة
+      useEffect(function () {
+        return function () {
+          if (geoWatchId.current != null && navigator.geolocation) {
+            try { navigator.geolocation.clearWatch(geoWatchId.current); } catch (eC) {}
+            geoWatchId.current = null;
+          }
+        };
+      }, []);
 
       useEffect(function () {
         try {
@@ -4905,7 +4952,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=130";
+      var PHARIS_SW_URL = "./service-worker.js?v=131";
 
       function pharisLang() {
         var lang = "ar";
