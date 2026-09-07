@@ -1441,11 +1441,34 @@
     }
 
     function haversine(lat1, lng1, lat2, lng2) {
-      const R = 6371;
-      const dLat = ((lat2 - lat1) * Math.PI) / 180;
-      const dLng = ((lng2 - lng1) * Math.PI) / 180;
-      const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const R = 6371; // كم
+      const toRad = (d) => (Number(d) * Math.PI) / 180;
+      const φ1 = toRad(lat1), φ2 = toRad(lat2);
+      const Δφ = toRad(Number(lat2) - Number(lat1));
+      const Δλ = toRad(Number(lng2) - Number(lng1));
+      const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+      const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return Number.isFinite(km) ? km : 99999;
+    }
+
+    /** عرض المسافة: أمتار إن < 1 كم، وإلا كيلومتر بدقة مناسبة */
+    function formatDistance(km, lang) {
+      const d = Number(km);
+      if (!Number.isFinite(d) || d >= 90000) {
+        return lang === "ar" ? "—" : "—";
+      }
+      if (d < 0.05) {
+        // أقل من 50 م
+        return lang === "ar" ? "بجانبكم" : lang === "fr" ? "Tout près" : "Nearby";
+      }
+      if (d < 1) {
+        const m = Math.max(50, Math.round(d * 1000 / 10) * 10); // تقريب لـ 10 م
+        return lang === "ar" ? (m + " م") : lang === "fr" ? (m + " m") : (m + " m");
+      }
+      if (d < 10) {
+        return (Math.round(d * 10) / 10).toFixed(1) + (lang === "ar" ? " كم" : " km");
+      }
+      return Math.round(d) + (lang === "ar" ? " كم" : " km");
     }
 
     function sanitize(text, max = 100) {
@@ -1763,7 +1786,7 @@ out center tags;`;
                     )}
                   </h3>
                   <span className="font-mono text-xs text-stone-400 flex-shrink-0">
-                    {ph.distance.toFixed(1)} {t("kmAway")}
+                    {formatDistance(ph.distance, lang)}
                   </span>
                 </div>
                 <p className="text-xs text-stone-500 dark:text-brand-300 mt-0.5 truncate">{ph.area}{ph.address ? ` · ${ph.address}` : ""}</p>
@@ -1871,7 +1894,7 @@ out center tags;`;
           var statusText = duty ? dutyLabel : open ? openLabel : closedLabel;
           var dist =
             Number.isFinite(Number(ph.distance))
-              ? Number(ph.distance).toFixed(1) + " km"
+              ? formatDistance(ph.distance, lang || "ar")
               : "";
           var m = L.circleMarker([ph.lat, ph.lng], {
             radius: duty ? 13 : 11,
@@ -3073,7 +3096,7 @@ out center tags;`;
             const hasCoords = Number.isFinite(Number(ph.lat)) && Number.isFinite(Number(ph.lng))
               && Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng));
             const distance = hasCoords
-              ? haversine(userLoc.lat, userLoc.lng, Number(ph.lat), Number(ph.lng))
+              ? haversine(Number(userLoc.lat), Number(userLoc.lng), Number(ph.lat), Number(ph.lng))
               : 99999;
             const complaintCount = complaints[ph.id] || complaints[String(ph.id)] || 0;
             const r = ratings[ph.id] || ratings[String(ph.id)] || { sum: ph.ratingSum || 0, count: ph.ratingCount || 0 };
@@ -4018,7 +4041,7 @@ out center tags;`;
                             <p className="text-xs text-stone-500 dark:text-brand-300 mt-1 truncate">{ph.area}</p>
                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                               <span className="font-mono text-sm font-semibold text-brand-700 dark:text-brand-300">
-                                {ph.distance.toFixed(1)} {t("kmAway")}
+                                {formatDistance(ph.distance, lang)}
                               </span>
                               {ph.onDuty && (
                                 <span className="text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-300 px-2 py-0.5 rounded-full">
@@ -4952,7 +4975,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=132";
+      var PHARIS_SW_URL = "./service-worker.js?v=134";
 
       function pharisLang() {
         var lang = "ar";
