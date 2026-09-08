@@ -3123,31 +3123,31 @@ out center tags;`;
           .filter(ph => filter === "favorites" ? ph.isFavorite : true)
           .filter(ph => filter === "late" ? (ph.status.open && (ph.hours?.close > 22 || ph.onDuty)) : true)
           .sort((a, b) => {
-            // فلتر الجميع: الأقرب → الأبعد (مع إظهار مفتوحة/مغلقة في البطاقة)
-            if (filter === "all") {
-              if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
-              return (a.distance ?? 99999) - (b.distance ?? 99999);
-            }
-            // باقي الفلاتر: مميزة ثم مفتوحة ثم مناوبة ثم مسافة
-            if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
+            // كل الفلاتر: من الأقرب إلى الأبعد دائماً
+            const da = Number.isFinite(Number(a.distance)) ? Number(a.distance) : 99999;
+            const db = Number.isFinite(Number(b.distance)) ? Number(b.distance) : 99999;
+            if (da !== db) return da - db;
+            // عند تساوي المسافة: المفتوحة ثم المناوبة ثم المميزة
             if (!!a.status?.open !== !!b.status?.open) return a.status?.open ? -1 : 1;
             if (!!a.onDuty !== !!b.onDuty) return a.onDuty ? -1 : 1;
-            return (a.distance ?? 99999) - (b.distance ?? 99999);
+            if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
+            return 0;
           });
       }, [allComputed, query, filter]);
 
       const openCount = list.filter(p => p.status.open).length;
 
-      // Emergency: top open pharmacies by distance (max 8)
+      // Emergency: top 5 nearest open pharmacies
       const emergencyList = useMemo(() => {
+        // طوارئ: أقرب 5 صيدليات مفتوحة فقط (من الأقرب للأبعد)
         return allComputed
-          .filter(ph => ph.status.open)
+          .filter(ph => ph.status && ph.status.open)
           .sort((a, b) => {
-            if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1;
-            if (a.onDuty !== b.onDuty) return a.onDuty ? -1 : 1;
-            return (a.distance ?? 99999) - (b.distance ?? 99999);
+            const da = Number.isFinite(Number(a.distance)) ? Number(a.distance) : 99999;
+            const db = Number.isFinite(Number(b.distance)) ? Number(b.distance) : 99999;
+            return da - db;
           })
-          .slice(0, 8);
+          .slice(0, 5);
       }, [allComputed]);
 
       const reviewQueue = useMemo(() => {
@@ -4975,7 +4975,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=134";
+      var PHARIS_SW_URL = "./service-worker.js?v=135";
 
       function pharisLang() {
         var lang = "ar";
