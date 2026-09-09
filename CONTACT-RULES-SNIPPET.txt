@@ -1,0 +1,13 @@
+// أضف هذا داخل match /databases/{database}/documents {
+
+    match /contact_messages/{docId} {
+      allow read: if request.auth != null
+        && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+      allow create: if request.resource.data.message is string
+        && request.resource.data.message.size() >= 5
+        && request.resource.data.message.size() <= 1000
+        && request.resource.data.read == false;
+      allow update, delete: if request.auth != null
+        && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+    }
+

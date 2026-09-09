@@ -381,25 +381,32 @@
         onboardBtn: "ابدأ الآن",
         onboardSkip: "تخطي",
         medBtn: "أبحث عن دواء",
+        contactUs: "راسلنا",
+        contactTitle: "راسلنا — تواصل مع الإدارة",
+        contactPhone: "رقم هاتفك (اختياري)",
+        contactMsg: "اكتب رسالتك هنا...",
+        contactSend: "إرسال الرسالة",
+        contactOk: "تم إرسال رسالتك بنجاح. سنراجعها قريباً.",
+        contactNeed: "اكتب رسالة قصيرة على الأقل (5 أحرف)",
         medTitle: "أبحث عن دواء",
         medSub: "انشر طلباً ليراه الصيادلة والمتطوعون — صالح لمدة 30 يوماً",
         medName: "اسم الدواء",
         medNamePh: "مثال: باراسيتامول 1000",
         medCity: "المدينة / الولاية",
         medCityPh: "مثال: سيدي بلعباس",
-        medWa: "رقم واتساب",
+        medWa: "رقم الهاتف",
         medWaPh: "05xxxxxxxx",
         medNote: "ملاحظة (اختياري)",
         medNotePh: "الجرعة أو تفاصيل مفيدة",
         medPublish: "نشر الطلب",
         medList: "الطلبات الحالية",
         medEmpty: "لا توجد طلبات حالياً",
-        medContact: "تواصل واتساب",
+        medContact: "اتصال",
         medDisclaimer: "منصة تواصل فقط. لا بيع داخل التطبيق. لا استشارة طبية. تجنّب الأدوية المراقبة. التواصل على مسؤولية الطرفين.",
         medSuccess: "تم نشر طلبك لمدة 30 يوماً",
         medError: "تعذّر النشر. تحقق من البيانات أو الاتصال.",
         medNeedName: "اكتب اسم الدواء",
-        medNeedWa: "أدخل رقم واتساب صحيح",
+        medNeedWa: "أدخل رقم هاتف صحيح",
         medExpires: "ينتهي",
         medClose: "إغلاق",
         medLoading: "جاري التحميل…",
@@ -540,25 +547,32 @@
         onboardBtn: "Commencer",
         onboardSkip: "Passer",
         medBtn: "Je cherche un médicament",
+        contactUs: "Nous écrire",
+        contactTitle: "Nous écrire — Support",
+        contactPhone: "Votre téléphone (optionnel)",
+        contactMsg: "Votre message...",
+        contactSend: "Envoyer",
+        contactOk: "Message envoyé. Nous vous répondrons bientôt.",
+        contactNeed: "Écrivez un message (5 caractères min.)",
         medTitle: "Je cherche un médicament",
         medSub: "Publiez une demande visible 30 jours pour pharmacies et bénévoles",
         medName: "Nom du médicament",
         medNamePh: "Ex. : Paracétamol 1000",
         medCity: "Ville / wilaya",
         medCityPh: "Ex. : Sidi Bel Abbès",
-        medWa: "Numéro WhatsApp",
+        medWa: "Numéro de téléphone",
         medWaPh: "05xxxxxxxx",
         medNote: "Note (optionnel)",
         medNotePh: "Dosage ou détails utiles",
         medPublish: "Publier la demande",
         medList: "Demandes en cours",
         medEmpty: "Aucune demande pour le moment",
-        medContact: "Contacter WhatsApp",
+        medContact: "Appeler",
         medDisclaimer: "Mise en relation uniquement. Pas de vente dans l'app. Pas de conseil médical. Évitez les médicaments contrôlés. Contact à vos risques.",
         medSuccess: "Demande publiée pour 30 jours",
         medError: "Échec de la publication. Vérifiez les données ou la connexion.",
         medNeedName: "Indiquez le nom du médicament",
-        medNeedWa: "Entrez un numéro WhatsApp valide",
+        medNeedWa: "Entrez un numéro de téléphone valide",
         medExpires: "Expire le",
         medClose: "Fermer",
         medLoading: "Chargement…",
@@ -699,25 +713,32 @@
         onboardBtn: "Get started",
         onboardSkip: "Skip",
         medBtn: "Looking for a medicine",
+        contactUs: "Contact us",
+        contactTitle: "Contact us — Support",
+        contactPhone: "Your phone (optional)",
+        contactMsg: "Your message...",
+        contactSend: "Send message",
+        contactOk: "Message sent. We will reply soon.",
+        contactNeed: "Write a short message (min 5 characters)",
         medTitle: "Looking for a medicine",
         medSub: "Post a request visible for 30 days to pharmacies and helpers",
         medName: "Medicine name",
         medNamePh: "e.g. Paracetamol 1000",
         medCity: "City / region",
         medCityPh: "e.g. Sidi Bel Abbès",
-        medWa: "WhatsApp number",
+        medWa: "Phone number",
         medWaPh: "05xxxxxxxx",
         medNote: "Note (optional)",
         medNotePh: "Dose or useful details",
         medPublish: "Publish request",
         medList: "Current requests",
         medEmpty: "No requests yet",
-        medContact: "Contact on WhatsApp",
+        medContact: "Call",
         medDisclaimer: "Contact board only. No in-app sales. Not medical advice. Avoid controlled medicines. Contact at your own risk.",
         medSuccess: "Request published for 30 days",
         medError: "Could not publish. Check data or connection.",
         medNeedName: "Enter the medicine name",
-        medNeedWa: "Enter a valid WhatsApp number",
+        medNeedWa: "Enter a valid phone number",
         medExpires: "Expires",
         medClose: "Close",
         medLoading: "Loading…",
@@ -2078,6 +2099,9 @@ out center tags;`;
       const [showPayModal, setShowPayModal] = useState(false);
       const [showOnboard, setShowOnboard] = useState(true);
       const [showMedSearch, setShowMedSearch] = useState(false);
+      const [showContact, setShowContact] = useState(false);
+      const [contactForm, setContactForm] = useState({ phone: "", message: "" });
+      const [contactSending, setContactSending] = useState(false);
       const [showMedListPanel, setShowMedListPanel] = useState(false);
       const [medRequests, setMedRequests] = useState([]);
       const [medLoading, setMedLoading] = useState(false);
@@ -2341,6 +2365,35 @@ out center tags;`;
           alert(t("medError"));
         }
         setMedSubmitting(false);
+      };
+
+      const submitContactUs = async () => {
+        const message = (contactForm.message || "").trim();
+        const phone = (contactForm.phone || "").trim();
+        if (message.length < 5) {
+          alert(t("contactNeed"));
+          return;
+        }
+        setContactSending(true);
+        try {
+          if (db) {
+            await db.collection("contact_messages").add({
+              message: message.slice(0, 1000),
+              phone: phone.slice(0, 20),
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+              createdAtMs: Date.now(),
+              lang: lang || "ar",
+              read: false,
+            });
+          }
+          setContactForm({ phone: "", message: "" });
+          setShowContact(false);
+          alert(t("contactOk"));
+        } catch (e) {
+          console.warn(e);
+          alert(lang === "ar" ? "تعذر الإرسال. حاول لاحقاً." : "Send failed. Try later.");
+        }
+        setContactSending(false);
       };
 
       const t = useCallback((key, vars) => tr(lang, key, vars), [lang]);
@@ -3863,6 +3916,13 @@ out center tags;`;
             <div className="mt-2 flex gap-1.5">
               <button
                 type="button"
+                onClick={() => setShowContact(true)}
+                className="flex-1 text-center bg-sky-500 text-white border-2 border-sky-400 rounded-xl py-2.5 text-[11px] font-bold hover:bg-sky-400 transition shadow-md shadow-sky-500/20"
+              >
+                💬 {t("contactUs")}
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowMedSearch(true)}
                 className="flex-1 text-center bg-yellow-400 text-yellow-950 border-2 border-yellow-500 rounded-xl py-2.5 text-[11px] font-bold hover:bg-yellow-300 transition shadow-md shadow-yellow-500/20"
               >
@@ -4158,12 +4218,11 @@ out center tags;`;
                         <div className="flex gap-1.5 mt-2">
                           {!r.isDemo && r.whatsapp ? (
                           <a
-                            href={"https://wa.me/" + r.whatsapp + "?text=" + waMsg}
-                            target="_blank"
+                            href={"tel:+" + String(r.whatsapp).replace(/[^0-9]/g, "")}
                             rel="noopener noreferrer"
-                            className="flex-1 inline-flex items-center justify-center py-2 rounded-lg bg-[#25D366] text-white text-xs font-bold"
+                            className="flex-1 inline-flex items-center justify-center py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold"
                           >
-                            {t("medContact")}
+                            📞 {t("medContact")}
                           </a>
                           ) : null}
                           {adminUser && (
@@ -4190,7 +4249,42 @@ out center tags;`;
           )}
 
           {/* خاصية أبحث عن دواء — أصفر مميز · 30 يوماً */}
-          {showMedSearch && (
+          {showContact && (
+        <div className="fixed inset-0 z-[86] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" onClick={() => !contactSending && setShowContact(false)}>
+          <div className="w-full max-w-md bg-brand-950 border border-sky-500/40 rounded-t-2xl sm:rounded-2xl p-4 shadow-xl" onClick={(e) => e.stopPropagation()} dir={dir}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-sky-300">💬 {t("contactTitle")}</h3>
+              <button type="button" onClick={() => setShowContact(false)} className="text-brand-300 text-xl leading-none px-2">×</button>
+            </div>
+            <label className="block text-xs text-brand-300 mb-1">{t("contactPhone")}</label>
+            <input
+              type="tel"
+              value={contactForm.phone}
+              onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+              className="w-full mb-3 px-3 py-2 rounded-xl bg-brand-900 border border-brand-700 text-sm text-white"
+              placeholder="05xxxxxxxx"
+            />
+            <label className="block text-xs text-brand-300 mb-1">{t("contactMsg")}</label>
+            <textarea
+              value={contactForm.message}
+              onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+              rows={4}
+              className="w-full mb-3 px-3 py-2 rounded-xl bg-brand-900 border border-brand-700 text-sm text-white resize-none"
+              placeholder={t("contactMsg")}
+            />
+            <button
+              type="button"
+              disabled={contactSending}
+              onClick={submitContactUs}
+              className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm disabled:opacity-50"
+            >
+              {contactSending ? "..." : t("contactSend")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showMedSearch && (
             <div className="fixed inset-0 z-[85] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" onClick={() => !medSubmitting && setShowMedSearch(false)}>
               <div className="w-full max-w-lg bg-yellow-50 dark:bg-brand-950 border-2 border-yellow-400 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} dir={lang === "ar" ? "rtl" : "ltr"}>
                 <div className="sticky top-0 bg-yellow-400 text-yellow-950 px-4 py-3 flex items-center justify-between z-10">
@@ -4975,7 +5069,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=135";
+      var PHARIS_SW_URL = "./service-worker.js?v=137";
 
       function pharisLang() {
         var lang = "ar";
