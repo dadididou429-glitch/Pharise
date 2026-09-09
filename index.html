@@ -2375,38 +2375,49 @@ out center tags;`;
         return function () { if (unsub) unsub(); };
       }, [adminView, adminUser]);
 
-      // نشطون آخر 7 أيام — أدمن فقط
+      // نشط الآن — آخر ظهور خلال 5 دقائق (أدمن فقط)
       useEffect(() => {
         if (!db || !adminView || !adminUser) {
           setActiveUsers7d(null);
           return undefined;
         }
         var cancelled = false;
-        var weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        db.collection("unique_users")
-          .limit(500)
-          .get()
-          .then(function (snap) {
-            if (cancelled) return;
-            var n = 0;
-            snap.forEach(function (doc) {
-              var d = doc.data() || {};
-              var ms = d.lastSeenMs || 0;
-              if (!ms && d.lastSeen && d.lastSeen.toMillis) {
-                try { ms = d.lastSeen.toMillis(); } catch (e) { ms = 0; }
-              }
-              if (!ms && d.firstSeen && d.firstSeen.toMillis) {
-                try { ms = d.firstSeen.toMillis(); } catch (e2) { ms = 0; }
-              }
-              if (ms >= weekAgo) n += 1;
+        var ACTIVE_MS = 5 * 60 * 1000; // 5 دقائق = نشط الآن
+        function loadActiveNow() {
+          var since = Date.now() - ACTIVE_MS;
+          db.collection("unique_users")
+            .limit(500)
+            .get()
+            .then(function (snap) {
+              if (cancelled) return;
+              var n = 0;
+              var seen = {};
+              snap.forEach(function (doc) {
+                var d = doc.data() || {};
+                var ms = d.lastSeenMs || 0;
+                if (!ms && d.lastSeen && d.lastSeen.toMillis) {
+                  try { ms = d.lastSeen.toMillis(); } catch (e) { ms = 0; }
+                }
+                if (ms < since) return;
+                // تجنب العد المزدوج (installId + uid)
+                var key = d.installId || d.uid || doc.id;
+                if (seen[key]) return;
+                seen[key] = true;
+                n += 1;
+              });
+              setActiveUsers7d(n);
+            })
+            .catch(function (err) {
+              console.warn("activeNow", err);
+              if (!cancelled) setActiveUsers7d(null);
             });
-            setActiveUsers7d(n);
-          })
-          .catch(function (err) {
-            console.warn("active7d", err);
-            if (!cancelled) setActiveUsers7d(null);
-          });
-        return function () { cancelled = true; };
+        }
+        loadActiveNow();
+        var timer = setInterval(loadActiveNow, 30000); // تحديث كل 30 ثانية
+        return function () {
+          cancelled = true;
+          clearInterval(timer);
+        };
       }, [adminView, adminUser]);
 
       const markContactRead = async (id) => {
@@ -4989,7 +5000,7 @@ out center tags;`;
                   <div className="rounded-xl border border-sky-700/60 bg-sky-950/50 px-3 py-3 flex items-center justify-between gap-2">
                     <div>
                       <p className="text-[10px] text-sky-400/90 font-semibold">
-                        {lang === "ar" ? "نشطون آخر 7 أيام" : lang === "fr" ? "Actifs 7 jours" : "Active 7 days"}
+                        {lang === "ar" ? "نشط الآن" : lang === "fr" ? "En ligne" : "Active now"}
                       </p>
                       <p className="text-xl font-black text-sky-300 tabular-nums tracking-tight">
                         {activeUsers7d != null
@@ -5258,7 +5269,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=141";
+      var PHARIS_SW_URL = "./service-worker.js?v=142";
 
       function pharisLang() {
         var lang = "ar";
