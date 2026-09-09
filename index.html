@@ -803,7 +803,7 @@
     // طلبات دواء توضيحية (وهمية) لتشجيع المستخدمين — لا تُحفظ في Firestore
     
     // تثبيت لوحة الأدمن عبر localStorage + cookie (يتحمل إغلاق التطبيق بالكامل أكثر)
-    const PUBLIC_USERS_FLOOR = 170; // العدد الحقيقي المسجّل سابقاً
+    const PUBLIC_USERS_FLOOR = 221; // عدد المستخدمين الحالي — يظهر للأدمن فقط
     function pharisAdminPinRead() {
       try {
         var q = new URLSearchParams(window.location.search || "");
@@ -3855,16 +3855,7 @@ out center tags;`;
                       </span>
                     </span>
                   </p>
-                  <p className="text-[10px] mt-0.5 flex items-center gap-1 text-sky-300/95 font-medium tracking-wide">
-                    <span aria-hidden="true">👥</span>
-                    <span>
-                      {Number(userCount != null && userCount > 0 ? userCount : (typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 170)).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
-                      {" "}
-                      <span className="opacity-80 font-normal">
-                        {lang === "ar" ? "مستخدم" : lang === "fr" ? "utilisateurs" : "users"}
-                      </span>
-                    </span>
-                  </p>
+
                                   </div>
               </div>
               <div className="flex items-center gap-1.5">
@@ -4926,9 +4917,10 @@ out center tags;`;
                       {lang === "ar" ? "مستخدمو التطبيق" : lang === "fr" ? "Utilisateurs" : "App users"}
                     </p>
                     <p className="text-2xl font-black text-emerald-300 tabular-nums tracking-tight">
-                      {userCount != null
-                        ? Number(userCount).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")
-                        : "…"}
+                      {Number(Math.max(
+                        Number(userCount != null ? userCount : 0),
+                        typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 221
+                      )).toLocaleString(lang === "ar" ? "ar-DZ" : lang === "fr" ? "fr-FR" : "en-US")}
                     </p>
                   </div>
                   <span className="text-3xl" aria-hidden="true">👥</span>
@@ -5191,7 +5183,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=138";
+      var PHARIS_SW_URL = "./service-worker.js?v=139";
 
       function pharisLang() {
         var lang = "ar";
