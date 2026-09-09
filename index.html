@@ -2095,7 +2095,7 @@ out center tags;`;
         if (b === "en") return "Detecting...";
         return "جارٍ تحديد موقعك...";
       });
-      const [userCount, setUserCount] = useState(typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 170);
+      const [userCount, setUserCount] = useState(typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 221);
       const [activeUsers7d, setActiveUsers7d] = useState(null);
       const [showPayModal, setShowPayModal] = useState(false);
       const [showOnboard, setShowOnboard] = useState(true);
@@ -2793,8 +2793,9 @@ out center tags;`;
         if (!firebaseReady || !db || !auth) return;
         let cancelled = false;
         (async function () {
-          var DONE_KEY = "pharis_install_registered_v4";
-          var INC_KEY = "pharis_stats_inc_v1";
+          // v5: تسجيل أقوى — مفتاح الجهاز + uid + إعادة محاولة الزيادة
+          var DONE_KEY = "pharis_install_registered_v5";
+          var INC_KEY = "pharis_stats_inc_v5";
           var INSTALL_KEY = "pharis_install_id_v3";
           try {
             try {
@@ -2815,7 +2816,7 @@ out center tags;`;
                 settled = true;
                 try { unsub(); } catch (e2) {}
                 resolve(auth.currentUser || null);
-              }, 3500);
+              }, 5000);
             });
             if (cancelled) return;
 
@@ -2834,7 +2835,7 @@ out center tags;`;
             }
             if (cancelled || !user) return;
 
-            // الأدمن الأساسي لا يُحسب
+            // الأدمن الأساسي لا يُحسب في العداد
             if (!user.isAnonymous && user.uid === PRIMARY_ADMIN_UID) {
               try {
                 localStorage.setItem(DONE_KEY, "1");
@@ -2850,60 +2851,82 @@ out center tags;`;
               try { localStorage.setItem(INSTALL_KEY, installId); } catch (e5) {}
             }
 
-            var ref = db.collection("unique_users").doc(user.uid);
+            var nowMs = Date.now();
+            // مستند ثابت لكل جهاز (installId) لتجنب تضخم العداد بتغيير uid
+            var refByInstall = db.collection("unique_users").doc(String(installId));
+            var refByUid = db.collection("unique_users").doc(user.uid);
             var already = false;
             try {
-              var existing = await ref.get();
-              already = !!(existing && existing.exists);
-            } catch (eGet) {
-              already = false;
+              var ex1 = await refByInstall.get();
+              if (ex1 && ex1.exists) already = true;
+            } catch (eG1) {}
+            if (!already) {
+              try {
+                var ex2 = await refByUid.get();
+                if (ex2 && ex2.exists) already = true;
+              } catch (eG2) {}
             }
             if (cancelled) return;
 
+            var payload = {
+              installId: installId,
+              uid: user.uid,
+              lastSeenMs: nowMs,
+              lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
             if (already) {
-              try {
-                await ref.set({
-                  lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                  lastSeenMs: Date.now(),
-                  installId: installId
-                }, { merge: true });
-              } catch (eUp) {}
+              try { await refByInstall.set(payload, { merge: true }); } catch (eU1) {}
+              try { await refByUid.set(payload, { merge: true }); } catch (eU2) {}
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e6) {}
-              // لا نزيد العداد لمستخدم معروف مسبقاً
+              // مستخدم معروف — لا زيادة
               return;
             }
 
-            // مستند جديد
+            // مستخدم جديد: أنشئ السجل ثم زد العداد
+            payload.firstSeen = firebase.firestore.FieldValue.serverTimestamp();
+            payload.firstSeenMs = nowMs;
+            payload.kind = "install";
+            payload.createdAtMs = nowMs;
             try {
-              await ref.set({
-                installId: installId,
-                uid: user.uid,
-                firstSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                lastSeenMs: Date.now(),
-                kind: "install"
-              }, { merge: true });
+              await refByInstall.set(payload, { merge: true });
+              try { await refByUid.set({ installId: installId, uid: user.uid, lastSeenMs: nowMs, createdAtMs: nowMs }, { merge: true }); } catch (eLink) {}
               try { localStorage.setItem(DONE_KEY, "1"); } catch (e7) {}
             } catch (eCreate) {
               console.warn("unique_users create failed", eCreate);
-              return;
+              // قد تكون القواعد أو الشبكة — نحاول الزيادة بحذر عبر INC فقط إن لم تُسجَّل
             }
 
-            // زيادة العداد مرة واحدة لكل installId
             var incDone = null;
             try { incDone = localStorage.getItem(INC_KEY); } catch (e8) {}
-            if (incDone === installId) return;
+            if (incDone === installId || incDone === "admin") return;
+
+            // تأكد أن مستند stats موجود ثم increment
+            var statsRef = db.collection("stats").doc("users");
+            try {
+              var st = await statsRef.get();
+              if (!st.exists) {
+                try {
+                  await statsRef.set({
+                    count: typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 221,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    seeded: true
+                  }, { merge: true });
+                } catch (eSeed) {
+                  console.warn("stats seed", eSeed);
+                }
+              }
+            } catch (eSt) {}
 
             try {
-              await db.collection("stats").doc("users").set({
+              await statsRef.set({
                 count: firebase.firestore.FieldValue.increment(1),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
               }, { merge: true });
               try { localStorage.setItem(INC_KEY, installId); } catch (e9) {}
-              console.info("Pharis: user count +1");
+              console.info("Pharis: user count +1", installId);
             } catch (eInc) {
               console.warn("stats increment failed", eInc);
-              // لا نحفظ INC_KEY حتى تنجح لاحقاً
             }
           } catch (e) {
             console.warn("install register", e);
@@ -2912,7 +2935,7 @@ out center tags;`;
         return function () { cancelled = true; };
       }, [firebaseReady, db, auth]);
 
-// عداد المستخدمين ظاهر للجميع — من stats/users (الحد الأدنى 170)
+// عداد المستخدمين ظاهر للجميع — من stats/users (الحد الأدنى 221)
       useEffect(() => {
         setUserCount(function (prev) {
           var p = Number(prev) || 0;
@@ -5235,7 +5258,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=140";
+      var PHARIS_SW_URL = "./service-worker.js?v=141";
 
       function pharisLang() {
         var lang = "ar";
