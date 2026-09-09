@@ -2104,6 +2104,8 @@ out center tags;`;
       const [contactSending, setContactSending] = useState(false);
       const [showMedListPanel, setShowMedListPanel] = useState(false);
       const [medRequests, setMedRequests] = useState([]);
+      const [contactMessages, setContactMessages] = useState([]);
+      const [contactMsgLoading, setContactMsgLoading] = useState(false);
       const [medLoading, setMedLoading] = useState(false);
       const [medSubmitting, setMedSubmitting] = useState(false);
       const [medForm, setMedForm] = useState({ name: "", city: "", whatsapp: "", note: "" });
@@ -2319,6 +2321,73 @@ out center tags;`;
         reader.onerror = function () { resolve(null); };
         reader.readAsDataURL(file);
       });
+
+      // رسائل راسلنا — للأدمن فقط
+      useEffect(() => {
+        if (!db || !adminView || !adminUser) {
+          setContactMessages([]);
+          return undefined;
+        }
+        setContactMsgLoading(true);
+        var unsub = db.collection("contact_messages")
+          .orderBy("createdAtMs", "desc")
+          .limit(50)
+          .onSnapshot(
+            function (snap) {
+              var list = [];
+              snap.forEach(function (doc) {
+                var d = doc.data() || {};
+                list.push({
+                  id: doc.id,
+                  message: d.message || "",
+                  phone: d.phone || "",
+                  createdAtMs: d.createdAtMs || 0,
+                  read: !!d.read,
+                  lang: d.lang || "",
+                });
+              });
+              setContactMessages(list);
+              setContactMsgLoading(false);
+            },
+            function (err) {
+              console.warn("contact_messages", err);
+              // fallback بدون orderBy إن لم يكن الفهرس جاهزاً
+              db.collection("contact_messages").limit(50).get().then(function (snap) {
+                var list = [];
+                snap.forEach(function (doc) {
+                  var d = doc.data() || {};
+                  list.push({
+                    id: doc.id,
+                    message: d.message || "",
+                    phone: d.phone || "",
+                    createdAtMs: d.createdAtMs || 0,
+                    read: !!d.read,
+                    lang: d.lang || "",
+                  });
+                });
+                list.sort(function (a, b) { return (b.createdAtMs || 0) - (a.createdAtMs || 0); });
+                setContactMessages(list);
+                setContactMsgLoading(false);
+              }).catch(function () { setContactMsgLoading(false); });
+            }
+          );
+        return function () { if (unsub) unsub(); };
+      }, [adminView, adminUser]);
+
+      const markContactRead = async (id) => {
+        if (!db || !id) return;
+        try {
+          await db.collection("contact_messages").doc(id).update({ read: true });
+        } catch (e) { console.warn(e); }
+      };
+
+      const deleteContactMsg = async (id) => {
+        if (!db || !id) return;
+        if (!window.confirm(lang === "ar" ? "حذف هذه الرسالة؟" : "Delete this message?")) return;
+        try {
+          await db.collection("contact_messages").doc(id).delete();
+        } catch (e) { console.warn(e); }
+      };
 
       submitMedRequest = async () => {
         const name = (medForm.name || "").trim();
@@ -4887,6 +4956,9 @@ out center tags;`;
                   <button onClick={() => setAdminTab("meds")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "meds" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
                     {lang === "ar" ? "طلبات دواء" : lang === "fr" ? "Médicaments" : "Med requests"} ({medRequests.length})
                   </button>
+                  <button onClick={() => setAdminTab("msgs")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "msgs" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
+                    {lang === "ar" ? "راسلنا" : lang === "fr" ? "Messages" : "Inbox"} ({contactMessages.filter(m => !m.read).length}/{contactMessages.length})
+                  </button>
                 </div>
 
                 {(adminTab === "review" || adminTab === "all") && (
@@ -4986,6 +5058,56 @@ out center tags;`;
                   </div>
                 )}
 
+                {adminTab === "msgs" && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-brand-400">
+                      {lang === "ar" ? "رسائل المستخدمين من زر راسلنا" : lang === "fr" ? "Messages via Nous écrire" : "Messages from Contact us"}
+                    </p>
+                    {contactMsgLoading && contactMessages.length === 0 && (
+                      <p className="text-sm text-brand-500">{lang === "ar" ? "جاري التحميل…" : "Loading…"}</p>
+                    )}
+                    {!contactMsgLoading && contactMessages.length === 0 && (
+                      <p className="text-sm text-brand-500 text-center py-8">
+                        {lang === "ar" ? "لا توجد رسائل" : lang === "fr" ? "Aucun message" : "No messages"}
+                      </p>
+                    )}
+                    {contactMessages.map((m) => (
+                      <div key={m.id} className={`bg-brand-900 border rounded-xl p-3 ${m.read ? "border-brand-800 opacity-80" : "border-sky-600/60"}`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            {!m.read && (
+                              <span className="inline-block text-[10px] font-bold bg-sky-600 text-white px-1.5 py-0.5 rounded mb-1">
+                                {lang === "ar" ? "جديد" : "NEW"}
+                              </span>
+                            )}
+                            <p className="text-sm text-brand-50 whitespace-pre-wrap break-words">{m.message}</p>
+                            {m.phone ? (
+                              <a href={"tel:" + String(m.phone).replace(/[^0-9+]/g, "")} className="text-[11px] text-emerald-400 font-mono mt-1 inline-block" dir="ltr">
+                                📞 {m.phone}
+                              </a>
+                            ) : null}
+                            {m.createdAtMs ? (
+                              <p className="text-[10px] text-brand-500 mt-1">
+                                {new Date(m.createdAtMs).toLocaleString(lang === "ar" ? "ar-DZ" : undefined)}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="flex flex-col gap-1 flex-shrink-0">
+                            {!m.read && (
+                              <button type="button" onClick={() => markContactRead(m.id)} className="text-[10px] bg-sky-950 text-sky-300 rounded-lg px-2 py-1.5 font-bold">
+                                {lang === "ar" ? "مقروء" : "Read"}
+                              </button>
+                            )}
+                            <button type="button" onClick={() => deleteContactMsg(m.id)} className="text-[10px] bg-rose-950 text-rose-300 rounded-lg px-2 py-1.5 font-bold">
+                              {lang === "ar" ? "حذف" : "Del"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {adminTab === "admins" && (
                   <div className="space-y-4">
                     <div className="bg-brand-900 rounded-2xl p-4 border border-brand-800 space-y-3">
@@ -5069,7 +5191,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=137";
+      var PHARIS_SW_URL = "./service-worker.js?v=138";
 
       function pharisLang() {
         var lang = "ar";
