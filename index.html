@@ -2111,6 +2111,7 @@ out center tags;`;
       const [medSubmitting, setMedSubmitting] = useState(false);
       const [medForm, setMedForm] = useState({ name: "", city: "", whatsapp: "", note: "" });
       const [medImagePreview, setMedImagePreview] = useState(null);
+      const [medLightbox, setMedLightbox] = useState(null);
       const [medImageFile, setMedImageFile] = useState(null);
 
       // زر الرجوع: يغلق الشاشة الحالية ويعود للواجهة (لا يخرج من التطبيق)
@@ -4339,9 +4340,16 @@ out center tags;`;
                       <div key={r.id} className="bg-white dark:bg-brand-900 border border-yellow-300/70 dark:border-yellow-700 rounded-xl p-3">
                         <p className="font-bold text-sm text-yellow-950 dark:text-yellow-200">{r.medicineName}</p>
                         {r.imageUrl ? (
-                          <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1.5">
-                            <img src={r.imageUrl} alt="" className="max-h-36 w-full object-cover rounded-lg border border-yellow-300/80" loading="lazy" />
-                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setMedLightbox(r.imageUrl)}
+                            className="block mt-1.5 w-full text-start relative group"
+                          >
+                            <img src={r.imageUrl} alt="" className="max-h-36 w-full object-cover rounded-lg border border-yellow-300/80 group-active:opacity-90" loading="lazy" />
+                            <span className="absolute bottom-1 end-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">
+                              {lang === "ar" ? "اضغط للتكبير" : lang === "fr" ? "Agrandir" : "Tap to zoom"}
+                            </span>
+                          </button>
                         ) : null}
                         {r.city ? <p className="text-[11px] text-stone-500 dark:text-brand-300 mt-0.5">📍 {r.city}</p> : null}
                         {r.note ? <p className="text-[11px] text-stone-600 dark:text-brand-200 mt-1">{r.note}</p> : null}
@@ -4380,7 +4388,34 @@ out center tags;`;
           )}
 
           {/* خاصية أبحث عن دواء — أصفر مميز · 30 يوماً */}
-          {showContact && (
+          {medLightbox && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3"
+          onClick={() => setMedLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute top-3 end-3 z-10 w-10 h-10 rounded-full bg-white/15 text-white text-2xl leading-none"
+            onClick={() => setMedLightbox(null)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <img
+            src={medLightbox}
+            alt=""
+            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <p className="absolute bottom-4 inset-x-0 text-center text-xs text-white/70">
+            {lang === "ar" ? "اضغط خارج الصورة للإغلاق" : lang === "fr" ? "Touchez hors image pour fermer" : "Tap outside to close"}
+          </p>
+        </div>
+      )}
+
+      {showContact && (
         <div className="fixed inset-0 z-[86] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" onClick={() => !contactSending && setShowContact(false)}>
           <div className="w-full max-w-md bg-brand-950 border border-sky-500/40 rounded-t-2xl sm:rounded-2xl p-4 shadow-xl" onClick={(e) => e.stopPropagation()} dir={dir}>
             <div className="flex items-center justify-between mb-3">
@@ -5116,9 +5151,9 @@ out center tags;`;
                         <div className="min-w-0">
                           <p className="font-bold text-sm text-yellow-200 truncate">{r.medicineName}</p>
                           {r.imageUrl ? (
-                            <a href={r.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1">
+                            <button type="button" onClick={() => setMedLightbox(r.imageUrl)} className="block mt-1 relative">
                               <img src={r.imageUrl} alt="" className="max-h-20 rounded-md object-cover border border-brand-700" loading="lazy" />
-                            </a>
+                            </button>
                           ) : null}
                           {r.city ? <p className="text-[11px] text-brand-400">📍 {r.city}</p> : null}
                           {r.whatsapp ? <p className="text-[11px] text-brand-500 font-mono" dir="ltr">{r.whatsapp}</p> : null}
@@ -5269,7 +5304,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=142";
+      var PHARIS_SW_URL = "./service-worker.js?v=143";
 
       function pharisLang() {
         var lang = "ar";
