@@ -315,6 +315,14 @@
         noResults: "لا توجد نتائج مطابقة",
         openNow: "مفتوحة الآن", closedNow: "مغلقة", closedNowFull: "مغلقة الآن",
         onDutyLabel: "مناوبة · 24 ساعة",
+        dutyTonight: "مناوبة الليلة",
+        dutyBanner: "صيدليات المناوبة الليلة",
+        dutyShare: "مشاركة المناوبة",
+        dutyEmpty: "لا توجد صيدليات مناوبة مسجّلة لهذه الليلة بعد",
+        dutyAdminTab: "مناوبة",
+        dutyAdd: "إضافة للمناوبة",
+        dutyRemove: "إزالة",
+        dutySaved: "تم تحديث مناوبة الليلة",
         closesAt: "تغلق الساعة {time}", opensAt: "تفتح الساعة {time}",
         reportTitle: "الإبلاغ عن هذه الصيدلية",
         directions: "الاتجاهات",
@@ -481,6 +489,14 @@
         noResults: "Aucun résultat",
         openNow: "Ouverte", closedNow: "Fermée", closedNowFull: "Fermée maintenant",
         onDutyLabel: "De garde · 24h",
+        dutyTonight: "Garde de nuit",
+        dutyBanner: "Pharmacies de garde ce soir",
+        dutyShare: "Partager la garde",
+        dutyEmpty: "Aucune pharmacie de garde pour ce soir",
+        dutyAdminTab: "Garde",
+        dutyAdd: "Ajouter à la garde",
+        dutyRemove: "Retirer",
+        dutySaved: "Garde de nuit mise à jour",
         closesAt: "Ferme à {time}", opensAt: "Ouvre à {time}",
         reportTitle: "Signaler cette pharmacie",
         directions: "Itinéraire",
@@ -647,6 +663,14 @@
         noResults: "No matching results",
         openNow: "Open now", closedNow: "Closed", closedNowFull: "Closed now",
         onDutyLabel: "On duty · 24h",
+        dutyTonight: "Tonight's duty",
+        dutyBanner: "Pharmacies on duty tonight",
+        dutyShare: "Share duty list",
+        dutyEmpty: "No duty pharmacies listed for tonight yet",
+        dutyAdminTab: "Duty",
+        dutyAdd: "Add to duty",
+        dutyRemove: "Remove",
+        dutySaved: "Tonight's duty updated",
         closesAt: "Closes at {time}", opensAt: "Opens at {time}",
         reportTitle: "Report this pharmacy",
         directions: "Directions",
@@ -1473,6 +1497,21 @@
     }
 
     /** عرض المسافة: أمتار إن < 1 كم، وإلا كيلومتر بدقة مناسبة */
+    
+    function pharisDutyDateKey() {
+      try {
+        // تاريخ اليوم بتوقيت الجزائر تقريباً (UTC+1)
+        var d = new Date(Date.now() + 60 * 60 * 1000);
+        var y = d.getUTCFullYear();
+        var m = String(d.getUTCMonth() + 1).padStart(2, "0");
+        var day = String(d.getUTCDate()).padStart(2, "0");
+        return y + "-" + m + "-" + day;
+      } catch (e) {
+        var n = new Date();
+        return n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, "0") + "-" + String(n.getDate()).padStart(2, "0");
+      }
+    }
+
     function formatDistance(km, lang) {
       const d = Number(km);
       if (!Number.isFinite(d) || d >= 90000) {
@@ -2097,6 +2136,9 @@ out center tags;`;
       });
       const [userCount, setUserCount] = useState(typeof PUBLIC_USERS_FLOOR === "number" ? PUBLIC_USERS_FLOOR : 221);
       const [activeUsers7d, setActiveUsers7d] = useState(null);
+      const [dutyIds, setDutyIds] = useState(() => new Set());
+      const [dutyDate, setDutyDate] = useState("");
+      const [dutySaving, setDutySaving] = useState(false);
       const [showPayModal, setShowPayModal] = useState(false);
       const [showOnboard, setShowOnboard] = useState(true);
       const [showMedSearch, setShowMedSearch] = useState(false);
@@ -2420,6 +2462,91 @@ out center tags;`;
           clearInterval(timer);
         };
       }, [adminView, adminUser]);
+
+      // مناوبة الليلة من Firestore
+      useEffect(() => {
+        if (!db) return undefined;
+        var dateKey = pharisDutyDateKey();
+        setDutyDate(dateKey);
+        var unsub = db.collection("duty_nights").doc(dateKey).onSnapshot(
+          function (snap) {
+            var ids = new Set();
+            if (snap.exists) {
+              var d = snap.data() || {};
+              var arr = d.pharmacyIds || d.ids || [];
+              if (Array.isArray(arr)) {
+                arr.forEach(function (id) { if (id != null && id !== "") ids.add(id); ids.add(String(id)); });
+              }
+            }
+            setDutyIds(ids);
+          },
+          function (err) { console.warn("duty_nights", err); }
+        );
+        return function () { if (unsub) unsub(); };
+      }, [firebaseReady]);
+
+      const toggleDutyPharmacy = async (phId) => {
+        if (!db || !adminUser) return;
+        var dateKey = dutyDate || pharisDutyDateKey();
+        setDutySaving(true);
+        try {
+          var ref = db.collection("duty_nights").doc(dateKey);
+          var snap = await ref.get();
+          var arr = [];
+          if (snap.exists) {
+            var d = snap.data() || {};
+            arr = Array.isArray(d.pharmacyIds) ? d.pharmacyIds.slice() : [];
+          }
+          var sid = String(phId);
+          var idx = arr.findIndex(function (x) { return String(x) === sid; });
+          if (idx >= 0) arr.splice(idx, 1);
+          else arr.push(phId);
+          await ref.set({
+            pharmacyIds: arr,
+            date: dateKey,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAtMs: Date.now()
+          }, { merge: true });
+        } catch (e) {
+          console.warn(e);
+          alert(lang === "ar" ? "تعذر حفظ المناوبة" : "Could not save duty");
+        }
+        setDutySaving(false);
+      };
+
+      const shareDutyTonight = async () => {
+        var list = allComputed.filter(function (p) { return p.onDuty; })
+          .sort(function (a, b) { return (a.distance || 99999) - (b.distance || 99999); })
+          .slice(0, 12);
+        var title = lang === "ar" ? "مناوبة الليلة — Pharis" : "Duty tonight — Pharis";
+        var lines = [title, dutyDate ? ("📅 " + dutyDate) : "", ""];
+        if (!list.length) {
+          lines.push(t("dutyEmpty"));
+        } else {
+          list.forEach(function (p, i) {
+            var dist = Number.isFinite(p.distance) && p.distance < 90000 ? formatDistance(p.distance, lang) : "";
+            lines.push((i + 1) + ". " + (p.name || "") + (dist ? " — " + dist : ""));
+          });
+        }
+        lines.push("", "📲 Pharis — Downloader 5040717");
+        var text = lines.filter(Boolean).join("\n");
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: title, text: text });
+          } else if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            alert(lang === "ar" ? "تم نسخ قائمة المناوبة" : "Duty list copied");
+          } else {
+            prompt(title, text);
+          }
+        } catch (e) {
+          if (e && e.name === "AbortError") return;
+          try {
+            await navigator.clipboard.writeText(text);
+            alert(lang === "ar" ? "تم نسخ قائمة المناوبة" : "Duty list copied");
+          } catch (e2) {}
+        }
+      };
 
       const markContactRead = async (id) => {
         if (!db || !id) return;
@@ -3286,7 +3413,9 @@ out center tags;`;
         return baseList
           .filter(ph => !isRemovedPh(ph))
           .map(ph => {
-            const status = computeStatus(ph, now);
+            const isOnDuty = !!(ph.onDuty || dutyIds.has(ph.id) || dutyIds.has(String(ph.id)));
+            const phDuty = isOnDuty ? { ...ph, onDuty: true } : ph;
+            const status = computeStatus(phDuty, now);
             const hasCoords = Number.isFinite(Number(ph.lat)) && Number.isFinite(Number(ph.lng))
               && Number.isFinite(Number(userLoc.lat)) && Number.isFinite(Number(userLoc.lng));
             const distance = hasCoords
@@ -3297,6 +3426,7 @@ out center tags;`;
             const isFeatured = !!(ph.featured || featuredMap[ph.id] || featuredMap[String(ph.id)]);
             return {
               ...ph,
+              onDuty: isOnDuty,
               featured: isFeatured,
               status,
               distance,
@@ -3307,7 +3437,7 @@ out center tags;`;
               isFavorite: favorites.has(ph.id) || favorites.has(String(ph.id))
             };
           });
-      }, [baseList, now, complaints, removedIds, ratings, favorites, userLoc, featuredMap]);
+      }, [baseList, now, complaints, removedIds, ratings, favorites, userLoc, featuredMap, dutyIds]);
 
       const list = useMemo(() => {
         return allComputed
@@ -4110,6 +4240,31 @@ out center tags;`;
               >
                 🚨 {t("emergency")}
               </button>
+
+            <div className="mx-3 mb-2 rounded-xl border border-rose-500/50 bg-gradient-to-l from-rose-950/80 to-brand-950 px-3 py-2.5 flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-rose-200">🌙 {t("dutyTonight")}</p>
+                <p className="text-[11px] text-rose-100/80 truncate">
+                  {allComputed.filter(p => p.onDuty).length > 0
+                    ? t("dutyBanner") + " · " + allComputed.filter(p => p.onDuty).length
+                    : t("dutyEmpty")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setFilter("urgent"); setEmergencyMode(false); }}
+                className="flex-shrink-0 text-[11px] font-bold bg-rose-500 text-white rounded-lg px-2.5 py-1.5"
+              >
+                {t("dutyTonight")}
+              </button>
+              <button
+                type="button"
+                onClick={shareDutyTonight}
+                className="flex-shrink-0 text-[11px] font-bold bg-brand-800 text-brand-100 border border-brand-600 rounded-lg px-2.5 py-1.5"
+              >
+                {t("dutyShare")}
+              </button>
+            </div>
               {[
                 { id: "all", label: "📋 " + t("filterAll") },
                 { id: "open", label: t("filterOpen") },
@@ -5072,6 +5227,9 @@ out center tags;`;
                   <button onClick={() => setAdminTab("msgs")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "msgs" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
                     {lang === "ar" ? "راسلنا" : lang === "fr" ? "Messages" : "Inbox"} ({contactMessages.filter(m => !m.read).length}/{contactMessages.length})
                   </button>
+                  <button onClick={() => setAdminTab("duty")} className={`flex-1 text-xs font-medium rounded-lg py-2 ${adminTab === "duty" ? "bg-brand-500 text-brand-950" : "bg-brand-900 text-brand-300"}`}>
+                    🌙 {t("dutyAdminTab")} ({allComputed.filter(p => p.onDuty).length})
+                  </button>
                 </div>
 
                 {(adminTab === "review" || adminTab === "all") && (
@@ -5168,6 +5326,46 @@ out center tags;`;
                         </button>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                
+                {adminTab === "duty" && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-rose-300 font-semibold">
+                      🌙 {t("dutyTonight")} {dutyDate ? "· " + dutyDate : ""}
+                    </p>
+                    <p className="text-[11px] text-brand-400">
+                      {lang === "ar"
+                        ? "اضغط لإضافة أو إزالة صيدلية من مناوبة هذه الليلة. تظهر فوراً للمستخدمين."
+                        : "Tap to add/remove a pharmacy from tonight's duty list."}
+                    </p>
+                    {dutySaving && <p className="text-xs text-brand-500">…</p>}
+                    <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+                      {allComputed
+                        .slice()
+                        .sort((a, b) => {
+                          if (!!a.onDuty !== !!b.onDuty) return a.onDuty ? -1 : 1;
+                          return (a.distance || 99999) - (b.distance || 99999);
+                        })
+                        .slice(0, 80)
+                        .map((ph) => (
+                          <div key={String(ph.id)} className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${ph.onDuty ? "border-rose-500/50 bg-rose-950/40" : "border-brand-800 bg-brand-900"}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-brand-50 truncate">{ph.name}</p>
+                              <p className="text-[10px] text-brand-400 truncate">{ph.area || ph.address}</p>
+                            </div>
+                            <button
+                              type="button"
+                              disabled={dutySaving}
+                              onClick={() => toggleDutyPharmacy(ph.id)}
+                              className={`text-[10px] font-bold rounded-lg px-2.5 py-1.5 ${ph.onDuty ? "bg-rose-600 text-white" : "bg-brand-700 text-brand-100"}`}
+                            >
+                              {ph.onDuty ? t("dutyRemove") : t("dutyAdd")}
+                            </button>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 )}
 
@@ -5304,7 +5502,7 @@ out center tags;`;
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=143";
+      var PHARIS_SW_URL = "./service-worker.js?v=144";
 
       function pharisLang() {
         var lang = "ar";

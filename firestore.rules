@@ -115,6 +115,12 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    match /duty_nights/{dateId} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid == 'vAz85zAbCTX5ipHqDowdCZBROR53';
+    }
+
     match /presence/{uid} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == uid;
