@@ -1810,7 +1810,7 @@ out center tags;`;
 
     function StatusDot({ open }) {
       return (
-        <span className={`relative flex h-3.5 w-3.5 flex-shrink-0`}>
+        <span className={`relative flex h-4 w-4 flex-shrink-0`}>
           <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-40 ${open ? "bg-emerald-400" : "bg-rose-400"}`} />
           <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${open ? "bg-emerald-500" : "bg-rose-500"}`} />
         </span>
@@ -1826,7 +1826,7 @@ out center tags;`;
     const PharmacyCard = memo(function PharmacyCard({ ph, lang, t, onSelect, onToggleFav, onReport, adminUser }) {
       const src = sourceBadge(ph, t);
       return (
-        <div className={`bg-white dark:bg-brand-900 rounded-2xl p-5 shadow-md border transition hover:shadow-lg min-h-[5.5rem] ${ph.underReview ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20" : "border-stone-100 dark:border-brand-800"}`}>
+        <div className={`bg-white dark:bg-brand-900 rounded-2xl p-5 sm:p-6 shadow-md border transition hover:shadow-lg min-h-[6.5rem] ${ph.underReview ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20" : "border-stone-100 dark:border-brand-800"}`}>
           {ph.underReview && (
             <div className="flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 mb-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-lg px-2.5 py-1.5">
               <Icons.Alert className="w-3.5 h-3.5 flex-shrink-0" />
@@ -1838,7 +1838,7 @@ out center tags;`;
               <StatusDot open={ph.status.open} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-bold text-[15px] sm:text-base text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
+                  <h3 className="font-bold text-base sm:text-lg text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
                     {ph.name}
                     {adminUser && ph.fromOwner && (
                       <span
@@ -1855,7 +1855,7 @@ out center tags;`;
                       <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded-full px-1.5 py-0.5 flex-shrink-0">✓ {t("trustVerified")}</span>
                     )}
                   </h3>
-                  <span className="font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                  <span className="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0">
                     {formatDistance(ph.distance, lang)}
                   </span>
                 </div>
@@ -4538,7 +4538,7 @@ const shareDutyTonight = async () => {
                     <p>{filter === "favorites" ? t("noFavorites") : t("noResults")}</p>
                   </div>
                 )}
-                <div className="space-y-3 min-h-[50vh] pb-6">
+                <div className="space-y-3.5 min-h-[50vh] h-[50vh] max-h-[55vh] overflow-y-auto pb-4 pe-1 scrollbar-thin rounded-xl">
                 {list.map(ph => (
                   <PharmacyCard
                     key={ph.id}
@@ -5645,7 +5645,7 @@ const shareDutyTonight = async () => {
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=148";
+      var PHARIS_SW_URL = "./service-worker.js?v=149";
 
       function pharisLang() {
         var lang = "ar";
