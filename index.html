@@ -1810,7 +1810,7 @@ out center tags;`;
 
     function StatusDot({ open }) {
       return (
-        <span className={`relative flex h-4 w-4 flex-shrink-0`}>
+        <span className={`relative flex h-2.5 w-2.5 flex-shrink-0`}>
           <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-40 ${open ? "bg-emerald-400" : "bg-rose-400"}`} />
           <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${open ? "bg-emerald-500" : "bg-rose-500"}`} />
         </span>
@@ -1826,19 +1826,19 @@ out center tags;`;
     const PharmacyCard = memo(function PharmacyCard({ ph, lang, t, onSelect, onToggleFav, onReport, adminUser }) {
       const src = sourceBadge(ph, t);
       return (
-        <div className={`bg-white dark:bg-brand-900 rounded-2xl p-5 sm:p-6 shadow-md border transition hover:shadow-lg min-h-[6.5rem] ${ph.underReview ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20" : "border-stone-100 dark:border-brand-800"}`}>
+        <div className={`bg-white dark:bg-brand-900 rounded-2xl p-4 shadow-sm border transition hover:shadow-md ${ph.underReview ? "border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20" : "border-stone-100 dark:border-brand-800"}`}>
           {ph.underReview && (
             <div className="flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 mb-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-lg px-2.5 py-1.5">
               <Icons.Alert className="w-3.5 h-3.5 flex-shrink-0" />
               {t("underReviewBanner", { n: ph.complaintCount })}
             </div>
           )}
-          <div className="flex items-center gap-3.5">
-            <button onClick={() => onSelect(ph)} className="flex-1 min-w-0 text-start flex items-center gap-3.5">
+          <div className="flex items-center gap-3">
+            <button onClick={() => onSelect(ph)} className="flex-1 min-w-0 text-start flex items-center gap-3">
               <StatusDot open={ph.status.open} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-bold text-base sm:text-lg text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
+                  <h3 className="font-semibold text-stone-900 dark:text-brand-50 truncate flex items-center gap-1.5">
                     {ph.name}
                     {adminUser && ph.fromOwner && (
                       <span
@@ -1855,11 +1855,11 @@ out center tags;`;
                       <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded-full px-1.5 py-0.5 flex-shrink-0">✓ {t("trustVerified")}</span>
                     )}
                   </h3>
-                  <span className="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                  <span className="font-mono text-xs text-stone-400 flex-shrink-0">
                     {formatDistance(ph.distance, lang)}
                   </span>
                 </div>
-                <p className="text-sm text-stone-600 dark:text-brand-300 mt-1 truncate">{ph.area}{ph.address ? ` · ${ph.address}` : ""}</p>
+                <p className="text-xs text-stone-500 dark:text-brand-300 mt-0.5 truncate">{ph.area}{ph.address ? ` · ${ph.address}` : ""}</p>
                 <div className="flex items-center justify-between mt-1.5 gap-2">
                   <p className={`text-xs font-medium ${ph.status.open ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                     {ph.status.open ? t("openNow") : t("closedNow")}
@@ -4125,9 +4125,9 @@ const shareDutyTonight = async () => {
       // RENDER
       // ═══════════════════════════════════════════════════════════
       return (
-        <div dir={dir} className={`min-h-screen ${dark ? "dark bg-black text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
+        <div dir={dir} className={`h-[100dvh] min-h-0 flex flex-col overflow-hidden ${dark ? "dark bg-black text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
           {/* Header */}
-          <header className="sticky top-0 z-20 bg-black text-brand-50 px-3 pt-1.5 pb-1.5 rounded-b-xl shadow-lg border-b border-brand-900">
+          <header className="flex-shrink-0 z-20 bg-black text-brand-50 px-3 pt-1 pb-1 rounded-b-xl shadow-lg border-b border-brand-900 max-h-[48vh] overflow-y-auto scrollbar-thin">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-800 flex items-center justify-center shadow-lg overflow-hidden border border-brand-700">
@@ -4175,7 +4175,7 @@ const shareDutyTonight = async () => {
               <button
                 type="button"
                 onClick={() => setShowLocationPicker(s => !s)}
-                className={`flex-[1.1] min-w-0 flex items-center gap-1.5 rounded-xl px-2.5 py-3 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
+                className={`flex-[1.1] min-w-0 flex items-center gap-1.5 rounded-xl px-2.5 py-2 border transition ${showLocationPicker ? "bg-brand-500 border-brand-400 text-brand-950" : "bg-brand-900 border-brand-700 text-brand-100 hover:bg-brand-800"}`}
               >
                 <Icons.MapPin className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate text-[11px] font-medium leading-tight text-start">
@@ -4195,7 +4195,7 @@ const shareDutyTonight = async () => {
                   value={queryInput}
                   onChange={(e) => setQueryInput(e.target.value)}
                   placeholder={lang === "ar" ? "صيدلية أو حي..." : lang === "fr" ? "Pharmacie ou quartier..." : "Pharmacy or area..."}
-                  className={`w-full h-full bg-brand-900 border border-brand-700 placeholder-brand-600 text-brand-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 ${dir === "rtl" ? "pr-9 pl-2" : "pl-9 pr-2"} py-3`}
+                  className={`w-full h-full bg-brand-900 border border-brand-700 placeholder-brand-600 text-brand-50 rounded-xl text-[11px] outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 ${dir === "rtl" ? "pr-8 pl-2" : "pl-8 pr-2"} py-2`}
                 />
               </div>
             </div>
@@ -4274,10 +4274,10 @@ const shareDutyTonight = async () => {
               </button>
               <button
                 type="button"
-                onClick={() => shareApp()}
-                className="flex-1 text-center bg-emerald-600 text-white border-2 border-emerald-500 rounded-xl py-2.5 text-[11px] font-bold hover:bg-emerald-500 transition shadow-md shadow-emerald-600/25"
+                onClick={() => setShowMedSearch(true)}
+                className="flex-1 text-center bg-yellow-400 text-yellow-950 border-2 border-yellow-500 rounded-xl py-2.5 text-[11px] font-bold hover:bg-yellow-300 transition shadow-md shadow-yellow-500/20"
               >
-                📤 {lang === "ar" ? "شارك" : lang === "fr" ? "Partager" : "Share"}
+                💊 {t("medBtn")}
               </button>
               <button
                 type="button"
@@ -4308,10 +4308,10 @@ const shareDutyTonight = async () => {
             </button>
             <button
               type="button"
-              onClick={() => setShowMedSearch(true)}
-              className="mt-3 block w-full text-center bg-yellow-400 text-yellow-950 border-2 border-yellow-500 rounded-2xl py-4 text-base font-black hover:bg-yellow-300 transition shadow-lg shadow-yellow-500/30 tracking-wide"
+              onClick={() => shareApp()}
+              className="mt-2 block w-full text-center bg-emerald-600 text-white border-2 border-emerald-500 rounded-xl py-2.5 text-xs font-bold hover:bg-emerald-500 transition shadow-md shadow-emerald-600/25"
             >
-              💊 {t("medBtn")}
+              {lang === "ar" ? "📤 شارك التطبيق مع الأصدقاء" : lang === "fr" ? "📤 Partager l'app avec vos amis" : "📤 Share the app with friends"}
             </button>
 
             {/* Stats */}
@@ -4435,7 +4435,7 @@ const shareDutyTonight = async () => {
 
 
           {/* Main */}
-          <main className="px-2 py-2 space-y-2 max-w-xl mx-auto safe-bottom pb-6 w-full">
+          <main className="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-2 max-w-lg mx-auto w-full safe-bottom">
             
 
             {showMap ? (
@@ -4532,35 +4532,30 @@ const shareDutyTonight = async () => {
               </>
             ) : (
               <>
+                <div className="rounded-2xl border border-emerald-700/50 bg-emerald-950/30 overflow-hidden min-h-[50vh]">
+                  <div className="flex items-center justify-between px-3 py-2 bg-emerald-900/80 border-b border-emerald-700/40">
+                    <span className="text-sm font-bold text-emerald-100">🏥 {lang === "ar" ? "الصيدليات" : lang === "fr" ? "Pharmacies" : "Pharmacies"}</span>
+                    <span className="text-sm font-mono font-bold text-emerald-300">{list.length}</span>
+                  </div>
+                  <div className="p-2 space-y-2.5">
                 {list.length === 0 && (
                   <div className="text-center py-16 text-stone-400 dark:text-brand-500">
                     <Icons.Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
                     <p>{filter === "favorites" ? t("noFavorites") : t("noResults")}</p>
                   </div>
                 )}
-                <div
-                  className="rounded-2xl border-2 border-emerald-600/50 dark:border-emerald-500/40 bg-stone-100 dark:bg-brand-950 shadow-lg overflow-hidden flex flex-col w-full"
-                  style={{ height: "min(50vh, 50dvh)", minHeight: "45vh", maxHeight: "60vh" }}
-                >
-                  <div className="px-3 py-2 border-b border-brand-800/40 flex items-center justify-between flex-shrink-0 bg-brand-900/40">
-                    <span className="text-xs font-bold text-brand-200">
-                      🏥 {lang === "ar" ? "الصيدليات" : lang === "fr" ? "Pharmacies" : "Pharmacies"}
-                    </span>
-                    <span className="text-[11px] font-mono text-brand-400">{list.length}</span>
-                  </div>
-                  <div className="flex-1 overflow-y-auto space-y-3 p-3 pe-2 scrollbar-thin">
-                    {list.map(ph => (
-                      <PharmacyCard
-                        key={ph.id}
-                        ph={ph}
-                        lang={lang}
-                        t={t}
-                        onSelect={setSelected}
-                        onToggleFav={toggleFavorite}
-                        onReport={reportPharmacy}
-                        adminUser={adminUser}
-                      />
-                    ))}
+                {list.map(ph => (
+                  <PharmacyCard
+                    key={ph.id}
+                    ph={ph}
+                    lang={lang}
+                    t={t}
+                    onSelect={setSelected}
+                    onToggleFav={toggleFavorite}
+                    onReport={reportPharmacy}
+                    adminUser={adminUser}
+                  />
+                ))}
                   </div>
                 </div>
               </>
@@ -5656,7 +5651,7 @@ const shareDutyTonight = async () => {
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=151";
+      var PHARIS_SW_URL = "./service-worker.js?v=153";
 
       function pharisLang() {
         var lang = "ar";
