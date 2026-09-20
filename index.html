@@ -4125,9 +4125,9 @@ const shareDutyTonight = async () => {
       // RENDER
       // ═══════════════════════════════════════════════════════════
       return (
-        <div dir={dir} className={`h-[100dvh] min-h-0 flex flex-col overflow-hidden ${dark ? "dark bg-black text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
+        <div dir={dir} className={`min-h-screen ${dark ? "dark bg-black text-brand-50" : "bg-brand-50 text-stone-900"}`} style={{ fontFamily: lang === "ar" ? "'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans', sans-serif" }}>
           {/* Header */}
-          <header className="flex-shrink-0 z-20 bg-black text-brand-50 px-3 pt-1 pb-1 rounded-b-xl shadow-lg border-b border-brand-900 max-h-[48vh] overflow-y-auto scrollbar-thin">
+          <header className="sticky top-0 z-20 bg-black text-brand-50 px-3 pt-1.5 pb-1.5 rounded-b-xl shadow-lg border-b border-brand-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-800 flex items-center justify-center shadow-lg overflow-hidden border border-brand-700">
@@ -4435,7 +4435,7 @@ const shareDutyTonight = async () => {
 
 
           {/* Main */}
-          <main className="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-2 max-w-lg mx-auto w-full safe-bottom">
+          <main className="px-4 py-4 space-y-3 max-w-lg mx-auto safe-bottom">
             
 
             {showMap ? (
@@ -4532,12 +4532,6 @@ const shareDutyTonight = async () => {
               </>
             ) : (
               <>
-                <div className="rounded-2xl border border-emerald-700/50 bg-emerald-950/30 overflow-hidden min-h-[50vh]">
-                  <div className="flex items-center justify-between px-3 py-2 bg-emerald-900/80 border-b border-emerald-700/40">
-                    <span className="text-sm font-bold text-emerald-100">🏥 {lang === "ar" ? "الصيدليات" : lang === "fr" ? "Pharmacies" : "Pharmacies"}</span>
-                    <span className="text-sm font-mono font-bold text-emerald-300">{list.length}</span>
-                  </div>
-                  <div className="p-2 space-y-2.5">
                 {list.length === 0 && (
                   <div className="text-center py-16 text-stone-400 dark:text-brand-500">
                     <Icons.Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
@@ -4556,8 +4550,6 @@ const shareDutyTonight = async () => {
                     adminUser={adminUser}
                   />
                 ))}
-                  </div>
-                </div>
               </>
             )}
           </main>
@@ -5651,7 +5643,7 @@ const shareDutyTonight = async () => {
     // نظام التحديث — زر للمستخدمين عند وجود نسخة أحدث فقط (آخر تحديث)
     if ("serviceWorker" in navigator) {
       var pharisRefreshing = false;
-      var PHARIS_SW_URL = "./service-worker.js?v=153";
+      var PHARIS_SW_URL = "./service-worker.js?v=152";
 
       function pharisLang() {
         var lang = "ar";
