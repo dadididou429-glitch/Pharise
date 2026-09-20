@@ -1,5 +1,5 @@
 // Pharis Service Worker — تحديث فوري + أوفلاين
-const CACHE_NAME = "pharis-v147-med-btn";
+const CACHE_NAME = "pharis-v148-cards-big";
 const SHELL = [
   "./",
   "./index.html",
